@@ -1,0 +1,14 @@
+# Enable Control Port for https://gitweb.torproject.org/torspec.git/tree/control-spec.txt
+ControlPort 12345
+CookieAuthentication 0
+
+# Using Bridges, obsf4
+UseBridges 1
+ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed
+
+# Use https://t.me/GetBridgesBot
+# Paste the obsf4 bridges here and put Bridge in front of each.
+Bridge obfs4 89.166.161.20:8080 02F00A33017A24E99112E5CA498AECD204F913F3 cert=eWfCYOE/3kdmDpYy/tT0CuKI01dWKY6BtSAMSu0uuD4ixo7RE4/av+0fNjw4sbZmORLKVQ iat-mode=0
+Bridge obfs4 62.144.44.76:1677 3234D58257F100D6B5D8AB6F43176E6946EFD513 cert=WdwQxepslXbph9Otb4msrnCEnxhMvD/h5ScT1F+p5kK9USw++zgCjH0tPDXq/x9mj56Qcw iat-mode=0
+Bridge obfs4 46.226.107.204:65385 1417ACC5C3C0FCAC2A5F0EB9277FD2833B8007E9 cert=fpWyQ7GUZL8F+u0r9dmq0quJud/j6r9ysXJAIACxU6ZdWOwD+SpfRUin2GkafQsROJSMEA iat-mode=0
+Bridge obfs4 15.235.47.71:58131 7AAC6E36700ECB0B9869BC70B7397D3A158EDE3E cert=QkNiC9DVrXqcyn1Y6njSwiNsOGGBb1anPVpE6Mjdph9jxr0Wi0fk9LArNCdvO4kCIIRdIA iat-mode=0
