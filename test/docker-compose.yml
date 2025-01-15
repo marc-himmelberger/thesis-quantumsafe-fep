@@ -1,0 +1,45 @@
+services:
+  bridge:
+    build: bridge
+    networks:
+      pq_obfs_network:
+        ipv4_address: 172.16.113.5
+    environment:
+      - OR_PORT=27797
+      - PT_PORT=28483
+      - EMAIL=himarc@ethz.ch
+      - NICKNAME=PqObfsBridgeDev
+      - OBFS4V_Address=172.16.113.5
+    volumes:
+      - data:/var/lib/tor
+      - ./.bridgeinfo:/.bridgeinfo
+    ports:
+      - 27797:27797
+      - 28483:28483
+    healthcheck:
+      test: [ "CMD-SHELL", "get-bridge-line > /.bridgeinfo" ]
+      interval: 2s
+      retries: 5
+      timeout: 2s
+  client:
+    build: client
+    networks:
+      pq_obfs_network:
+        ipv4_address: 172.16.113.6
+    volumes:
+      - ./.bridgeinfo:/.bridgeinfo:ro
+    depends_on:
+      bridge:
+        condition: service_healthy
+        restart: true
+
+volumes:
+  data:
+    name: tor-datadir
+
+networks:
+  pq_obfs_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.113.0/24"

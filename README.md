@@ -43,7 +43,8 @@ See [Notion](https://www.notion.so/MSc-Thesis-172b3139d28980ee8917f71ec2b4ba35?p
 
 ## Measuring
 
-- *TBD*
+- To start the bridge (self-initializing) and client (which executes some sanity checks upon startup), use `docker compose up -d --build`
+- When done, use `docker compose down`
 
 ## Contributing
 This project is currently not open to contributions.
