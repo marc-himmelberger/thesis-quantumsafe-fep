@@ -4,6 +4,21 @@ echo "############"
 echo "# /test.sh #"
 echo "############"
 
+# Check tor with version
+tor --version
+if [ "$?" = "0" ]; then
+    echo "[PASS] Tor present"
+else
+    echo "[FAIL] Tor executable not present"
+fi
+
+# Read Bridge Line
+cat /.bridgeinfo >> /etc/tor/torrc
+
+# Set control password
+torpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)
+torhash=$(su tor-client -c "tor --hash-password \"$torpass\" 2>/dev/null")
+echo "HashedControlPassword $torhash\n" >> /etc/tor/torrc
 
 # Start tor
 /etc/init.d/tor start 2>&1 > test_initd.log
@@ -16,8 +31,8 @@ fi
 # Check that tor circuit is established
 # The log files containing info about $1 should contain $2, otherwise something went wrong
 tor_getinfo () {
-    nc_out=$(nc -N 127.0.0.1 12345 <<EOF
-AUTHENTICATE
+    nc_out=$(nc -N 127.0.0.1 9051 <<EOF
+AUTHENTICATE "$torpass"
 GETINFO $1
 EOF
     )
@@ -31,7 +46,7 @@ EOF
     fi
 }
 
-sleep 5
+sleep 10
 tor_getinfo "circuit-status" " BUILT "
 tor_getinfo "orconn-status" " CONNECTED"
 tor_getinfo "entry-guards" " up"
