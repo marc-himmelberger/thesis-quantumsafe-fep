@@ -1,0 +1,3 @@
+[submodule "lyrebird-pq-obfs"]
+	path = lyrebird-pq-obfs
+	url = git@gitlab.ethz.ch:himarc/lyrebird-pq-obfs.git

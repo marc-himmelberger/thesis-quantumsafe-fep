@@ -1,6 +1,8 @@
 services:
   bridge:
-    build: bridge
+    build:
+      context: ..
+      dockerfile: docker/bridge/Dockerfile
     networks:
       pq_obfs_network:
         ipv4_address: 172.16.113.5
@@ -22,7 +24,9 @@ services:
       retries: 5
       timeout: 2s
   client:
-    build: client
+    build:
+      context: ..
+      dockerfile: docker/client/Dockerfile
     networks:
       pq_obfs_network:
         ipv4_address: 172.16.113.6

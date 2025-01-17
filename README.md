@@ -40,6 +40,7 @@ See [Notion](https://www.notion.so/MSc-Thesis-172b3139d28980ee8917f71ec2b4ba35?p
 ## Installation, Requirements
 
 - To use pre-commit hooks to clone Overleaf files: `pip3 install pre-commit` and `pre-commit install`
+- To make sure that the Lyrebird submodule is also fetched, use `git clone --recurse-submodules` or `git submodule update --init`
 
 ## Measuring
 
