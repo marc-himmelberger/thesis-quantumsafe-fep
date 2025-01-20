@@ -1,0 +1,53 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "go: build lyrebird-pq-obfs",
+			"type": "go",
+			"command": "build",
+			"args": [
+				"-ldflags=-X main.lyrebirdVersion=lyrebird-pqobfs-test",
+				"./cmd/lyrebird"
+			],
+			"problemMatcher": [
+				"$go"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/lyrebird-pq-obfs",
+				"env": {
+					"CGO_ENABLED": "0"
+				}
+			},
+			"group": "build",
+		},
+		{
+			"label": "Docker Compose: build",
+			"type": "shell",
+			"command": "docker compose build",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/docker"
+			},
+			"dependsOn": [
+				"go: build lyrebird-pq-obfs"
+			],
+			"group": "build",
+		},
+		{
+			"label": "Docker Compose: up",
+			"type": "shell",
+			"command": "docker compose up --force-recreate --abort-on-container-exit",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/docker"
+			},
+			"dependsOn": [
+				"Docker Compose: build"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+		},
+	]
+}

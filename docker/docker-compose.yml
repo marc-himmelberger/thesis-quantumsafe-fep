@@ -18,6 +18,7 @@ services:
     ports:
       - 27797:27797
       - 28483:28483
+    stop_grace_period: 1s # SIGKILL after 1s
     healthcheck:
       test: [ "CMD-SHELL", "get-bridge-line > /.bridgeinfo" ]
       interval: 2s
