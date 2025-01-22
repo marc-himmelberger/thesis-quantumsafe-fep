@@ -2,6 +2,29 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "go: test lyrebird-pq-obfs",
+			"type": "go",
+			"command": "test",
+			"args": [
+				"-ldflags=-X main.lyrebirdVersion=lyrebird-pqobfs-test",
+				"./..."
+			],
+			"problemMatcher": [
+				"$go"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/lyrebird-pq-obfs",
+				"env": {
+					"CGO_ENABLED": "0"
+				}
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"group": "build",
+		},
+		{
 			"label": "go: build lyrebird-pq-obfs",
 			"type": "go",
 			"command": "build",
@@ -18,6 +41,13 @@
 					"CGO_ENABLED": "0"
 				}
 			},
+			"dependsOn": [
+				"go: test lyrebird-pq-obfs"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
 			"group": "build",
 		},
 		{
@@ -31,6 +61,10 @@
 			"dependsOn": [
 				"go: build lyrebird-pq-obfs"
 			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
 			"group": "build",
 		},
 		{
@@ -44,6 +78,10 @@
 			"dependsOn": [
 				"Docker Compose: build"
 			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
 			"group": {
 				"kind": "build",
 				"isDefault": true
