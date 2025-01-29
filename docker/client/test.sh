@@ -66,3 +66,6 @@ else
     echo "  Regular IP: $regular_json"
     echo "  Torify IP:  $torify_json"
 fi
+
+# TODO check on bridge logs or different websites, to see what did or didn't work
+# TODO also check during/after connection
