@@ -98,6 +98,43 @@
 \department{Applied Cryptography Group\\Institute of Information Security\\Department of Computer Science}
 \date{June 20, 2025}
 
+% ######## CUSTOM style code ########
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage{stmaryrd}
+\usepackage[advantage,adversary,sets,ff,primitives,events,keys]{cryptocode}
+\usepackage{siunitx}
+
+% Define aliases
+\newcommand{\Adv}[3]{\textsf{Adv}\ _{\textsf{\tiny #1}}^{\textsf{\tiny #2}}(#3)}
+\newcommand{\AdvD}[4]{\textsf{Adv}\ _{\textsf{\tiny #1},\ \mathcal{#2}}^{\textsf{\tiny #3}}(#4)}
+
+\renewcommand{\pcadvantagename}{\mathsf{Adv}}
+\renewcommand{\pcadvantagesuperstyle}[1]{#1}
+\renewcommand{\pcadvantagesubstyle}[1]{#1}
+
+% Set up style for algorithms
+\definecolor{lngray}{gray}{0.5} % gray line numbers
+\renewcommand{\pclnspace}{0.5em} % spacing of numbering
+\renewcommand{\pclnrspace}{0em}
+\renewcommand{\pclnstyle}[1]{\text{\scriptsize\color{lngray} \num[minimum-integer-digits=2]{#1}}} % zero-pad
+\renewcommand{\pclnseparator}{} % no separator
+\makeatletter % put comments at the end of lines, could not do it just with hfill & fiends so I dug into internals :P
+\newcommand{\lncomment}[1]{ \@pc@modeend& \mbox{\pccomment{}\hspace{-0.75em} \ensuremath{#1}} \\  }
+\newcommand{\titlecomment}[1]{ \hfill \mbox{\pccomment{}\hspace{-0.75em} \ensuremath{#1}}}
+\makeatother
+% Refine cryptocode styles and add more notions
+\renewcommand{\pcnotionstyle}[1]{\ensuremath{\mathsf{#1}}}
+\renewcommand{\kgen}{\pcalgostyle{KeyGen}}
+
+\providecommand{\encaps}{\pcalgostyle{Encaps}}
+\providecommand{\decaps}{\pcalgostyle{Decaps}}
+\providecommand{\sprcca}{\pcnotionstyle{SPR\pcmathhyphen{}CCA}}
+
+\providecommand{\prkey}{\pcnotionstyle{PR\pcmathhyphen{}Key}}
+\providecommand{\mdsd}{\pcnotionstyle{mDSD}}
+
+% ######## END CUSTOM style code ########
+
 \begin{document}
 
 \frontmatter
@@ -122,13 +159,13 @@
 %% Your real content!
 \sloppy
 \input{sections/1_introduction}
-\input{sections/2_methods}
-\input{sections/3_results}
-\input{sections/4_conclusions}
+\input{sections/2_preliminaries}
+\input{sections/3_obfuscation}
+\input{sections/4_implementation}
+\input{sections/5_experiment}
 
 % \appendix
-
-% \input{sections/5_appendix}
+% \input{sections/6_appendix}
 
 \backmatter
 

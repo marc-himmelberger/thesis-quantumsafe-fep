@@ -1,0 +1,22 @@
+\begin{pchstack}[boxed, center, space=0.5em]
+
+\procedure[linenumbering]{\textbf{GAME} \textsf{OW-ATK}}{
+    (\pk,\sk) \gets \kgen(\secparam) \\
+    m^* \gets \mathcal{D}(\mathcal{M}) \\
+    c^* \gets \enc(\pk,m) \\
+    m' \gets \adv^{O_\textsf{ATK}}(\pk, c^*) \\
+    \pcreturn \llbracket \textsc{Pco}(m',c^*) \rrbracket
+}
+
+\begin{pcvstack}[space=0.05em]
+\procedure[lnstart=5,linenumbering]{$\textsc{Pco}(m \in \mathcal{M}, c)$}{
+    \pcreturn \llbracket \dec(\sk,c) = m \rrbracket
+}
+
+\procedure[lnstart=6,linenumbering]{$\textsc{Cvo}(c \neq c^*)$}{
+    m := \dec(\sk, c) \\
+    \pcreturn \llbracket m \in \mathcal{M} \rrbracket
+}
+\end{pcvstack}
+
+\end{pchstack}

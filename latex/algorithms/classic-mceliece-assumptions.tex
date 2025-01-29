@@ -1,0 +1,35 @@
+\begin{pchstack}[boxed, center, space=0.5em]
+
+\begin{pcvstack}[space=0.05em]
+\procedure[linenumbering]{\textbf{GAME} \textsf{PR-Key}}{
+    b \gets \bin \\
+    (T_0,\sk) \gets \kgen() \\
+    T_1 \gets \textsf{RandGen}() \\
+    b' \gets \adv(T_b) \\
+    \pcreturn \llbracket b' = b \rrbracket
+}
+
+\procedure[lnstart=5,linenumbering]{\textbf{GAME} \textsf{mDSD}}{
+    b \gets \bin \\
+    \hat T \gets \textsf{RandGen}() \\
+    e \gets \textsf{FixedWeight}() \\
+    u_0 \gets \left[ I_{n-k} \mid \hat T \right] \cdot e \\
+    u_1 \gets U(\mathbb F_2^{n - k}) \\
+    b' \gets \adv(\hat T, u_b) \\
+    \pcreturn \llbracket b' = b \rrbracket
+}
+\end{pcvstack}
+
+\begin{pcvstack}[space=0.05em]
+\procedure[lnstart=12,linenumbering]{$\textsf{RandGen}()$}{
+    \hat T \gets \bot \\
+    \pcwhile \hat T = \bot \pcdo \\
+    \t  \hat H \gets U(\mathbb F_2^{n \times k}) \\
+    \t  \text{reduce } \hat H \text{ to systematic form } \left[ I_{n-k} \mid \hat T \right] \text{} \\
+    \t  \text{if this fails } \hat T \gets \bot \\ 
+    \pcendwhile \\
+    \pcreturn \hat T
+}
+\end{pcvstack}
+
+\end{pchstack}
