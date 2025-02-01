@@ -13,7 +13,7 @@ See [Notion](https://www.notion.so/MSc-Thesis-172b3139d28980ee8917f71ec2b4ba35?p
 
 **WP1 (January)**: Literature Review and Protocol Familiarization
 
-- [ ] Reviewing the proposed construction in Obfuscated Key Exchange
+- [x] Reviewing the proposed construction in Obfuscated Key Exchange
 - [ ] Reviewing the obfs4-spec.txt  and how it differentiates itself from VMess or Shadowsocks
 
 **WP2 (February)**: Implementing pq-obfs
