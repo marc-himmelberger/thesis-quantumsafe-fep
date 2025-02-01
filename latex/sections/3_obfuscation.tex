@@ -34,17 +34,18 @@ Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a code-based KEM in roun
 
 In Classic McEliece, public keys are the rightmost column of a generator matrix in systematic form. Ciphertexts are the data bits corresponding to codewords with Hamming weight exactly $t$.
 
-The generation of public keys occurs in a multi-step process starting from a 256-bit seed which is expanded using SHAKE256 into a secondary seed and raw values. If the raw values do not form a suitable systematic code, another attempt is started from the secondary seed, and so on.
+The generation of public keys occurs in a multistep process starting from a 256-bit seed which is expanded using SHAKE256 into a secondary seed and raw values. If the raw values do not form a suitable systematic code, another attempt is started from the secondary seed, and so on.
 
 For encapsulation, rejection-sampling is used to generate a uniformly random vector of Hamming weight $t$ which is then mapped from the space of $n$-bit vectors to $mt=n-k$ bits.
 
 We define the same assumptions about computational hardness as in \cite[Definition~K.1]{EC:Xagawa22}. \cref{fig:classic-mceliece-assumptions} shows corresponding game-based definitions.
 \begin{itemize}
-    \item \textbf{PR-Key assumption:} It is computationally hard to distinguish real public keys from the rightmost columns of the systematic forms of uniformly random generator matrices (conditional on the systematic form existing). \\
-    Consequently, no adversary $\adv$ could achieve high $ \advantage{\prkey}{}[(\adv)] $.
-    \item \textbf{modified Decisional Syndrome Decoding assumption:} It computationally hard to distinguish real ciphertexts from uniformly random $(n-k)$-bit vectors. \\
-    Consequently, no adversary $\adv$ could achieve high $ \advantage{\mdsd}{}[(\adv)] $.
+    \item \textbf{PR-Key assumption:} It is computationally hard to distinguish real public keys from the rightmost columns of the systematic forms of uniformly random generator matrices (conditional on the systematic form existing).
+    \item \textbf{modified Decisional Syndrome Decoding assumption:} It is computationally hard to distinguish real ciphertexts from uniformly random $(n-k)$-bit vectors.
 \end{itemize}
+
+For both games $\textsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of an adversary $\adv$ as follows and further say that Classic McEliece is $(t, \epsilon)\textsf{-goal}$-secure if for any adversary $\adv$ with running time at most $t$, we have that:
+\[ \advantage{\textsf{goal}}{}[(\adv)] := 2 \cdot \Pr[\textsf{goal}(\adv) = 1] - 1 \leq \epsilon \]
 
 \begin{figure}
     \input{algorithms/classic-mceliece-assumptions}
@@ -54,8 +55,52 @@ We define the same assumptions about computational hardness as in \cite[Definiti
 
 \paragraph{Constructed Encoding}
 
+Public keys ... ? TODO
+
+Ciphertexts are already hard to distinguish from uniform random bit vectors following the $\mdsd$ assumption. We therefore only need to take care to pad the bit vectors up to the byte boundary with randomly sampled bits that can be discarded during decoding.
+
+\cref{fig:classic-mceliece-encoding} shows the encoding functions for TODO TBD in pseudocode.
+
+\begin{figure}
+    \input{algorithms/classic-mceliece-encoding}
+    \caption{Encoding functions for Classic McEliece.}
+    \label{fig:classic-mceliece-encoding}
+\end{figure}
+
 \paragraph{Uniformity and Success Rate}
 
+We analyze the public key and ciphertext uniformity of our encoding and reduce to the two assumptions made above. We analyze the success rate of our encoding.
+
+\begin{lemma}[Public key uniformity of TODO TBD] \label{lem:classic-mceliece-pk-unif}
+    TODO bounds on uniformity
+\end{lemma}
+
+\begin{lemma}[Ciphertext uniformity of TODO TBD] \label{lem:classic-mceliece-ctxt-unif}
+    TODO bounds on uniformity
+\end{lemma}
+
+\begin{lemma}[First-keygen success probability of TODO TBD] \label{lem:classic-mceliece-first-keygen-success}
+    TODO bounds on success
+\end{lemma}
+
+\begin{lemma}[[First-encap success probability of TODO TBD] \label{lem:classic-mceliece-first-encap-success}
+    TODO bounds on success
+\end{lemma}
+
+Together with the Classic McEliece KEM, our encoding functions can be used to define a keygen/encapsulate-then-encode obfuscated KEM as in \cref{def:keygen-then-encode} and \ref{def:keygen-encap-then-encode}.
+
+\begin{theorem}
+    Let TODO TBD be a keygen/encapsulate-then-encode obfuscated KEM based on the Classic McEliece KEM as per \cref{def:keygen-then-encode} and \ref{def:keygen-encap-then-encode}. For any adversary $\adv$ against the $\indcca$ security of TODO TBD, there exists an algorithm $\bdv$ such that
+    \[ \advantage{\indcca}{TODO TBD}[(\bdv)] \leq 123 \]
+
+    Further,  For any adversary $\adv$ against the $\sprcca$ security of TODO TBD, there exists an algorithm $\bdv$ such that
+    \[ \advantage{\sprcca}{TODO TBD}[(\bdv)] \leq 123 \]
+\end{theorem}
+\begin{proof}
+    IND-CCA security follows from \cite[Theorem~2.12]{CCS:GunSteVei24}, together with \cref{lem:classic-mceliece-first-keygen-success} and \ref{lem:classic-mceliece-first-encap-success}.
+    
+    SPR-CCA security follows from \cite[Theorem~2.13]{CCS:GunSteVei24}, together with \cref{lem:classic-mceliece-first-keygen-success}, \ref{lem:classic-mceliece-first-encap-success} and \ref{lem:classic-mceliece-ctxt-unif}.
+\end{proof}
 
 \section{Obfuscating ABC with XYZ} \label{sec:tbd}
 
