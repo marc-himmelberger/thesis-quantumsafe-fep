@@ -32,7 +32,7 @@ TODO: Show domain in table? Update references to convenience definitions earlier
 \paragraph{Original Generation and Distribution}
 Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a code-based KEM in round 4 of the NIST PQC standardization. We only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation. TODO: OK? Keita also makes that assumption at some point.
 
-In Classic McEliece, public keys are the rightmost column of a generator matrix in systematic form. Ciphertexts are the data bits corresponding to codewords with Hamming weight exactly $t$.
+In Classic McEliece, public keys are the $k$ rightmost columns of a $mt \times n$ generator matrix in systematic form ($k = n - mt$). Ciphertexts are the $mt$ data bits corresponding to $n$-bit codewords with Hamming weight exactly $t$.
 
 The generation of public keys occurs in a multistep process starting from a 256-bit seed which is expanded using SHAKE256 into a secondary seed and raw values. If the raw values do not form a suitable systematic code, another attempt is started from the secondary seed, and so on.
 
@@ -55,9 +55,33 @@ For both games $\textsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of
 
 \paragraph{Constructed Encoding}
 
-Public keys ... ? TODO
+Given the $\prkey$ assumption, public keys are hard to distinguish from outputs of $\textsf{RandGen}()$. On \cref{ln:randgen-reject}, a reduction to systematic form (also known as \emph{reduced row echelon form} or \emph{row canonical form}) fails if and only if the $mt$ leftmost columns of $\hat H$ do not form a full rank square matrix.
+The probability for a $mt \times mt$ matrix with i.i.d. uniformly random entries over $\mathbb F_2$ to be of full rank is exactly \cite{DBLP:journals/corr/SalmondGGC14}
+\[ p_\textsf{FR} := \prod_{i=1}^{mt} \left( 1-2^{-i} \right) \approx 0.288788 \]
 
-Ciphertexts are already hard to distinguish from uniform random bit vectors following the $\mdsd$ assumption. We therefore only need to take care to pad the bit vectors up to the byte boundary with randomly sampled bits that can be discarded during decoding.
+The above approximation holds for all parameter sets of Classic McEliece. We have $768 \leq mt \leq 1664$, and the function converges rapidly. A strict upper bound of $p_\textsf{FR} \leq \prod_{i=1}^{768} \left( 1-2^{-i} \right) \leq \prod_{i=1}^{8} \left( 1-2^{-i} \right) \leq 0.29$ can be shown. The proof for a tight lower bound eludes us.
+
+We now show a simplification of $\textsf{RandGen}()$ which produces statistically indistinguishable results.
+
+\begin{lemma}[Simplifying \textsf{RandGen}] \label{lem:classic-mceliece-randgen-prime}
+    Let $\textsf{RandGen}(), \textsf{RandGen}'()$ be defined as in \cref{fig:classic-mceliece-assumptions}.
+    The distributions $D_0 = \{ M \gets \textsf{RandGen}() \}$ and $D_1 = \{ M \gets \textsf{RandGen}'() \}$ are statistically indistinguishable, i.e. have statistical distance $\Delta(D_0, D_1) = 0$.
+\end{lemma}
+
+\begin{proof}
+    Consider an intermediate value of $\hat H$ which can be reduced to systematic form (i.e. has full rank). This value exists for all terminating executions of $\textsf{RandGen}()$ as the last sample drawn before returning.
+
+    In general, the reduced row echelon form is obtained using Gauss–Jordan elimination. This algorithm carries out a sequence of operations on the matrix consisting of swapping rows, adding rows onto others and scaling rows.
+    Over $\mathbb F_2$, the scaling of rows is not needed and swapping of rows can be accomplished via a sequence of 3 row additions. The reduction can thus be expressed as merely a sequence of adding rows onto others.
+    The systematic form of $\hat H$ over $\mathbb F_2$, just like reduced row echelon forms over any field, is also unique. Thus it suffices to consider an arbitrary sequence of row additions transforming $\hat H$ to systematic form.
+    
+    The leftmost $mt$ columns of $\hat H$ suffice to determine which rows are added to which others.
+    Let $M_0$ denote the rightmost columns of $\hat H$, which form a $mt \times k$ matrix of uniformly random i.i.d. entries from $\mathbb F_2$, independent from the leftmost columns of $\hat H$. As the addition of any one row of uniformly random bits onto any other row of independent uniformly random bits produces a row of uniformly random i.i.d. bits, the resulting matrix, say $M_1$, after one row addition of a randomly determined row onto another is statistically indistinguishable from $M_0$.
+    
+    Applying this argument for a maximum of $(mt)^2$ times, we can conclude that $\hat T$ is statistically indistinguishable from a uniformly random $mt \times k$ matrix over $\mathbb F_2$.
+\end{proof}
+
+Ciphertexts are already hard to distinguish from uniform random bit vectors following the $\mdsd$ assumption. We therefore only need to take care to pad the bit vectors up to the byte boundary with randomly sampled bits that can be discarded during decoding. This is necessary only for the parameter set 'mceliece6960119' as all others have $mt = 0 \mod 8$.
 
 \cref{fig:classic-mceliece-encoding} shows the encoding functions for TODO TBD in pseudocode.
 

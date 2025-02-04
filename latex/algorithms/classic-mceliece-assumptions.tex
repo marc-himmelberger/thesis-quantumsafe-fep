@@ -24,10 +24,16 @@
 \procedure[lnstart=12,linenumbering]{$\textsf{RandGen}()$}{
     \hat T \gets \bot \\
     \pcwhile \hat T = \bot \pcdo \\
-    \t  \hat H \gets U(\mathbb F_2^{n \times k}) \\
-    \t  \text{reduce } \hat H \text{ to systematic form } \left[ I_{n-k} \mid \hat T \right] \text{} \\
+    \t  \hat H \gets U(\mathbb F_2^{mt \times n}) \\
+    \t  \text{reduce } \hat H \text{ to systematic form } \left[ I_{mt} \mid \hat T \right] \pccomment{TODO: check dimensions} \\
+    \label{ln:randgen-reject}
     \t  \text{if this fails } \hat T \gets \bot \\ 
     \pcendwhile \\
+    \pcreturn \hat T
+}
+
+\procedure[lnstart=19,linenumbering]{$\textsf{RandGen}'()$}{
+    \hat T \gets U(\mathbb F_2^{mt \times k}) \\ 
     \pcreturn \hat T
 }
 
