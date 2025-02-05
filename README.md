@@ -46,7 +46,7 @@ See [Notion](https://www.notion.so/MSc-Thesis-172b3139d28980ee8917f71ec2b4ba35?p
 
 - To start the bridge (self-initializing) and client (which executes some sanity checks upon startup), use `cd docker && docker compose up -d --build`
 - When done, use `docker compose down`
-- This process is automated as VScode Tasks, so `CTRL + SHIFT + B` should suffice to run through everything
+- This process is automated as VScode Tasks, so `CTRL + SHIFT + B` should suffice to run through everything (this also includes running the tests included with the Go code)
 
 ## Contributing
 This project is currently not open to contributions.

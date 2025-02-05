@@ -25,7 +25,7 @@
 			"group": "build",
 		},
 		{
-			"label": "go: build lyrebird-pq-obfs awesome",
+			"label": "go: build lyrebird-pq-obfs",
 			"type": "go",
 			"command": "build",
 			"args": [
