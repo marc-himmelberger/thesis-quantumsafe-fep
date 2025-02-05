@@ -8,11 +8,10 @@ RUN make build
 # Base docker image
 FROM ubuntu:latest
 
-RUN apt update
 # For actually using Tor
-RUN apt install -y tor
+RUN apt update && apt install -y tor
 # Dev Dependencies
-RUN apt install -y jq curl netcat-openbsd
+RUN apt update && apt install -y jq curl netcat-openbsd dnsutils
 
 RUN apt clean
 RUN rm -rf /var/lib/apt/lists/*

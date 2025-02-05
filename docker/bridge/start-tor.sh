@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-NICK=${NICKNAME:-DockerObfs4Bridge}
+NICK=${NICKNAME:-DockerPqObfsBridge}
 
 echo "Using NICKNAME=${NICK}, OR_PORT=${OR_PORT}, PT_PORT=${PT_PORT}, and EMAIL=${EMAIL}."
 
-ADDITIONAL_VARIABLES_PREFIX="OBFS4V_"
+ADDITIONAL_VARIABLES_PREFIX="TORBRIDGE_"
 ADDITIONAL_VARIABLES=
 
-if [[ "$OBFS4_ENABLE_ADDITIONAL_VARIABLES" == "1" ]]
+if [[ "$TORBRIDGE_ENABLE_ADDITIONAL_VARIABLES" == "1" ]]
 then
     ADDITIONAL_VARIABLES="# Additional properties from processed '$ADDITIONAL_VARIABLES_PREFIX' environment variables"
     echo "Additional properties from '$ADDITIONAL_VARIABLES_PREFIX' environment variables processing enabled"
@@ -30,15 +30,15 @@ BridgeRelay 1
 Nickname ${NICK}
 Log notice file /var/log/tor/log
 Log notice stdout
-ServerTransportPlugin obfs4 exec /usr/bin/lyrebird
+ServerTransportPlugin pq_obfs exec /usr/bin/lyrebird
 ExtORPort auto
 DataDirectory /var/lib/tor
 
 # The variable "OR_PORT" is replaced with the OR port.
 ORPort ${OR_PORT}
 
-# The variable "PT_PORT" is replaced with the obfs4 port.
-ServerTransportListenAddr obfs4 0.0.0.0:${PT_PORT}
+# The variable "PT_PORT" is replaced with the pq_obfs port.
+ServerTransportListenAddr pq_obfs 0.0.0.0:${PT_PORT}
 
 # The variable "EMAIL" is replaced with the operator's email address.
 ContactInfo ${EMAIL}

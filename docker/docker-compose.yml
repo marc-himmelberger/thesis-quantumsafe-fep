@@ -11,7 +11,7 @@ services:
       - PT_PORT=28483
       - EMAIL=himarc@ethz.ch
       - NICKNAME=PqObfsBridgeDev
-      - OBFS4V_Address=172.16.113.5
+      - TORBRIDGE_Address=172.16.113.5
     volumes:
       - data:/var/lib/tor
       - ./.bridgeinfo:/.bridgeinfo

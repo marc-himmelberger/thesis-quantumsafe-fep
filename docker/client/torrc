@@ -3,7 +3,7 @@ ControlPort 9051
 
 # Using Bridges, obsf4
 UseBridges 1
-ClientTransportPlugin obfs4 exec /usr/bin/lyrebird
+ClientTransportPlugin pq_obfs exec /usr/bin/lyrebird
 
 # Added by test.sh script: HashedControlPassword $torpass
 # Added by test.sh script: Bridge info

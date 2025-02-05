@@ -52,19 +52,20 @@ tor_getinfo "orconn-status" " CONNECTED"
 tor_getinfo "entry-guards" " up"
 
 # Check IP with and without Tor
-regular_json=$(curl -sS -k https://4.myip.is)
+IPCHECKER_DOMAIN="4.myip.is"
+IPCHECKER_IP=$(dig +answer $IPCHECKER_DOMAIN +short)
+echo "  using $IPCHECKER_DOMAIN at $IPCHECKER_IP"
+regular_json=$(curl -sS -k https://$IPCHECKER_DOMAIN --resolve $IPCHECKER_DOMAIN:443:$IPCHECKER_IP)
+    echo "  Regular IP: $regular_json"
 regular_ip=$(echo $regular_json | jq -r '.ip')
-torify_json=$(torify curl -sS -k https://4.myip.is)
+torify_json=$(torify curl -sS -k https://$IPCHECKER_DOMAIN --resolve $IPCHECKER_DOMAIN:443:$IPCHECKER_IP)
+    echo "  Torify IP:  $torify_json"
 torify_ip=$(echo $torify_json | jq -r '.ip')
 
 if [ "$regular_ip" != "$torify_ip" ]; then
     echo "[PASS] Received a new IP"
-    echo "  Regular IP: $regular_json"
-    echo "  Torify IP:  $torify_json"
 else
     echo "[FAIL] IP did not change"
-    echo "  Regular IP: $regular_json"
-    echo "  Torify IP:  $torify_json"
 fi
 
 # TODO check on bridge logs or different websites, to see what did or didn't work
