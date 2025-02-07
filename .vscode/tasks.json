@@ -51,9 +51,9 @@
 			"group": "build",
 		},
 		{
-			"label": "Docker Compose: build",
+			"label": "Docker Compose: down",
 			"type": "shell",
-			"command": "docker compose build",
+			"command": "docker compose --profile \"*\" down",
 			"problemMatcher": [],
 			"options": {
 				"cwd": "${workspaceFolder}/docker"
@@ -68,9 +68,26 @@
 			"group": "build",
 		},
 		{
-			"label": "Docker Compose: up",
+			"label": "Docker Compose: build",
 			"type": "shell",
-			"command": "docker compose up --force-recreate --abort-on-container-exit",
+			"command": "docker compose --profile \"*\" build",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/docker"
+			},
+			"dependsOn": [
+				"Docker Compose: down"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"group": "build",
+		},
+		{
+			"label": "Docker Compose: up (nodebug)",
+			"type": "shell",
+			"command": "docker compose --profile nodebug up --force-recreate --abort-on-container-exit",
 			"problemMatcher": [],
 			"options": {
 				"cwd": "${workspaceFolder}/docker"
@@ -86,6 +103,23 @@
 				"kind": "build",
 				"isDefault": true
 			},
+		},
+		{
+			"label": "Docker Compose: up (debugbridge)",
+			"type": "shell",
+			"command": "docker compose --profile debugbridge up --wait --force-recreate",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/docker"
+			},
+			"dependsOn": [
+				"Docker Compose: build"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"group": "build",
 		},
 	]
 }

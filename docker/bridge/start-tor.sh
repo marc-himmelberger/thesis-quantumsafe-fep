@@ -30,7 +30,7 @@ BridgeRelay 1
 Nickname ${NICK}
 Log notice file /var/log/tor/log
 Log notice stdout
-ServerTransportPlugin pq_obfs exec /usr/bin/lyrebird
+ServerTransportPlugin pq_obfs exec /usr/bin/wrapper.sh
 ExtORPort auto
 DataDirectory /var/lib/tor
 

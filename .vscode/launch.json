@@ -1,0 +1,27 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Bridge",
+            "type": "go",
+            "request": "attach",
+            "mode": "remote",
+            "substitutePath": [
+                {
+                    "from": "${workspaceFolder}/lyrebird-pq-obfs",
+                    "to": "/lyrebird-pq-obfs"
+                }
+            ],
+            "asRoot": true,
+            "port": 35759,
+            "debugAdapter": "dlv-dap",
+            "preLaunchTask": "Docker Compose: up (debugbridge)",
+            "postDebugTask": "Docker Compose: down",
+            "host": "0.0.0.0",
+            "showLog": true
+        }
+    ]
+}

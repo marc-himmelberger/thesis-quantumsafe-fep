@@ -18,6 +18,8 @@ services:
     ports:
       - 27797:27797
       - 28483:28483
+    profiles:
+      - nodebug
     stop_grace_period: 1s # SIGKILL after 1s
     healthcheck:
       test: [ "CMD-SHELL", "get-bridge-line > /.bridgeinfo" ]
@@ -37,6 +39,37 @@ services:
       bridge:
         condition: service_healthy
         restart: true
+    profiles:
+      - nodebug
+
+  bridge-debugbridge:
+    build:
+      context: ..
+      dockerfile: docker/bridge-debug/Dockerfile
+    networks:
+      pq_obfs_network:
+        ipv4_address: 172.16.113.5
+    environment:
+      - OR_PORT=27797
+      - PT_PORT=28483
+      - EMAIL=himarc@ethz.ch
+      - NICKNAME=PqObfsBridgeDev
+      - TORBRIDGE_Address=172.16.113.5
+    volumes:
+      - data:/var/lib/tor
+      - ./.bridgeinfo:/.bridgeinfo
+    ports:
+      - 27797:27797
+      - 28483:28483
+      - 35759:35759
+    profiles:
+      - debugbridge
+    stop_grace_period: 1s # SIGKILL after 1s
+    healthcheck:
+      test: [ "CMD-SHELL", "cat /var/log/tor/log | grep \"100% (done): Done\"" ]
+      interval: 2s
+      retries: 5
+      timeout: 2s
 
 volumes:
   data:
