@@ -135,10 +135,10 @@ The notions of public key and ciphertext uniformity are discussed in \cref{def:p
 \begin{lemma}[Ciphertext uniformity of Classic McEliece] \label{lem:classic-mceliece-ctxt-unif}
     Let $\textsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22}.
     For any adversary $\adv$ against the ciphertext uniformity of $\textsf{CM}$, there exist adversaries $\bdv, \cdv$ against the $\prkey$ and $\mdsd$ assumptions respectively, such that
-    \[ \advantage{\pkunif}{\textsf{CM}}[(\adv)] \leq \advantage{\prkey}{}[(\bdv)] + \advantage{\mdsd}{}[(\cdv)] \]
+    \[ \advantage{\ctxtunif}{\textsf{CM}}[(\adv)] \leq \advantage{\prkey}{}[(\bdv)] + \advantage{\mdsd}{}[(\cdv)] \]
 \end{lemma}
 \begin{proof}
-    TODO: two-adversary reduction
+    TODO: two-adversary reduction. Revise rest of proof from here!
     
     The reduction $\bdv$ takes in a public key matrix $T_b$ and forwards its corresponding bitstring to $\adv$. Let $b$ be the output of $\adv$, then $\bdv$ returns the bit $1-b$.
 
@@ -154,19 +154,19 @@ The notions of public key and ciphertext uniformity are discussed in \cref{def:p
 
 We analyze the public key and ciphertext uniformity of our encoding and reduce to the two assumptions made above. We analyze the success rate of our encoding.
 
-\begin{lemma}[Public key uniformity of TODO TBD] \label{lem:classic-mceliece-pk-unif}
+\begin{lemma}[Public key uniformity of TODO TBD] \label{lem:tbd-pk-unif}
     TODO bounds on uniformity
 \end{lemma}
 
-\begin{lemma}[Ciphertext uniformity of TODO TBD] \label{lem:classic-mceliece-ctxt-unif}
+\begin{lemma}[Ciphertext uniformity of TODO TBD] \label{lem:tbd-ctxt-unif}
     TODO bounds on uniformity
 \end{lemma}
 
-\begin{lemma}[First-keygen success probability of TODO TBD] \label{lem:classic-mceliece-first-keygen-success}
+\begin{lemma}[First-keygen success probability of TODO TBD] \label{lem:tbd-first-keygen-success}
     TODO bounds on success
 \end{lemma}
 
-\begin{lemma}[[First-encap success probability of TODO TBD] \label{lem:classic-mceliece-first-encap-success}
+\begin{lemma}[[First-encap success probability of TODO TBD] \label{lem:tbd-first-encap-success}
     TODO bounds on success
 \end{lemma}
 
@@ -180,7 +180,7 @@ Together with the Classic McEliece KEM, our encoding functions can be used to de
     \[ \advantage{\sprcca}{TODO TBD}[(\bdv)] \leq 123 \]
 \end{theorem}
 \begin{proof}
-    IND-CCA security follows from \cite[Theorem~2.12]{CCS:GunSteVei24}, together with \cref{lem:classic-mceliece-first-keygen-success,lem:classic-mceliece-first-encap-success}.
+    IND-CCA security follows from \cite[Theorem~2.12]{CCS:GunSteVei24}, together with \cref{lem:tbd-first-keygen-success,lem:tbd-first-encap-success}.
     
-    SPR-CCA security follows from \cite[Theorem~2.13]{CCS:GunSteVei24}, together with \cref{lem:classic-mceliece-first-keygen-success}, \ref{lem:classic-mceliece-first-encap-success,lem:classic-mceliece-ctxt-unif}.
+    SPR-CCA security follows from \cite[Theorem~2.13]{CCS:GunSteVei24}, together with \cref{lem:tbd-first-keygen-success}, \ref{lem:tbd-first-encap-success,lem:tbd-ctxt-unif}.
 \end{proof}
