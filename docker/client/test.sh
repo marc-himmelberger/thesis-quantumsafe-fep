@@ -70,3 +70,6 @@ fi
 
 # TODO check on bridge logs or different websites, to see what did or didn't work
 # TODO also check during/after connection
+# TODO check without pluggable transport
+# TODO check with obfs4
+# TODO investigate DNS again?
