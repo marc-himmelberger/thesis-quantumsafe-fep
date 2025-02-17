@@ -23,8 +23,8 @@ We define the same assumptions about computational hardness as in \cite[Definiti
     \item \textbf{modified Decisional Syndrome Decoding assumption:} It is computationally hard to distinguish ciphertexts generated using uniformly random generator matrices from uniformly random $(n-k)$-bit vectors.
 \end{itemize}
 
-For both games $\textsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of an adversary $\adv$ as follows and further say that Classic McEliece is $(t, \epsilon)\textsf{-goal}$-secure if for any adversary $\adv$ with running time at most $t$, we have that:
-\[ \advantage{\textsf{goal}}{}[(\adv)] := 2 \left| \Pr[\textsf{goal}(\adv) = 1] - \frac{1}{2} \right| \leq \epsilon \]
+For both games $\textsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of an adversary $\adv$ against these games as follows:
+\[ \advantage{\textsf{goal}}{}[(\adv)] := 2 \cdot \left| \Pr\left[\textsf{goal}(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| \leq \epsilon \]
 
 \begin{figure}
     \input{algorithms/classic-mceliece-assumptions}
@@ -73,12 +73,10 @@ Ciphertexts are also statistically indistinguishable from uniform random bit vec
 \begin{theorem}
     Classic McEliece, as specified in \cite{NISTPQC-R4:ClassicMcEliece22}, is an obfuscated KEM without requiring any special encoding of public keys or ciphertexts.
 
-    Classic McEliece, as an OKEM, achieves $\indcca$ and $\sprcca$ security according to \cref{def:ind-spr-cca}.
+    Classic McEliece, as an OKEM, achieves $\indcca$ and $\sprcca$ security according to \cref{def:kem-security}.
 \end{theorem}
 \begin{proof}
-    TODO: discuss syntax of OKEM vs KEM
-
-    The $\indcca$ and $\sprcca$ security notions for OKEMs defined in \cref{def:ind-spr-cca} match the established notions of the same names. These have been shown for Classic McEliece in previous work \cite{EC:Xagawa22}, \cite[security.pdf: Section 5]{NISTPQC-R4:ClassicMcEliece22}.
+    The $\indcca$ and $\sprcca$ security notions for OKEMs defined in \cref{def:kem-security} match the established notions for KEMs of the same names. These have been shown for Classic McEliece in previous work \cite{EC:Xagawa22}, \cite[security.pdf: Section 5]{NISTPQC-R4:ClassicMcEliece22}.
 
     The $\prkey$ and $\mdsd$ assumptions are not needed here.
 \end{proof}
@@ -117,18 +115,18 @@ The notions of public key and ciphertext uniformity are discussed in \cref{def:p
     \end{itemize}
 
     As $G_0$ denotes the original $\ctxtunif$ game, we have:
-    \[ 2 \left| \Pr[G_0(\adv) = 1] - \frac{1}{2} \right| = \advantage{\ctxtunif}{\textsf{CM}}[(\adv)] \]
+    \[ 2 \cdot \left| \Pr\left[G_0(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| = \advantage{\ctxtunif}{\textsf{CM}}[(\adv)] \]
 
     To bound the difference in advantage between $G_0$ and $G_1$, notice that we can define an adversary $\bdv$ against the $\prkey$ assumption which simulates the $\ctxtunif$ games towards $\adv$ using a new random bit for that simulation, and using the public key received from its $\prkey$ challenger. If $b=0$ in this $\prkey$ game, then $\adv$ is playing in $G_0$, if $b=1$, then $\adv$ is playing in $G_1$. Let $\bdv$ output its guess for the bit $b$ in the $\prkey$ game as $b=1$ if and only if $\adv$ wins the simulated game.
 
     Thus, any change in the probability of $\adv$ winning in $G_0$ vs $G_1$ directly corresponds to a change in the probability of $\bdv$ winning the $\prkey$ game. This means:
-    \[ \left| \Pr[G_0(\adv) = 1] - \Pr[G_1(\adv) = 1] \right| \leq \advantage{\prkey}{}[(\bdv)] \]
+    \[ \left| \Pr\left[G_0(\adv) \Rightarrow 1\right] - \Pr\left[G_1(\adv) \Rightarrow 1\right] \right| \leq \advantage{\prkey}{}[(\bdv)] \]
 
     The analogous argument applies to the switch from $G_1$ to $G_2$: we can define an adversary $\cdv$ against the $\mdsd$ assumption which simulates the (modified) $\ctxtunif$ games towards $\adv$. If $b=0$ in the $\mdsd$ game, then $\adv$ is playing in $G_1$, if $b=1$, then $\adv$ is playing in $G_2$ (note that we translate in the obvious way between vectors of bits and bitstrings of the appropriate length). Thus:
-    \[ \left| \Pr[G_1(\adv) = 1] - \Pr[G_2(\adv) = 1] \right| \leq \advantage{\mdsd}{}[(\cdv)] \]
+    \[ \left| \Pr\left[G_1(\adv) \Rightarrow 1\right] - \Pr\left[G_2(\adv) \Rightarrow 1\right] \right| \leq \advantage{\mdsd}{}[(\cdv)] \]
 
     Finally, because both $c_0$ and $c_1$ are uniformly random bitstrings in game $G_2$,
-    \[ \left| \Pr[G_2(\adv) = 1] - \frac{1}{2} \right| = 0 \]
+    \[ \left| \Pr\left[G_2(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| = 0 \]
 
     Combining the above inequalities using the triangle inequality yields the required bound.
 \end{proof}

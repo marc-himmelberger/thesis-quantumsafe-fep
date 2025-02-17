@@ -1,0 +1,33 @@
+\begin{pchstack}[boxed, center, space=0.5em]
+
+\begin{pcvstack}[space=0.05em]
+\procedure[linenumbering]{$\textbf{GAME } \indcca(\adv)$}{
+    b \getsr \bin \\
+    (\pk, \sk) \getsr \kgen() \\
+    (c^*, K_0) \getsr \encaps(\pk) \\
+    K_1 \getsr \mathcal K \\
+    b' \getsr \adv^{\decapsoracle}(\pk, c^*, K_b) \\
+    \pcreturn \llbracket b = b'\rrbracket
+}
+
+\procedure[lnstart=6,linenumbering]{$\decapsoracle(c \neq c^*)$}{
+    K \gets \decaps(c) \\
+    \pcreturn K
+}
+
+\end{pcvstack}
+
+\begin{pcvstack}[space=0.05em]
+\procedure[lnstart=8,linenumbering]{$\textbf{GAME } \sprcca(\adv)$}{
+    b \getsr \bin \\
+    (\pk, \sk) \getsr \kgen() \\
+    (c_0, K_0) \getsr \encaps(\pk) \\
+    c_1 \getsr \mathcal S \\
+    K_1 \getsr \mathcal K \\
+    c^* \gets c_b \\
+    b' \gets \adv^{\decapsoracle}(\pk, c_b, K_b) \\
+    \pcreturn \llbracket b = b'\rrbracket
+}
+\end{pcvstack}
+
+\end{pchstack}

@@ -106,6 +106,15 @@
 
 % ######## CUSTOM style code ########
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\getsr}{\xleftarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
+\newcommand{\tor}{\xrightarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
+\newcommand{\ul}[1]{\underline{\smash{#1}}}  % tight underline
+\newcommand{\KEM}{\textsf{KEM}}
+\newcommand{\OKEM}{\textsf{OKEM}}
+\newcommand{\pkcoll}[1]{\pcnotionstyle{pkcoll}_{#1}}
+\newcommand{\obfpklen}{\mathsf{ol}}
+\newcommand{\obfctxtlen}{\mathsf{cl}}
+\newcommand{\pkobf}{\hat{\pk}}
 
 \pcfixcleveref
 
@@ -133,6 +142,9 @@
 
 \providecommand{\encaps}{\pcalgostyle{Encaps}}
 \providecommand{\decaps}{\pcalgostyle{Decaps}}
+\providecommand{\decapsoracle}{\mathcal{O}_{\decaps}}
+\providecommand{\encode}{\pcalgostyle{Encode}}
+\providecommand{\decode}{\pcalgostyle{Decode}}
 \providecommand{\sprcca}{\pcnotionstyle{SPR\pcmathhyphen{}CCA}}
 
 \providecommand{\pkunif}{\pcnotionstyle{pk\pcmathhyphen{}unif}}
