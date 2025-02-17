@@ -13,8 +13,8 @@
     b \gets \bin \\
     \hat T \gets \textsf{RandGen}() \\
     e \gets \textsf{FixedWeight}() \\
-    u_0 \gets \left[ I_{n-k} \mid \hat T \right] \cdot e \\
-    u_1 \gets U(\mathbb F_2^{n - k}) \\
+    u_0 \gets \left[ I_{mt} \mid \hat T \right] \cdot e \\
+    u_1 \gets U(\mathbb F_2^{mt}) \\
     b' \gets \adv(\hat T, u_b) \\
     \pcreturn \llbracket b' = b \rrbracket
 }
@@ -25,7 +25,7 @@
     \hat T \gets \bot \\
     \pcwhile \hat T = \bot \pcdo \\
     \t  \hat H \gets U(\mathbb F_2^{mt \times n}) \\
-    \t  \text{reduce } \hat H \text{ to systematic form } \left[ I_{mt} \mid \hat T \right] \pccomment{TODO: check dimensions} \\
+    \t  \text{reduce } \hat H \text{ to systematic form } \left[ I_{mt} \mid \hat T \right] \\
     \label{ln:randgen-reject}
     \t  \text{if this fails } \hat T \gets \bot \\ 
     \pcendwhile \\

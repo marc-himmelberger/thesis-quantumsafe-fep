@@ -1,18 +1,44 @@
 \begin{pchstack}[boxed, center, space=0.5em]
 
 \begin{pcvstack}[space=0.05em]
-\procedure[linenumbering]{$\kgen()$ \titlecomment{\text{see \cite{NISTPQC-R4:ClassicMcEliece22}}}}{
-    \pcreturn \bot \pccomment{TODO}
+\procedure[linenumbering]{$\kgen()$ \titlecomment{\text{see \cite[Sec. 5.3]{NISTPQC-R4:ClassicMcEliece22}}}}{
+    \delta \gets \bin^\ell \\
+    X, \delta' \gets G(\delta) \pccomment{$\delta' \in \bin^\ell$} \\
+    \text{if anything fails, restart with } \delta=\delta' \\
+    s, \alpha_0, \dots, \alpha_{q-1}, g \gets X \pcskipln \\
+    \t  \text{where $s$ is an $n$-bit string,}  \pcskipln \\
+    \t  \text{$\alpha_0, \dots, \alpha_{q-1}$ are distrinct elements of $\mathbb F_q$,}  \pcskipln \\
+    \t  \text{$g \in \mathbb F_q[x]$ is monic, irreducible,} \pcskipln \\
+    \t  \text{and $\deg(g)=t$} \\
+    \Gamma \gets (g, \alpha_0, \dots, \alpha_{n-1}) \\
+    T \gets \textsf{MatGen}(\Gamma) \\
+    \pcreturn \pk=T, \sk=(\delta, g, \alpha_0, \dots, \alpha_{q-1}, s)
+}
+\procedure[lnstart=7,linenumbering]{$\textsf{MatGen}(\Gamma=(g, \alpha_0, \dots, \alpha_{n-1}))$ \kern-1em \titlecomment{\text{see \cite[Sec. 4.2]{NISTPQC-R4:ClassicMcEliece22}}}}{
+    \tilde H \gets \left\{\alpha_j^i/g(\alpha_j)\right\}_{i,j} \pccomment{$\tilde H \in \mathbb F_q^{t \times n}$}\\
+    \hat H \gets \text{expand each polynomial entry of } \tilde H \pcskipln \\
+    \text{ into $m$ rows of bits denoting its coefficients} \\
+    (I_{mt} \mid T) \gets \text{reduce } \hat H \text{ into systematic form} \\
+    \text{if this fails } T \gets \bot \\ 
+    \pcreturn T
 }
 \end{pcvstack}
 
 \begin{pcvstack}[space=0.05em]
-\procedure[lnstart=30,linenumbering]{$\encaps()$ \titlecomment{\text{see \cite{NISTPQC-R4:ClassicMcEliece22}}}}{
-    \pcreturn \bot \pccomment{TODO}
+\procedure[lnstart=12,linenumbering]{$\encaps()$ \titlecomment{\text{see \cite[Sec. 4.3]{NISTPQC-R4:ClassicMcEliece22}}}}{
+    e \gets \textsf{FixedWeight}() \\
+    H \gets (I_{mt} \mid T) \\
+    C \gets He \in \mathbb F_2^{mt} \\
+    K \gets H(1,e,C) \\
+    \pcreturn (C, K)
 }
 
-\procedure[lnstart=50,linenumbering]{$\textsf{FixedWeight}()$ \titlecomment{\text{see \cite{NISTPQC-R4:ClassicMcEliece22}}}}{
-    \pcreturn \bot \pccomment{TODO}
+\procedure[lnstart=17,linenumbering]{$\textsf{FixedWeight}()$ \titlecomment{\text{see \cite[Sec. 5.4]{NISTPQC-R4:ClassicMcEliece22}}}}{
+    a_0, \dots, a_{t-1} \gets [0, n-1] \\
+    \text{if not all $a_i$ are distrinct, restart} \\
+    e \gets (e_0, \dots, e_{n-1}) \pcskipln \\
+    \t  \text{ where, for all } i: e_{a_i} = 1 \\
+    \pcreturn e
 }
 \end{pcvstack}
 
