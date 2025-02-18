@@ -109,19 +109,19 @@
 \newcommand{\getsr}{\xleftarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
 \newcommand{\tor}{\xrightarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
 \newcommand{\ul}[1]{\underline{\smash{#1}}}  % tight underline
-\newcommand{\KEM}{\textsf{KEM}}
-\newcommand{\OKEM}{\textsf{OKEM}}
+\newcommand{\KEM}{\mathsf{KEM}}
+\newcommand{\OKEM}{\mathsf{OKEM}}
 \newcommand{\pkcoll}[1]{\pcnotionstyle{pkcoll}_{#1}}
 \newcommand{\obfpklen}{\mathsf{ol}}
 \newcommand{\obfctxtlen}{\mathsf{cl}}
 \newcommand{\pkobf}{\hat{\pk}}
 
+\newcommand{\obfsfour}{\textsf{obfs4}}
+\newcommand{\pqobfs}{\textsf{pq-obfs}}
+
 \pcfixcleveref
 
 % Define aliases
-\newcommand{\Adv}[3]{\textsf{Adv}\ _{\textsf{\tiny #1}}^{\textsf{\tiny #2}}(#3)}
-\newcommand{\AdvD}[4]{\textsf{Adv}\ _{\textsf{\tiny #1},\ \mathcal{#2}}^{\textsf{\tiny #3}}(#4)}
-
 \renewcommand{\pcadvantagename}{\mathsf{Adv}}
 \renewcommand{\pcadvantagesuperstyle}[1]{#1}
 \renewcommand{\pcadvantagesubstyle}[1]{#1}
@@ -145,7 +145,16 @@
 \providecommand{\decapsoracle}{\mathcal{O}_{\decaps}}
 \providecommand{\encode}{\pcalgostyle{Encode}}
 \providecommand{\decode}{\pcalgostyle{Decode}}
+\providecommand{\encodectxt}{\pcalgostyle{EncodeCtxt}}
+\providecommand{\decodectxt}{\pcalgostyle{DecodeCtxt}}
 \providecommand{\sprcca}{\pcnotionstyle{SPR\pcmathhyphen{}CCA}}
+
+\providecommand{\sObfKE}{\pcnotionstyle{sObfKE}}
+\providecommand{\swapprf}{\pcnotionstyle{swap\pcmathhyphen{}PRF}}
+\providecommand{\indonecca}{\pcnotionstyle{IND\pcmathhyphen{}1CCA}}
+
+\providecommand{\firstkeygensuccess}{\pcnotionstyle{1kgensucc}}
+\providecommand{\firstencapssuccess}{\pcnotionstyle{1encsucc}}
 
 \providecommand{\pkunif}{\pcnotionstyle{pk\pcmathhyphen{}unif}}
 \providecommand{\ctxtunif}{\pcnotionstyle{ctxt\pcmathhyphen{}unif}}
@@ -153,6 +162,7 @@
 \providecommand{\prkey}{\pcnotionstyle{PR\pcmathhyphen{}Key}}
 \providecommand{\mdsd}{\pcnotionstyle{mDSD}}
 % ######## END CUSTOM style code ########
+
 
 \begin{document}
 

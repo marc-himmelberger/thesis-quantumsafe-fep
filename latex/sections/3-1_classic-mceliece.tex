@@ -23,8 +23,8 @@ We define the same assumptions about computational hardness as in \cite[Definiti
     \item \textbf{modified Decisional Syndrome Decoding assumption:} It is computationally hard to distinguish ciphertexts generated using uniformly random generator matrices from uniformly random $(n-k)$-bit vectors.
 \end{itemize}
 
-For both games $\textsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of an adversary $\adv$ against these games as follows:
-\[ \advantage{\textsf{goal}}{}[(\adv)] := 2 \cdot \left| \Pr\left[\textsf{goal}(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| \leq \epsilon \]
+For both games $\mathsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of an adversary $\adv$ against these games as follows:
+\[ \advantage{\mathsf{goal}}{}[(\adv)] := 2 \cdot \left| \Pr\left[\mathsf{goal}(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| \leq \epsilon \]
 
 \begin{figure}
     \input{algorithms/classic-mceliece-assumptions}
@@ -44,10 +44,10 @@ Given the $\prkey$ assumption, public keys are hard to distinguish from outputs 
 \begin{proof}
     We first examine the rejection sampling behavior around \cref{ln:randgen-reject}: A resampling occurs if and only if a reduction of $\hat H$ to systematic form (also known as \emph{reduced row echelon form} or \emph{row canonical form}) fails. This reduction, in turn, fails if and only if the $mt$ leftmost columns of $\hat H$ do not form a full rank square matrix.
     The probability for a $mt \times mt$ matrix with i.i.d. uniformly random entries over $\mathbb F_2$ to be of full rank is exactly \cite{DBLP:journals/corr/SalmondGGC14}
-    \[ p_\textsf{FR} := \prod_{i=1}^{mt} \left( 1-2^{-i} \right) \]
+    \[ p_\mathsf{FR} := \prod_{i=1}^{mt} \left( 1-2^{-i} \right) \]
     
-    For the parameter sets used in Classic McEliece ($768 \leq mt \leq 1664$), this calculates to \[ p_\textsf{FR} \approx 0.288788 \]
-    Differences between the parameter sets are negligible and a strict upper bound of $p_\textsf{FR} \leq \prod_{i=1}^{768} \left( 1-2^{-i} \right) \leq \prod_{i=1}^{8} \left( 1-2^{-i} \right) \leq 0.29$ applies. A proof for a tight lower bound eludes us although the numerical convergence is rapid.
+    For the parameter sets used in Classic McEliece ($768 \leq mt \leq 1664$), this calculates to \[ p_\mathsf{FR} \approx 0.288788 \]
+    Differences between the parameter sets are negligible and a strict upper bound of $p_\mathsf{FR} \leq \prod_{i=1}^{768} \left( 1-2^{-i} \right) \leq \prod_{i=1}^{8} \left( 1-2^{-i} \right) \leq 0.29$ applies. A proof for a tight lower bound eludes us although the numerical convergence is rapid.
     
     This calculation validates our analysis, as the resulting probability is the same as was experimentally reported in \cite[security.pdf: Section 4.2]{NISTPQC-R4:ClassicMcEliece22}.
     
@@ -87,10 +87,10 @@ We analyze the public key and ciphertext uniformity of Classic McEliece and redu
 The notions of public key and ciphertext uniformity are discussed in \cref{def:pk-uniformity,def:ctxt-uniformity} respectively.
 
 \begin{lemma}[Public key uniformity of Classic McEliece] \label{lem:classic-mceliece-pk-unif}
-    Let $\textsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\textsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\textsf{cl} = n-k$.
+    Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\mathsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\mathsf{cl} = n-k$.
     
-    For any adversary $\adv$ against the public key uniformity of $\textsf{CM}$, there exists an adversary $\bdv$ against the $\prkey$ assumption, such that
-    \[ \advantage{\pkunif}{\textsf{CM}}[(\adv)] \leq \advantage{\prkey}{}[(\bdv)] \]
+    For any adversary $\adv$ against the public key uniformity of $\mathsf{CM}$, there exists an adversary $\bdv$ against the $\prkey$ assumption, such that
+    \[ \advantage{\pkunif}{\mathsf{CM}}[(\adv)] \leq \advantage{\prkey}{}[(\bdv)] \]
 \end{lemma}
 \begin{proof}
     The reduction $\bdv$ takes in a public key matrix $T_b$ and forwards its corresponding bitstring to $\adv$. Let $b$ be the output of $\adv$, then $\bdv$ returns the bit $1-b$.
@@ -101,21 +101,21 @@ The notions of public key and ciphertext uniformity are discussed in \cref{def:p
 \end{proof}
 
 \begin{lemma}[Ciphertext uniformity of Classic McEliece] \label{lem:classic-mceliece-ctxt-unif}
-    Let $\textsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\textsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\textsf{cl} = n-k$.
+    Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\mathsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\mathsf{cl} = n-k$.
     
-    For any adversary $\adv$ against the ciphertext uniformity of $\textsf{CM}$, there exist adversaries $\bdv, \cdv$ against the $\prkey$ and $\mdsd$ assumptions respectively, such that
-    \[ \advantage{\ctxtunif}{\textsf{CM}}[(\adv)] \leq 2 \cdot \left( \advantage{\prkey}{}[(\bdv)] + \advantage{\mdsd}{}[(\cdv)] \right) \]
+    For any adversary $\adv$ against the ciphertext uniformity of $\mathsf{CM}$, there exist adversaries $\bdv, \cdv$ against the $\prkey$ and $\mdsd$ assumptions respectively, such that
+    \[ \advantage{\ctxtunif}{\mathsf{CM}}[(\adv)] \leq 2 \cdot \left( \advantage{\prkey}{}[(\bdv)] + \advantage{\mdsd}{}[(\cdv)] \right) \]
 \end{lemma}
 \begin{proof}
     We proceed via a series of two game hops, and consider the following three games:
     \begin{itemize}
         \item Let $G_0$ denote the $\ctxtunif$ game as in \cref{def:ctxt-uniformity}
         \item Let $G_1$ denote the same game as $G_0$ but with the change that $\pk$ is generated using $\textsf{RandGen}()$
-        \item Let $G_2$ denote the same game as $G_1$ but with the change that $c_1 \gets \bin^\textsf{cl}$
+        \item Let $G_2$ denote the same game as $G_1$ but with the change that $c_1 \gets \bin^\mathsf{cl}$
     \end{itemize}
 
     As $G_0$ denotes the original $\ctxtunif$ game, we have:
-    \[ 2 \cdot \left| \Pr\left[G_0(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| = \advantage{\ctxtunif}{\textsf{CM}}[(\adv)] \]
+    \[ 2 \cdot \left| \Pr\left[G_0(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| = \advantage{\ctxtunif}{\mathsf{CM}}[(\adv)] \]
 
     To bound the difference in advantage between $G_0$ and $G_1$, notice that we can define an adversary $\bdv$ against the $\prkey$ assumption which simulates the $\ctxtunif$ games towards $\adv$ using a new random bit for that simulation, and using the public key received from its $\prkey$ challenger. If $b=0$ in this $\prkey$ game, then $\adv$ is playing in $G_0$, if $b=1$, then $\adv$ is playing in $G_1$. Let $\bdv$ output its guess for the bit $b$ in the $\prkey$ game as $b=1$ if and only if $\adv$ wins the simulated game.
 

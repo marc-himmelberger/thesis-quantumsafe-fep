@@ -1,0 +1,27 @@
+\begin{pchstack}[boxed, center, space=0.5em]
+
+    \procedure[linenumbering]{$\kgen'()$}{
+        \pcdo \\
+        \t  (\pk, \sk) \getsr \KEM.\kgen() \\
+        \label{ln:kgen-encode}
+        \t  \pkobf \getsr \encode(\pk) \\
+        \pcwhile \pkobf = \bot \\
+        \pcreturn (\pkobf, \sk)
+    }
+    
+    \procedure[lnstart=5,linenumbering]{$\encaps'(\pkobf)$}{
+        \pk \gets \decode(\pkobf) \\
+        \pcdo \\
+        \t  (c, K) \getsr \KEM.\encaps(\pk) \\
+        \label{ln:encaps-encode}
+        \t  \hat c \getsr \encodectxt(c) \\
+        \pcwhile \hat c = \bot \\
+        \pcreturn (\hat c, K)
+    }
+    
+    \procedure[lnstart=11,linenumbering]{$\decaps'(\sk, \hat c)$}{
+        c \gets \decodectxt(\hat c) \\
+        \pcreturn \KEM.\decaps(c)
+    }
+
+\end{pchstack}

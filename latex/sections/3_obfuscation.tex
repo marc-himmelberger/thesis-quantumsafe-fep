@@ -1,6 +1,6 @@
 \chapter{Obfuscating NIST candidates}\label{ch:obfuscation}
 
-In this section, we construct encodings for different post-quantum KEMs suitable for use in the pq-obfs protocol.
+In this section, we construct encodings for different post-quantum KEMs suitable for use in the \pqobfs protocol.
 
 While such encodings have already been constructed for elliptic curve Diffie–Hellman \cite{CCS:BHKL13, tor-dev-udh, USENIX:WWGH11} as well as for ML-KEM \cite{CCS:GunSteVei24}, other KEMs are also being examined for future use.
 
@@ -15,14 +15,14 @@ We call all our encoding schemes TODO where TODO is the name of the correspondin
     \begin{tabular}{@{} L{0.2\textwidth-\tabcolsep} | L{0.35\textwidth-2\tabcolsep} L{0.2\textwidth-2\tabcolsep} L{0.25\textwidth-\tabcolsep} @{}}
         \textbf{KEM /\newline Encoding} & \textbf{Obfuscation/Ciphertext uniformity} & \textbf{First-Keygen/Encap Success Probability}\newline (\cref{def:first-keygen-success,def:first-encap-success}) & \textbf{Output Size}\newline (in bytes)\\ \hline
         Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} /\newline None & \rule{0pt}{1.2em} &  & \\
-        - public keys & $\leq \advantage{\prkey}{}[(\bdv)]$\newline (cf. \cref{lem:classic-mceliece-pk-unif})
+        - public keys & $\leq \advantage{\prkey}{}[]$\newline (cf. \cref{lem:classic-mceliece-pk-unif})
          & 1
          & 261 120 (\textsf{mceliece348864}, +0)\newline
          524 160 (\textsf{mceliece460896}, +0)\newline
          1 044 992 (\textsf{mceliece6688128}, +0)\newline
          1 047 319 (\textsf{mceliece6960119}, +0)\newline
          1 357 824 (\textsf{mceliece8192128}, +0)\newline \\
-        - ciphertexts & $\leq 2 \cdot \left( \advantage{\prkey}{}[(\bdv)] + \advantage{\mdsd}{}[(\cdv)] \right)$\newline (cf. \cref{lem:classic-mceliece-ctxt-unif})
+        - ciphertexts & $\leq 2 \cdot \left( \advantage{\prkey}{}[] + \advantage{\mdsd}{}[] \right)$\newline (cf. \cref{lem:classic-mceliece-ctxt-unif})
          & 1
          & 96 (\textsf{mceliece348864}, +0)\newline
          156 (\textsf{mceliece460896}, +0)\newline
