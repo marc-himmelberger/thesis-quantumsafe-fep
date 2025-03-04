@@ -16,16 +16,16 @@ See [Notion](https://www.notion.so/MSc-Thesis-172b3139d28980ee8917f71ec2b4ba35?p
 - [x] Reviewing the proposed construction in Obfuscated Key Exchange
 - [ ] Reviewing the obfs4-spec.txt  and how it differentiates itself from VMess or Shadowsocks
 
-**WP2 (February)**: Implementing pq-obfs
+**WP2 (February)**: Implementing drivel
 
-- [ ] Implementing pq-obfs with Kemeleon encoding as specified in Obfuscated Key Exchange in order to reach a proof-of-concept stage
+- [ ] Implementing drivel with Kemeleon encoding as specified in Obfuscated Key Exchange in order to reach a proof-of-concept stage
 - [ ] Evaluating performance and traffic overhead compared to the original obfs4 protocol
 - [ ] Documenting the implementation
 
 **WP3 (March/April)**: Designing and Evaluating Novel Encodings
 
 - [ ] Designing novel encoding algorithms for quantum-safe KEMs that map public keys and ciphertexts to random bitstrings
-- [ ] Instantiating pq-obfs with several KEMs and their related encodings
+- [ ] Instantiating drivel with several KEMs and their related encodings
 - [ ] Evaluating tradeoffs of different encodings of KEM public keys/ciphertexts
 
 **WP4 (May)**: Extensions

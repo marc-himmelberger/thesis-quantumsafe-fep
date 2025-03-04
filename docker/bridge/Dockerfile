@@ -1,8 +1,8 @@
 # build lyrebird
 FROM golang AS builder
 
-COPY ./lyrebird-pq-obfs /lyrebird-pq-obfs
-WORKDIR /lyrebird-pq-obfs
+COPY ./lyrebird /lyrebird
+WORKDIR /lyrebird
 RUN make build
 
 # Base docker image
@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y -t stable-backports \
     --no-install-recommends && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /lyrebird-pq-obfs/lyrebird /usr/bin/lyrebird
+COPY --from=builder /lyrebird/lyrebird /usr/bin/lyrebird
 COPY docker/bridge/wrapper.sh /usr/bin/wrapper.sh
 RUN chmod +x /usr/bin/wrapper.sh
 # Allow lyrebird to bind to ports < 1024.

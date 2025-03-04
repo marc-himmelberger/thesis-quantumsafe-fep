@@ -1,8 +1,8 @@
 # build lyrebird
 FROM golang AS builder
 
-COPY ./lyrebird-pq-obfs /lyrebird-pq-obfs
-WORKDIR /lyrebird-pq-obfs
+COPY ./lyrebird /lyrebird
+WORKDIR /lyrebird
 RUN make build
 
 # Base docker image
@@ -16,7 +16,7 @@ RUN apt update && apt install -y jq curl netcat-openbsd dnsutils
 RUN apt clean
 RUN rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /lyrebird-pq-obfs/lyrebird /usr/bin/lyrebird
+COPY --from=builder /lyrebird/lyrebird /usr/bin/lyrebird
 
 RUN useradd -ms /bin/bash tor-client
 

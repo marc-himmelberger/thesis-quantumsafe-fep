@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NICK=${NICKNAME:-DockerPqObfsBridge}
+NICK=${NICKNAME:-DockerDrivelBridge}
 
 echo "Using NICKNAME=${NICK}, OR_PORT=${OR_PORT}, PT_PORT=${PT_PORT}, and EMAIL=${EMAIL}."
 
@@ -30,15 +30,15 @@ BridgeRelay 1
 Nickname ${NICK}
 Log notice file /var/log/tor/log
 Log notice stdout
-ServerTransportPlugin pq_obfs exec /usr/bin/wrapper.sh
+ServerTransportPlugin drivel exec /usr/bin/wrapper.sh
 ExtORPort auto
 DataDirectory /var/lib/tor
 
 # The variable "OR_PORT" is replaced with the OR port.
 ORPort ${OR_PORT}
 
-# The variable "PT_PORT" is replaced with the pq_obfs port.
-ServerTransportListenAddr pq_obfs 0.0.0.0:${PT_PORT}
+# The variable "PT_PORT" is replaced with the drivel port.
+ServerTransportListenAddr drivel 0.0.0.0:${PT_PORT}
 
 # The variable "EMAIL" is replaced with the operator's email address.
 ContactInfo ${EMAIL}

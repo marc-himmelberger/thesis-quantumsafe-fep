@@ -11,8 +11,8 @@
             "mode": "remote",
             "substitutePath": [
                 {
-                    "from": "${workspaceFolder}/lyrebird-pq-obfs",
-                    "to": "/lyrebird-pq-obfs"
+                    "from": "${workspaceFolder}/lyrebird",
+                    "to": "/lyrebird"
                 }
             ],
             "asRoot": true,

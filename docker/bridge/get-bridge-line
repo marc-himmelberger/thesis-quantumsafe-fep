@@ -5,7 +5,7 @@
 # <https://gitlab.torproject.org/tpo/core/tor/-/issues/29128>
 
 TOR_LOG=/var/log/tor/log
-PT_STATE=/var/lib/tor/pt_state/pq_obfs_bridgeline.txt
+PT_STATE=/var/lib/tor/pt_state/drivel_bridgeline.txt
 FINGERPRINT=/var/lib/tor/fingerprint
 
 if [ ! -r "$TOR_LOG" ]
@@ -34,11 +34,11 @@ if [ -z "$addr" ]; then
         tail -1)
 fi
 
-port=$(grep "Registered server transport 'pq_obfs' at" "$TOR_LOG" | \
+port=$(grep "Registered server transport 'drivel' at" "$TOR_LOG" | \
     sed "s/.*:\([0-9]\{1,5\}\)'$/\1/" | \
     tail -1)
 fingerprint=$(sed 's/.* //' "$FINGERPRINT")
-pt_args=$(grep '^Bridge pq_obfs' "$PT_STATE" | sed 's/.*\(cert=.*\)/\1/' | \
+pt_args=$(grep '^Bridge drivel' "$PT_STATE" | sed 's/.*\(cert=.*\)/\1/' | \
     tail -1)
 
 if [[ "$addr" = "" || "$port" = "" || "$fingerprint" = "" || "$pt_args" = "" ]]
@@ -47,4 +47,4 @@ then
     exit 1
 fi
 
-echo "pq_obfs ${addr}:${port} ${fingerprint} ${pt_args}"
+echo "drivel ${addr}:${port} ${fingerprint} ${pt_args}"

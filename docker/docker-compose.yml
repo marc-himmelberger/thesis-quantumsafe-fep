@@ -4,13 +4,13 @@ services:
       context: ..
       dockerfile: docker/bridge/Dockerfile
     networks:
-      pq_obfs_network:
+      drivel_network:
         ipv4_address: 172.16.113.5
     environment:
       - OR_PORT=27797
       - PT_PORT=28483
       - EMAIL=himarc@ethz.ch
-      - NICKNAME=PqObfsBridgeDev
+      - NICKNAME=DrivelBridgeDev
       - TORBRIDGE_Address=172.16.113.5
     volumes:
       - data:/var/lib/tor
@@ -31,7 +31,7 @@ services:
       context: ..
       dockerfile: docker/client/Dockerfile
     networks:
-      pq_obfs_network:
+      drivel_network:
         ipv4_address: 172.16.113.6
     volumes:
       - ./.bridgeinfo:/.bridgeinfo:ro
@@ -47,13 +47,13 @@ services:
       context: ..
       dockerfile: docker/bridge-debug/Dockerfile
     networks:
-      pq_obfs_network:
+      drivel_network:
         ipv4_address: 172.16.113.5
     environment:
       - OR_PORT=27797
       - PT_PORT=28483
       - EMAIL=himarc@ethz.ch
-      - NICKNAME=PqObfsBridgeDev
+      - NICKNAME=DrivelBridgeDev
       - TORBRIDGE_Address=172.16.113.5
     volumes:
       - data:/var/lib/tor
@@ -76,7 +76,7 @@ volumes:
     name: tor-datadir
 
 networks:
-  pq_obfs_network:
+  drivel_network:
     ipam:
       driver: default
       config:

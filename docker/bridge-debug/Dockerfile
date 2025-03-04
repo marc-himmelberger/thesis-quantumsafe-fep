@@ -24,10 +24,10 @@ RUN tar -C /usr/local -xzf go1.23.6.linux-amd64.tar.gz
 ENV PATH="$PATH:/usr/local/go/bin"
 RUN GOBIN=/usr/local/bin/ go install github.com/go-delve/delve/cmd/dlv@latest
 
-COPY ./lyrebird-pq-obfs /lyrebird-pq-obfs
-RUN chown debian-tor:debian-tor /lyrebird-pq-obfs
-RUN chmod 0755 /lyrebird-pq-obfs
-# COPY --from=builder /lyrebird-pq-obfs/lyrebird /usr/bin/lyrebird
+COPY ./lyrebird /lyrebird
+RUN chown debian-tor:debian-tor /lyrebird
+RUN chmod 0755 /lyrebird
+# COPY --from=builder /lyrebird/lyrebird /usr/bin/lyrebird
 COPY docker/bridge-debug/wrapper.sh /usr/bin/wrapper.sh
 RUN chmod +x /usr/bin/wrapper.sh
 # Allow lyrebird to bind to ports < 1024.

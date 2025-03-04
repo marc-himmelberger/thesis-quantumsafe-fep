@@ -2,18 +2,18 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "go: test lyrebird-pq-obfs",
+			"label": "go: test lyrebird",
 			"type": "go",
 			"command": "test",
 			"args": [
-				"-ldflags=-X main.lyrebirdVersion=lyrebird-pqobfs-test",
+				"-ldflags=-X main.lyrebirdVersion=lyrebird-drivel-test",
 				"./..."
 			],
 			"problemMatcher": [
 				"$go"
 			],
 			"options": {
-				"cwd": "${workspaceFolder}/lyrebird-pq-obfs",
+				"cwd": "${workspaceFolder}/lyrebird",
 				"env": {
 					"CGO_ENABLED": "0"
 				}
@@ -25,24 +25,24 @@
 			"group": "build",
 		},
 		{
-			"label": "go: build lyrebird-pq-obfs",
+			"label": "go: build lyrebird",
 			"type": "go",
 			"command": "build",
 			"args": [
-				"-ldflags=-X main.lyrebirdVersion=lyrebird-pqobfs-test",
+				"-ldflags=-X main.lyrebirdVersion=lyrebird-drivel-test",
 				"./cmd/lyrebird"
 			],
 			"problemMatcher": [
 				"$go"
 			],
 			"options": {
-				"cwd": "${workspaceFolder}/lyrebird-pq-obfs",
+				"cwd": "${workspaceFolder}/lyrebird",
 				"env": {
 					"CGO_ENABLED": "0"
 				}
 			},
 			"dependsOn": [
-				"go: test lyrebird-pq-obfs"
+				"go: test lyrebird"
 			],
 			"presentation": {
 				"reveal": "always",
@@ -59,7 +59,7 @@
 				"cwd": "${workspaceFolder}/docker"
 			},
 			"dependsOn": [
-				"go: build lyrebird-pq-obfs"
+				"go: build lyrebird"
 			],
 			"presentation": {
 				"reveal": "always",
