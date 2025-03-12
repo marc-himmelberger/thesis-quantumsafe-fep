@@ -2,14 +2,16 @@
 
 \begin{pcvstack}[space=0.05em]
 \procedure[linenumbering]{$\kgen()$ \titlecomment{\text{see \cite[Sec. 5.3]{NISTPQC-R4:ClassicMcEliece22}}}}{
-    \delta \gets \bin^\ell \\
+    \label{ln:mceliece-keygen}
+    \delta \getsr \bin^\ell \\
     X, \delta' \gets G(\delta) \pccomment{$\delta' \in \bin^\ell$} \\
-    \text{if anything fails, restart with } \delta=\delta' \\
     s, \alpha_0, \dots, \alpha_{q-1}, g \gets X \pcskipln \\
     \t  \text{where $s$ is an $n$-bit string,}  \pcskipln \\
     \t  \text{$\alpha_0, \dots, \alpha_{q-1}$ are distrinct elements of $\mathbb F_q$,}  \pcskipln \\
     \t  \text{$g \in \mathbb F_q[x]$ is monic, irreducible,} \pcskipln \\
-    \t  \text{and $\deg(g)=t$} \\
+    \t  \text{and $\deg(g)=t$} \pcskipln \\
+    \t  \text{if any of the above fail, restart} \pcskipln \\
+    \t\t    \text{from \cref{ln:mceliece-keygen} with } \delta=\delta' \\
     \Gamma \gets (g, \alpha_0, \dots, \alpha_{n-1}) \\
     T \gets \textsf{MatGen}(\Gamma) \\
     \pcreturn \pk=T, \sk=(\delta, g, \alpha_0, \dots, \alpha_{q-1}, s)
@@ -26,7 +28,7 @@
 
 \begin{pcvstack}[space=0.05em]
 \procedure[lnstart=12,linenumbering]{$\encaps()$ \titlecomment{\text{see \cite[Sec. 4.3]{NISTPQC-R4:ClassicMcEliece22}}}}{
-    e \gets \textsf{FixedWeight}() \\
+    e \getsr \textsf{FixedWeight}() \\
     H \gets (I_{mt} \mid T) \\
     C \gets He \in \mathbb F_2^{mt} \\
     K \gets H(1,e,C) \\
@@ -35,7 +37,7 @@
 
 \procedure[lnstart=17,linenumbering]{$\textsf{FixedWeight}()$ \titlecomment{\text{see \cite[Sec. 5.4]{NISTPQC-R4:ClassicMcEliece22}}}}{
     a_0, \dots, a_{t-1} \gets [0, n-1] \\
-    \text{if not all $a_i$ are distrinct, restart} \\
+    \text{if not all $a_i$ are distinct, restart} \\
     e \gets (e_0, \dots, e_{n-1}) \pcskipln \\
     \t  \text{ where, for all } i: e_{a_i} = 1 \\
     \pcreturn e

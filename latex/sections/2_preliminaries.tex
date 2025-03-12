@@ -8,11 +8,11 @@ TODO: Define basic constructs like PRF, etc if needed.
 
 \section{Review of Prior Work} \label{sec:review-gsv24}
 
-Günther et al. first \cite{CCS:GunSteVei24} described a framework for proveable security of obfuscated key exchange, extending efforts by Fenske and Johnson \cite{CCS:FenJoh24}, whose work focused on the data transfer phase of fully encrypted protocols.
+Günther et al. \cite{CCS:GunSteVei24} first described a framework for proveable security of obfuscated key exchange, extending efforts by Fenske and Johnson \cite{CCS:FenJoh24}, whose work focused on the data transfer phase of fully encrypted protocols.
 
 The work by Günther et al. was iterated upon in \cite{EPRINT:GRSV25} where the notation was simplified, and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel, the obfuscated key exchange protocol we will implement in this thesis.
 
-For convenience, we reproduce the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} that are relevant for this thesis here. This reproduction contains equivalent definitions, but we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted after encryption or out-of-band in \drivel.
+We adapted the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} to our setting. Concretely, we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted after encryption or out-of-band in \drivel. The definitions are equivalent in all other aspects.
 
 \subsection{Key Encapsulation Mechanisms}
 
@@ -49,10 +49,11 @@ This captures the goal that an adversary (even given the public key $\pk$) does 
 This notion is central to the main premise of KEMs, namely to initialize a secure communication channel given only one party's public key by way of setting up a shared secret.
 
 A second notion is strong pseudorandomness ($\sprcca$), i.e. given a public key, it should be hard to differentiate a ciphertext-key pair obtained from encapsulation for that public key from a pair consisting of a randomly sampled ciphertext and a uniformly randomly sampled key, even when allowed to obtain decapsulations of other ciphertexts.
-This captures the goal that ciphertexts must "look randomly chosen" among a set of possible ciphertexts and should look unrelated to any given public key - even given the corresponding shared secret. A KEM can be $\sprcca$ secure with respect to a subset of the full ciphertext space, and the sampling of ciphertexts does not have to be uniformly at random. This is expressed throught the use of a simulator $\mathcal S$.
+This captures the goal that ciphertexts must "look randomly chosen" among a set of possible ciphertexts and should look unrelated to any given public key - even given the corresponding shared secret.
+This is expressed through the use of a simulator $\mathcal S$ and $\sprcca$ is always achieved with respect to such a simulator.
 This notion is first introduced \cite{EC:Xagawa22} in this form by Xagawa, and it is satisfied by many KEMs that are being considered for use in quantum-safe communication \cite{EC:Xagawa22}. We use $\sprcca$ security as a stepping stone to argue about the distribution of ciphertext bits.
 
-\begin{definition} \label{def:kem-security}
+\begin{definition}[$\indcca$ and $\sprcca$ security] \label{def:kem-security}
     We define two security notions $\indcca$ and $\sprcca$ using the games shown in \cref{fig:kem-security} and we define the respective advantages of an adversary~$\adv$ against the $\mathsf{goal} \in \{\indcca, \sprcca\}$ security of a KEM~$\KEM$ as
 \[
     \advantage{\mathsf{goal}}{\KEM}[(\adv)] := 2 \cdot \left| \Pr \left[ G^{\mathsf{goal}}_{\KEM}(\adv) \Rightarrow 1 \right] - \frac{1}{2} \right|.
@@ -61,9 +62,9 @@ This notion is first introduced \cite{EC:Xagawa22} in this form by Xagawa, and i
 
 \begin{figure}
     \input{algorithms/prelim-games}
-    \caption[%
+    \caption[
         Security games for $\indcca$ and $\sprcca$ security of a KEM or obfuscated KEM.
-    ]{%
+    ]{
         Security games for $\indcca$ and $\sprcca$ security of a KEM~$\KEM = (\kgen, \encaps, \decaps)$ with key space~$\mathcal K$. $\sprcca$ security is defined with respect to a simulator $\mathcal S$. Oracle queries violating the stated condition on arguments are not allowed.
     }
     \label{fig:kem-security}
@@ -105,9 +106,9 @@ This notion is first introduced \cite{EC:Xagawa22} in this form by Xagawa, and i
     As in \cref{def:kem}, we also demand KEM correctness for OKEMs.
 \end{definition}
 
-The $\indcca$ and $\sprcca$ security of an OKEM, its correctness, and the public key collision probability are defined exactly as for the underlying KEM (see \cref{fig:kem-security}, \cref{def:kem-corr,def:pk-collisions}).
+For OKEMs, the notion of $\indcca$ security, the OKEM correctness, and the public key collision probability are defined exactly as for KEMs (see \cref{fig:kem-security,def:kem-corr,def:pk-collisions}). For $\sprcca$ security of OKEMs, we restrict the more general definition for KEMs to always use the simulator $\mathcal S_\$$, which outputs uniformly random elements of $\bin^\obfctxtlen$.
 
-In addition to the above properties, which an OKEM should also fulfill, an obfuscated KEM should fulfill stronger randomness requirements. In particular, its public keys and ciphertexts should not be distinguishable from random bit strings. This is in contrast to regular KEMs which may have recognizable structures in $\pk, c$ even if they are $\sprcca$-secure.
+In addition to the above properties, an obfuscated KEM should fulfill stronger randomness requirements than KEMs. In particular, its public keys and ciphertexts should not be distinguishable from random bit strings. This is in contrast to regular KEMs which may have recognizable structures in $\pk, c$ even if they are $\sprcca$-secure.
 
 \begin{definition}[Ciphertext uniformity]\label{def:ctxt-uniformity}
     Let $\OKEM$ be an OKEM.
@@ -193,7 +194,8 @@ Note that in this construction, the first-encaps success probability from \cref{
 
 For an OKEM constructed according to \cref{def:encaps-then-encode} using appropriate encoding/decoding functions, it was shown in \cite[Theorems 2.12 and 2.13]{CCS:GunSteVei24} that the central security notions are preserved:
 
-\begin{theorem}\label{thm:encaps-then-encode-security}
+\begin{theorem}[Encapsulate-then-Encode Security]
+\label{thm:encaps-then-encode-security}
     Let $\OKEM$ be a encapsulate-then-encode obfuscated KEM based on a regular KEM $\KEM$ as per \cref{def:encaps-then-encode}.
     For any adversary $\adv$ against the $\indcca$ security of $\OKEM$, there exists an algorithm $\bdv$ such that
     \[
@@ -212,34 +214,37 @@ For an OKEM constructed according to \cref{def:encaps-then-encode} using appropr
         &+ \advantage{\ctxtunif}{\OKEM}[(\cdv)]
     \end{align*}
     
-    where $\mathcal S_\mathsf{unif}$ is a ``uniform-encapsulation'' simulator for KEM, i.e. a simulator that outputs uniformly random ciphertexts from the appropriate output space.
+    where $\mathcal S_\mathcal{C}$ is a simulator that outputs uniformly random ciphertexts from the ciphertext space of $\KEM$.
 \end{theorem}
 
 Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directly on the output distribution of the $\encodectxt$ algorithm.
 
-TODO: continue from here
-
 \subsection{Obfuscated Key Exchange}
 
-In \cite{CCS:GunSteVei24}, a protocol for secure, authenticated key exchange using obfuscation is constructed ($\pqobfs$). This protocol allows for the initial setup of a shared key and achieves various other desirable security properties needed for a FEP.
-This new $\pqobfs$ protocol builds upon $\obfsfour$, which already disguises flow signatures, has features for probing resistance and still guarantees some level of security if the node public key and node ID are known.
-However, $\pqobfs$ comes with a formal security proof, it gives stronger guarantees when node public key and node ID are known and may also employ OKEMs with other constructions besides \textsf{Elligator2}~\cite{CCS:BHKL13}, enabling quantum-safe constructions.
+In \cite{CCS:GunSteVei24}, the $\pqobfs$ protocol for secure, authenticated key exchange achieving obfuscation is constructed. This protocol allows for the initial setup of a shared key and achieves various other desirable security properties needed for a FEP:
+$\pqobfs$ builds upon $\obfsfour$ \cite{obfs4}, an established ``pluggable transport'' protocol for the Tor Project, and $\pqobfs$ inherits features such as disguising flow signatures, probing resistance and some guarantees even if the node public key and node ID are known.
+However, $\pqobfs$ gives even stronger guarantees when node public key and node ID are known, and may crucially also employ OKEMs with other constructions besides \textsf{Elligator2}~\cite{CCS:BHKL13}. This allows for the use of quantum-safe KEMs such as those standardized through the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization} which was not possible in $\obfsfour$ without major changes.
 
-To define the security of their obfuscated key exchange protocol, \cite{CCS:GunSteVei24} introduces the security notion $\sObfKE$. The following shortened theorem gives requirements on the employed OKEM which allow $\pqobfs$ to achieve this security goal.
+Additionally, \cite{CCS:GunSteVei24} provides a formal security model and proofs for both $\obfsfour$ and $\pqobfs$ demonstrating the various guarantees.
+
+To define the security of their obfuscated key exchange protocol, \cite{CCS:GunSteVei24} introduces the security notion of strong Obfuscated Key Exchange security ($\sObfKE$), capturing key indistinguishability, explicit server authentication, and strong obfuscation.
+The following shortened theorem gives requirements on the employed OKEM which allow $\pqobfs$ to achieve this security goal.
 
 When we construct OKEMs in later sections, we will show that they achieve the required security notions listed below.
 
-\begin{theorem}\label{thm:s-obfuscated-keyex-security}
+\begin{theorem}[Obfuscated Key Exchange Security]
+\label{thm:s-obfuscated-keyex-security}
     Let $\pqobfs$ be defined as in \cite[Fig. 7]{CCS:GunSteVei24}. Let $\OKEM$ be an OKEM.
-    Let $n_s, n_r$ be the number of sessions and servers respectively, and let $q_C$ be a bound on the number of real-or-random key exchanges which are available to the adversary in any given game.
     
-    The $\sObfKE$ security of $\pqobfs$ is shown to reduce to the following properties of $\OKEM$, captured with the according term reproduced to see scaling factors:
+    The $\sObfKE$ security of $\pqobfs$ is shown to reduce to the following properties of $\OKEM$:
     \begin{itemize}
-        \item Low chance of public key collisions: $2 \cdot \pkcoll{\OKEM}(n_s+n_r)$
-        \item Correctness: $4n_s \cdot \delta_\OKEM$
-        \item Indistinguishability over all sessions: $2 n_s n_r \cdot \advantage{\indcca}{\OKEM}[]$
-        \item Indistinguishability in a randomly chosen session: $(n_s^2 + n_s n_r q_C) \cdot \advantage{\indonecca}{\OKEM}[]$
-        \item Pseudorandomness: $(n_s + n_r q_C) \cdot (\advantage{\sprcca}{\OKEM}[] + \advantage{\pkunif}{\OKEM}[] + \advantage{\ctxtunif}{\OKEM}[])$
+        \item Low chance of public key collisions across all sessions and bridges, as measured by $\pkcoll{\OKEM}$
+        \item KEM Correctness $\delta_\OKEM$
+        \item $\indcca$ security of $\OKEM$
+        \item $\indonecca$ security of $\OKEM$
+        \item $\sprcca$ security of $\OKEM$
+        \item $\pkunif$ security of $\OKEM$
+        \item $\ctxtunif$ security of $\OKEM$
     \end{itemize}
 
     and, in addition, the $\sObfKE$ security also depends on the $\prf$ and $\swapprf$ security of two pseudorandom functions, both of which we instantiate with HMAC, whose required security for fixed-length keys is proven in \cite{C:BBGS23}.

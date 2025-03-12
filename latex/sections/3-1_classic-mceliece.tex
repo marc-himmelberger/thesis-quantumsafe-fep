@@ -1,19 +1,22 @@
-\section{Classic McEliece as an obfuscated KEM} \label{sec:obfuscating-classic-mceliece}
+\section{Classic McEliece as an Obfuscated KEM} \label{sec:obfuscating-classic-mceliece}
 
 Throughout this \cref{sec:obfuscating-classic-mceliece}, we use the positive integer variables $m,n,t,k$ where $n < 2^m$ and $k=mt-n$ as defined in \cite{NISTPQC-R4:ClassicMcEliece22}. We work with matrices and vectors over $\mathbb F_2$ when examining the KEM and use bitstrings in the defintion and analysis of OKEMs. As the dimensions of the matrices and vectors are fixed for a given parameter set, we associate the matrices and vectors with their canonical encoding as bitstrings of appropriate length.
 
-\paragraph{Original Generation and Distribution}
+\paragraph{Original generation and distribution}
 Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in round 4 of the NIST PQC standardization. We only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
 
 In Classic McEliece, public keys are the $k$ rightmost columns of a $mt \times n$ generator matrix in systematic form ($k = n - mt$). Ciphertexts are the $mt$ data bits corresponding to $n$-bit codewords with Hamming weight exactly $t$.
 
-The generation of public keys occurs in a multistep process starting from a 256-bit seed which is expanded using SHAKE256 into a secondary seed and raw values. If the raw values do not form a suitable systematic code, another attempt is started from the secondary seed, and so on. This key generation process, among other algorithms from the Round 4 specification of Classic McEliece are reproduced in \cref{fig:classic-mceliece-spec}.
+The generation of public keys is a multistep process starting from a 256-bit seed which is expanded using SHAKE256 into a secondary seed and raw values. If the raw values do not form a suitable systematic code, another attempt is started from the secondary seed, and so on. This key generation process, among other algorithms from the Round 4 specification of Classic McEliece are reproduced in \cref{fig:classic-mceliece-spec}.
 
 For encapsulation, rejection-sampling is used to generate a uniformly random vector of Hamming weight exactly $t$ which is then mapped from the space of $n$-bit vectors to $mt=n-k$ bits using the generator matrix defined by the public key.
 
 \begin{figure}
     \input{algorithms/classic-mceliece-spec}
-    \caption{A relevant selection of algorithms from the Classic McEliece Round 4 specification \cite{NISTPQC-R4:ClassicMcEliece22}. $q=2^m$ refers to the size of a polynomial field of characteristic $2$. $G$ refers to a pseudorandom bit generator mapping a string of $\ell$ bits to a string of $\geq n + mq + mt + \ell$ bits. For the sake of brevity, the many more technical details, as well as the semi-systematic form, are omitted.}
+    \caption[
+        A selection of algorithms from the Classic McEliece Round 4 specification.
+    ]{
+        A relevant selection of algorithms from the Classic McEliece Round 4 specification \cite{NISTPQC-R4:ClassicMcEliece22}. $q=2^m$ refers to the size of a polynomial field of characteristic $2$. $G$ refers to a pseudorandom bit generator mapping a string of $\ell$ bits to a string of $\geq n + mq + mt + \ell$ bits. For the sake of brevity, the many more technical details, as well as the semi-systematic form, are omitted.}
     \label{fig:classic-mceliece-spec}
 \end{figure}
 
@@ -28,13 +31,16 @@ For both games $\mathsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of
 
 \begin{figure}
     \input{algorithms/classic-mceliece-assumptions}
-    \caption{Indistinguishability games for Classic McEliece with $\kgen$ and \textsf{FixedWeight} as defined in \cref{fig:classic-mceliece-spec}. These games follow the definitions from \cite[Definition~K.1]{EC:Xagawa22}. Note that $n-k = mt$.}
+    \caption[
+        Indistinguishability games for Classic McEliece.
+    ]{
+        Indistinguishability games for Classic McEliece with $\kgen$ and \textsf{FixedWeight} as defined in \cref{fig:classic-mceliece-spec}. These games follow the definitions from \cite[Definition~K.1]{EC:Xagawa22}. Note that $n-k = mt$.}
     \label{fig:classic-mceliece-assumptions}
 \end{figure}
 
 \paragraph{Classic McEliece is already obfuscated}
 
-Given the $\prkey$ assumption, public keys are hard to distinguish from outputs of $\textsf{RandGen}()$. We claim that $\textsf{RandGen}()$ can be simplified to a new algorithm $\textsf{RandGen}'()$, also shown in \cref{fig:classic-mceliece-assumptions}, with statistical indistinguishability.
+Given the $\prkey$ assumption, public keys are computationally hard to distinguish from outputs of $\textsf{RandGen}()$. We claim that $\textsf{RandGen}()$ can be simplified to a new algorithm $\textsf{RandGen}'()$, also shown in \cref{fig:classic-mceliece-assumptions}, with statistical indistinguishability between these two algorithms. Thus, we would show computational indistinguishability between McEliece public keys and outputs of $\textsf{RandGen}'()$.
 
 \begin{lemma}[Simplifying \textsf{RandGen}] \label{lem:classic-mceliece-randgen-prime}
     Let $\textsf{RandGen}(), \textsf{RandGen}'()$ be defined as in \cref{fig:classic-mceliece-assumptions}.
@@ -43,21 +49,23 @@ Given the $\prkey$ assumption, public keys are hard to distinguish from outputs 
 
 \begin{proof}
     We first examine the rejection sampling behavior around \cref{ln:randgen-reject}: A resampling occurs if and only if a reduction of $\hat H$ to systematic form (also known as \emph{reduced row echelon form} or \emph{row canonical form}) fails. This reduction, in turn, fails if and only if the $mt$ leftmost columns of $\hat H$ do not form a full rank square matrix.
-    The probability for a $mt \times mt$ matrix with i.i.d. uniformly random entries over $\mathbb F_2$ to be of full rank is exactly \cite{DBLP:journals/corr/SalmondGGC14}
-    \[ p_\mathsf{FR} := \prod_{i=1}^{mt} \left( 1-2^{-i} \right) \]
+    The probability for a $mt \times mt$ matrix with i.i.d. uniformly random entries over $\mathbb F_2$ to be of full rank is exactly~\cite{DBLP:journals/corr/SalmondGGC14}
+    \[ p_\mathsf{FR} := \prod_{i=1}^{mt} \left( 1-2^{-i} \right). \]
     
-    For the parameter sets used in Classic McEliece ($768 \leq mt \leq 1664$), this calculates to \[ p_\mathsf{FR} \approx 0.288788 \]
+    For the parameter sets used in Classic McEliece ($768 \leq mt \leq 1664$), this is \[ p_\mathsf{FR} \approx 0.288788 . \]
     Differences between the parameter sets are negligible and a strict upper bound of $p_\mathsf{FR} \leq \prod_{i=1}^{768} \left( 1-2^{-i} \right) \leq \prod_{i=1}^{8} \left( 1-2^{-i} \right) \leq 0.29$ applies. A proof for a tight lower bound eludes us although the numerical convergence is rapid.
     
-    This calculation validates our analysis, as the resulting probability is the same as was experimentally reported in \cite[security.pdf: Section 4.2]{NISTPQC-R4:ClassicMcEliece22}.
+    This calculation further supports our statement that resampling occurs exactly for values of $\hat H$ whose $mt$ leftmost columns are not full rank, because the resulting probability $p_\mathsf{FR}$ is the same as was experimentally reported in \cite[security.pdf: Section 4.2]{NISTPQC-R4:ClassicMcEliece22}.
     
-    We now consider the possible influence that the reduction to systematic form might have on the distribution of bits in the simulated public key $\hat T$.
+    After understanding which reductions fail, we now consider the possible influence that the reduction to systematic form might have on the distribution of bits in the simulated public key $\hat T$.
 
-    Consider an intermediate value of $\hat H$ which can be reduced to systematic form (i.e. has full rank and will pass the check on \cref{ln:randgen-reject}). This value exists precisely once for all terminating executions of $\textsf{RandGen}()$ as the last $\hat H$ sampled before returning a result.
+    Consider an intermediate value of $\hat H$ which can be reduced to systematic form (i.e. has full rank in its leftmost columns and will thus pass the check on \cref{ln:randgen-reject}). This value exists precisely once for all terminating executions of $\textsf{RandGen}()$ as the last $\hat H$ sampled before returning a result.
 
     In general, the reduced row echelon form can be obtained using Gauss–Jordan elimination. This algorithm carries out a sequence of operations on the matrix consisting of swapping rows, adding rows onto others and scaling rows.
     Over $\mathbb F_2$, the scaling of rows is not needed and swapping of rows can be accomplished via a sequence of 3 row additions. Any Gauss-Jordan reduction to systematic form can thus be expressed as merely a sequence of row additions.
     The systematic form of $\hat H$ over $\mathbb F_2$, just like reduced row echelon forms over any field, is also unique. Thus it suffices to consider an arbitrary sequence of row additions transforming $\hat H$ to systematic form.
+
+    Note in particular, that during such a sequence of row additions, the rank of $\hat H$ is preserved. It is thus impossible for the sequence to ever add any row onto itself, i.e. all row additions are between distinct rows. Any such row addition would lower the rank by 1 and no row addition may increase the rank of a matrix.
     
     Due to the number of rows, a reduction is possible in $(mt)^2$ row additions: The diagonal can be filled with ones using at most $mt$ additions. After another $(mt)^2-mt$ additions at the latest, all other entries in the leftmost $mt$ columns are zeroes. To determine one such order of row additions which bring $\hat H$ into systematic form, it suffices to consider only the leftmost $mt$ columns.
     
@@ -68,9 +76,9 @@ Given the $\prkey$ assumption, public keys are hard to distinguish from outputs 
     Repeating this argument for a maximum of $(mt)^2$ times, we can conclude that $\hat T$ is statistically indistinguishable from a uniformly random $mt \times k$ matrix over $\mathbb F_2$ as in $\textsf{RandGen}'()$.
 \end{proof}
 
-Ciphertexts are also statistically indistinguishable from uniform random bit vectors following the $\prkey$ and $\mdsd$ assumptions. Implementers should note that padding public keys and ciphertexts to the byte boundary may require \emph{randomized} padding. This is only needed if the number of bits is not evenly divisible by 8, and occurs only for the parameter set 'mceliece6960119'.  All other parameter sets have $mt = 0 \mod 8$. Padding of these values with zero bits (as suggested in the specification) would break the public key and ciphertext uniformity.
+Ciphertexts, in turn, are computationally indistinguishable from uniform random bit vectors following the $\prkey$ and $\mdsd$ assumptions. Implementers should note that padding public keys and ciphertexts to the byte boundary may require \emph{randomized} padding. This is only needed if the number of bits is not evenly divisible by 8, and occurs only for the parameter set 'mceliece6960119'.  All other parameter sets have $mt = 0 \mod 8$. Padding of these values with zero bits (as suggested in the specification) would break the public key and ciphertext uniformity.
 
-\begin{theorem}
+\begin{theorem}[$\indcca$ and $\sprcca$ of Classic McEliece]
     Classic McEliece, as specified in \cite{NISTPQC-R4:ClassicMcEliece22}, is an obfuscated KEM without requiring any special encoding of public keys or ciphertexts.
 
     Classic McEliece, as an OKEM, achieves $\indcca$ and $\sprcca$ security according to \cref{def:kem-security}.
@@ -86,7 +94,8 @@ Ciphertexts are also statistically indistinguishable from uniform random bit vec
 We analyze the public key and ciphertext uniformity of Classic McEliece and reduce to the two assumptions made above. As no further encoding is done here, there is no discussion of success rate as for other KEMs.
 The notions of public key and ciphertext uniformity are discussed in \cref{def:pk-uniformity,def:ctxt-uniformity} respectively.
 
-\begin{lemma}[Public key uniformity of Classic McEliece] \label{lem:classic-mceliece-pk-unif}
+\begin{lemma}[Public key uniformity of Classic McEliece]
+\label{lem:classic-mceliece-pk-unif}
     Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\mathsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\mathsf{cl} = n-k$.
     
     For any adversary $\adv$ against the public key uniformity of $\mathsf{CM}$, there exists an adversary $\bdv$ against the $\prkey$ assumption, such that
@@ -100,7 +109,8 @@ The notions of public key and ciphertext uniformity are discussed in \cref{def:p
     The output bit needs to be flipped as $b=0$ corresponds to the real key generation in the game $\prkey$ but $b=1$ is used to denote the same in the $\pkunif$ game.
 \end{proof}
 
-\begin{lemma}[Ciphertext uniformity of Classic McEliece] \label{lem:classic-mceliece-ctxt-unif}
+\begin{lemma}[Ciphertext uniformity of Classic McEliece]
+\label{lem:classic-mceliece-ctxt-unif}
     Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\mathsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\mathsf{cl} = n-k$.
     
     For any adversary $\adv$ against the ciphertext uniformity of $\mathsf{CM}$, there exist adversaries $\bdv, \cdv$ against the $\prkey$ and $\mdsd$ assumptions respectively, such that

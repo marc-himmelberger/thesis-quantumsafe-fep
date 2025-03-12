@@ -4,7 +4,7 @@ In this section, we construct encodings for different post-quantum KEMs suitable
 
 While such encodings have already been constructed for elliptic curve Diffie–Hellman \cite{CCS:BHKL13, tor-dev-udh, USENIX:WWGH11} as well as for ML-KEM \cite{CCS:GunSteVei24}, other KEMs are also being examined for future use.
 
-We take a selection of round 4 candidates of the NIST Post-Quantum Cryptography Standardization, as well as previous candidate schemes which we believe to be of interest.
+We take a selection of Round 4 candidates of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}, as well as previous candidate schemes which we believe to be of interest.
 For each scheme, we describe the generation of public keys and ciphertexts in the original scheme and examine their distributions. We then introduce encoding algorithms from the original public keys and ciphertexts to bitstrings and finally give concrete bounds for uniformity and encoding success rate.
 
 We call all our encoding schemes TODO where TODO is the name of the corresponding KEM. \cref{tab:obfuscation-summary} summarizes the result of the later sections.
@@ -30,6 +30,9 @@ We call all our encoding schemes TODO where TODO is the name of the correspondin
          194 (\textsf{mceliece6960119}, +0)\newline
          208 (\textsf{mceliece8192128}, +0)\newline \\
     \end{tabular}
-    \caption{Summary of KEMs, their corresponding encodings and the results of our analysis. The origins of analysis results are specified, and for output sizes, differences in bytes from original public key/ciphertext sizes are given. This table can be viewed as an extension of \cite[Table~2]{CCS:GunSteVei24}.}
+    \caption[
+        Summary of KEMs, their corresponding encodings and the results of our analysis.
+    ]{
+        Summary of KEMs, their corresponding encodings and the results of our analysis. The origins of analysis results are specified, and for output sizes, differences in bytes from original public key/ciphertext sizes are given. This table can be viewed as an extension of \cite[Table~2]{CCS:GunSteVei24}.}
     \label{tab:obfuscation-summary}
 \end{table}

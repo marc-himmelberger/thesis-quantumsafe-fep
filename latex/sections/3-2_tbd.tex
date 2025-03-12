@@ -1,30 +1,29 @@
 \section{Obfuscating HQC with XYZ} \label{sec:tbd}
-\paragraph{Original Generation and Distribution}
-\paragraph{Constructed Encoding}
-\paragraph{Uniformity and Success Rate}
+\paragraph{Original generation and distribution}
+\paragraph{Constructed encoding}
+\paragraph{Uniformity and success rate}
 
 We analyze the public key and ciphertext uniformity of our encoding and reduce to the two assumptions made above. We analyze the success rate of our encoding.
 
-\begin{lemma}[Public key uniformity of TODO TBD] \label{lem:tbd-pk-unif}
+\begin{lemma}[Public key uniformity of TODO TBD]
+\label{lem:tbd-pk-unif}
     TODO bounds on uniformity
 \end{lemma}
 
-\begin{lemma}[Ciphertext uniformity of TODO TBD] \label{lem:tbd-ctxt-unif}
+\begin{lemma}[Ciphertext uniformity of TODO TBD]
+\label{lem:tbd-ctxt-unif}
     TODO bounds on uniformity
 \end{lemma}
 
-\begin{lemma}[First-keygen success probability of TODO TBD] \label{lem:tbd-first-keygen-success}
-    TODO bounds on success
-\end{lemma}
-
-\begin{lemma}[[First-encap success probability of TODO TBD] \label{lem:tbd-first-encap-success}
+\begin{lemma}[[First-encaps success probability of TODO TBD]
+\label{lem:tbd-first-encap-success}
     TODO bounds on success
 \end{lemma}
 
 Together with the Classic McEliece KEM, our encoding functions can be used to define a keygen/encapsulate-then-encode obfuscated KEM as in \cref{def:keygen-encap-then-encode}.
 
-\begin{theorem}
-    Let TODO TBD be a keygen/encapsulate-then-encode obfuscated KEM based on the Classic McEliece KEM as per \cref{def:keygen-encap-then-encode}. For any adversary $\adv$ against the $\indcca$ security of TODO TBD, there exists an algorithm $\bdv$ such that
+\begin{theorem}[$\indcca$ and $\sprcca$ security of TODO TBD]
+    Let TODO TBD be an encapsulate-then-encode obfuscated KEM based on the Classic McEliece KEM as per \cref{def:keygen-encap-then-encode}. For any adversary $\adv$ against the $\indcca$ security of TODO TBD, there exists an algorithm $\bdv$ such that
     \[ \advantage{\indcca}{TODO TBD}[(\bdv)] \leq 123 \]
 
     Further,  For any adversary $\adv$ against the $\sprcca$ security of TODO TBD, there exists an algorithm $\bdv$ such that

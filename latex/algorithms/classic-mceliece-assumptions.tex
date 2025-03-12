@@ -2,20 +2,20 @@
 
 \begin{pcvstack}[space=0.05em]
 \procedure[linenumbering]{$\textbf{GAME } \textsf{PR-Key}(\adv)$}{
-    b \gets \bin \\
-    (T_0,\sk) \gets \kgen() \\
-    T_1 \gets \textsf{RandGen}() \\
-    b' \gets \adv(T_b) \\
+    b \getsr \bin \\
+    (T_0,\sk) \getsr \kgen() \\
+    T_1 \getsr \textsf{RandGen}() \\
+    b' \getsr \adv(T_b) \\
     \pcreturn \llbracket b' = b \rrbracket
 }
 
 \procedure[lnstart=5,linenumbering]{$\textbf{GAME } \textsf{mDSD}(\adv)$}{
-    b \gets \bin \\
-    \hat T \gets \textsf{RandGen}() \\
-    e \gets \textsf{FixedWeight}() \\
+    b \getsr \bin \\
+    \hat T \getsr \textsf{RandGen}() \\
+    e \getsr \textsf{FixedWeight}() \\
     u_0 \gets \left[ I_{mt} \mid \hat T \right] \cdot e \\
-    u_1 \gets U(\mathbb F_2^{mt}) \\
-    b' \gets \adv(\hat T, u_b) \\
+    u_1 \getsr U(\mathbb F_2^{mt}) \\
+    b' \getsr \adv(\hat T, u_b) \\
     \pcreturn \llbracket b' = b \rrbracket
 }
 \end{pcvstack}
@@ -24,7 +24,7 @@
 \procedure[lnstart=12,linenumbering]{$\textsf{RandGen}()$}{
     \hat T \gets \bot \\
     \pcwhile \hat T = \bot \pcdo \\
-    \t  \hat H \gets U(\mathbb F_2^{mt \times n}) \\
+    \t  \hat H \getsr U(\mathbb F_2^{mt \times n}) \\
     \t  \text{reduce } \hat H \text{ to systematic form } \left[ I_{mt} \mid \hat T \right] \\
     \label{ln:randgen-reject}
     \t  \text{if this fails } \hat T \gets \bot \\ 
@@ -33,7 +33,7 @@
 }
 
 \procedure[lnstart=19,linenumbering]{$\textsf{RandGen}'()$}{
-    \hat T \gets U(\mathbb F_2^{mt \times k}) \\ 
+    \hat T \getsr U(\mathbb F_2^{mt \times k}) \\ 
     \pcreturn \hat T
 }
 \end{pcvstack}
