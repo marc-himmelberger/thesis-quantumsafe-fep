@@ -1,27 +1,27 @@
 \chapter{Preliminaries}\label{ch:preliminaries}
 
 \paragraph{Notation}
-In pseudocode, we use the notation $x \gets A(y)$ to express an assignment to a variable $x$ using the output of the deterministic computation $A(y)$. When the computation is non-deterministic, we write $x \getsr A(y)$.
+In pseudocode, we use the notation $x \gets A(y)$ to express an assignment to a variable $x$ using the output of the deterministic computation $A(y)$. When the computation is probabilistic, we write $x \getsr A(y)$.
 Uniformly random sampling of $x$ from a set $S$ is denoted $x \getsr S$.
 
 TODO: Define basic constructs like PRF, etc if needed.
 
-\section{\texorpdfstring{Review of Günther, Stebila, and Veitch \cite{CCS:GunSteVei24}}{Review of Günther, Stebila, and Veitch}} \label{sec:review-gsv24}
+\section{Review of Prior Work} \label{sec:review-gsv24}
 
-Günther et al. first described a framework for proveable security of obfuscated key exchange, extending efforts by Fenske and Johnson \cite{CCS:FenJoh24}, whose work focused on the data transfer phase of fully encrypted protocols.
+Günther et al. first \cite{CCS:GunSteVei24} described a framework for proveable security of obfuscated key exchange, extending efforts by Fenske and Johnson \cite{CCS:FenJoh24}, whose work focused on the data transfer phase of fully encrypted protocols.
 
-For convenience, we reproduce the relevant definitions for this thesis here. This reproduction contains equivalent definitions, but with slight modifications made by the authors for the sake of simplicity.
+The work by Günther et al. was iterated upon in \cite{EPRINT:GRSV25} where the notation was simplified, and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel, the obfuscated key exchange protocol we will implement in this thesis.
+
+For convenience, we reproduce the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} that are relevant for this thesis here. This reproduction contains equivalent definitions, but we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted after encryption or out-of-band in \drivel.
 
 \subsection{Key Encapsulation Mechanisms}
-
-WATCH OUT: USE ABSOLUTE VALUE IN ADVANTAGES, EASES GAME HOPPING
 
 \begin{definition}[Key encapsulation mechanism]
     \label{def:kem}
     A key encapsulation mechanism $\KEM = (\kgen, \encaps, \decaps)$ consists of three algorithms:
     \begin{itemize}
         \item $\ul{\kgen}() \tor (\pk, \sk)$
-        is a probabilistic \emph{key generation} algorithm that generates a secret key~$\sk$ and corresponding public key~$\pk$.
+        is a probabilistic \emph{key generation} algorithm that generates a public key~$\pk$ and corresponding secret key~$\sk$.
         \item $\ul{\encaps}(\pk) \tor (c, K)$
         is a probabilistic \emph{encapsulation} algorithm that takes as input a KEM public key~$\pk$, and outputs a ciphertext~$c$ and shared secret~$K$.
         \item $\ul{\decaps}(\sk, c) \to K$
@@ -44,9 +44,13 @@ We say that a KEM~$\KEM=(\kgen, \encaps, \decaps)$ is \emph{$\delta_\KEM$-correc
 \]
 \end{definition}
 
-To define what it means for a KEM to be secure, we require two security notions. One focuses on indistinguishability of ciphertexts, i.e. given a public key and ciphertext, it should be hard to differentiate the encapsulated shared secret from uniformly random elements of the key space. This captures the goal that an attacker must not be able to construct the shared secret without the secret key. Further, attackers must not even be able to pick between two options for the shared secret better than chance. This notion is central to the main premise of KEMs, namely to initialize a secure communication channel given only one party's public key by way of setting up a shared secret.
+To define what it means for a KEM to be secure, we require two security notions. One focuses on indistinguishability of ciphertexts ($\indcca$), i.e. given a public key and ciphertext, it should be hard to differentiate the encapsulated shared secret from uniformly random elements of the key space.
+This captures the goal that an adversary (even given the public key $\pk$) does not learn any information about the shared secret encapsulated in the challenge ciphertext $c^*$, even when allowed to obtain decapsulations of other ciphertexts.
+This notion is central to the main premise of KEMs, namely to initialize a secure communication channel given only one party's public key by way of setting up a shared secret.
 
-A second notion is strong pseudorandomness, i.e. given a public key, it should be hard to differentiate a ciphertext-key pair obtained from encapsulation for that public key from a pair of independently sampled ciphertext and key. This captures the goal that ciphertexts must "look randomly chosen" among a set of possible ciphertexts and should look unrelated to any given public key - even given the corresponding shared secret. This notion is satisfied by many KEMs that are being considered for use in quantum-safe communication, and we use this second notion as a stepping stone to argue about the distribution of ciphertext bits.
+A second notion is strong pseudorandomness ($\sprcca$), i.e. given a public key, it should be hard to differentiate a ciphertext-key pair obtained from encapsulation for that public key from a pair consisting of a randomly sampled ciphertext and a uniformly randomly sampled key, even when allowed to obtain decapsulations of other ciphertexts.
+This captures the goal that ciphertexts must "look randomly chosen" among a set of possible ciphertexts and should look unrelated to any given public key - even given the corresponding shared secret. A KEM can be $\sprcca$ secure with respect to a subset of the full ciphertext space, and the sampling of ciphertexts does not have to be uniformly at random. This is expressed throught the use of a simulator $\mathcal S$.
+This notion is first introduced \cite{EC:Xagawa22} in this form by Xagawa, and it is satisfied by many KEMs that are being considered for use in quantum-safe communication \cite{EC:Xagawa22}. We use $\sprcca$ security as a stepping stone to argue about the distribution of ciphertext bits.
 
 \begin{definition} \label{def:kem-security}
     We define two security notions $\indcca$ and $\sprcca$ using the games shown in \cref{fig:kem-security} and we define the respective advantages of an adversary~$\adv$ against the $\mathsf{goal} \in \{\indcca, \sprcca\}$ security of a KEM~$\KEM$ as
@@ -88,55 +92,22 @@ A second notion is strong pseudorandomness, i.e. given a public key, it should b
 
 \begin{definition}[Obfuscated KEM]
     \label{def:okem}
-    An \emph{obfuscated key encapsulation mechanism (OKEM)} $\OKEM = (\kgen, \encaps, \decaps, \decode)$ with \emph{obfuscated key length}~$\obfpklen \in \mathbb{N}$ and \emph{obfuscated ciphertext length}~$\obfctxtlen \in \mathbb{N}$ consists of the following algorithms:
+    An \emph{obfuscated key encapsulation mechanism (OKEM)} $\OKEM = (\kgen, \encaps, \decaps, \decode)$ with \emph{obfuscated ciphertext length}~$\obfctxtlen \in \mathbb{N}$ consists of the following algorithms:
     \begin{itemize}
-        \item $\ul{\kgen}() \tor (\pk,\sk,\pkobf)$ is a probabilistic key generation algorithm that generates a public key~$\pk$, secret key~$\sk$, and obfuscated public key~$\pkobf \in \bin^\obfpklen$.
+        \item $\ul{\kgen}() \tor (\pk,\sk)$ is a probabilistic \emph{key generation} algorithm that generates a public key~$\pk$ and corresponding secret key~$\sk$.
 
-        \item $\ul{\encaps}(\pk) \tor (c, K)$ is a probabilistic encapsulation algorithm that takes as input a KEM public key~$\pk$ and outputs an (obfuscated) ciphertext~$c \in \bin^\obfctxtlen$ and shared secret~$K$.
+        \item $\ul{\encaps}(\pk) \tor (\hat c, K)$ is a probabilistic \emph{encapsulation} algorithm that takes as input an OKEM public key~$\pk$ and outputs an (obfuscated) ciphertext~$\hat c \in \bin^\obfctxtlen$ and shared secret~$K$.
 
-        \item $\ul{\decaps}(\sk,c) \to K$ is a deterministic decapsulation algorithm that takes as input a secret key~$\sk$ and (obfuscated) ciphertext~$c$, and outputs a shared secret~$K$.
-    
-        \item $\ul{\decode}(\pkobf) \to \pk$
-        is a deterministic \emph{decoding} algorithm that on input of an obfuscated public key~$\pkobf \in \bin^{\obfpklen}$ outputs a public key~$\pk$.
+        \item $\ul{\decaps}(\sk,\hat c) \to K$ is a deterministic \emph{decapsulation} algorithm that takes as input a secret key~$\sk$ and (obfuscated) ciphertext~$\hat c$, and outputs a shared secret~$K$.
     \end{itemize}
-    Note that the tuple of algorithms $(\kgen, \encaps, \decaps)$, when ignoring the obfuscated public key~$\pkobf$ output by $\kgen$, is a KEM as in \cref{def:kem}.
+    Note that the tuple of algorithms $(\kgen, \encaps, \decaps)$ can also be viewed as a KEM as in \cref{def:kem}, but we restrict the ciphertext space to bitstrings.
 
-    Beyond KEM correctness, as per \cref{def:kem-corr}, we demand that public keys generated by~$\kgen$ can be successfully encoded/decoded into each other:
-    \begin{align*}
-        \Pr\left[
-            \decode(\pkobf) = \pk
-        ~\middle|
-            (\pk, \sk, \pkobf) \getsr \kgen()
-        \right] = 1.
-    \end{align*}
-
+    As in \cref{def:kem}, we also demand KEM correctness for OKEMs.
 \end{definition}
 
-The $\indcca$ and $\sprcca$ security of an OKEM, its correctness, and the public key collision probability are defined exactly as for the underlying KEM (see \cref{fig:kem-security}, \cref{def:kem-corr,def:pk-collisions}), merely ignoring the extra encoded public key~$\pkobf$ output by $\kgen$.
+The $\indcca$ and $\sprcca$ security of an OKEM, its correctness, and the public key collision probability are defined exactly as for the underlying KEM (see \cref{fig:kem-security}, \cref{def:kem-corr,def:pk-collisions}).
 
 In addition to the above properties, which an OKEM should also fulfill, an obfuscated KEM should fulfill stronger randomness requirements. In particular, its public keys and ciphertexts should not be distinguishable from random bit strings. This is in contrast to regular KEMs which may have recognizable structures in $\pk, c$ even if they are $\sprcca$-secure.
-
-\begin{definition}[Public key uniformity]\label{def:pk-uniformity}
-    Let $\OKEM$ be an OKEM.
-    We measure the uniformity of the obfuscated public keys of length~$\obfpklen$ generated by $\OKEM.\kgen$ against an adversary~$\adv$ as
-    \[
-        \advantage{\pkunif}{\OKEM}[(\adv)]
-        :=
-        2 \cdot \left|
-        \Pr\left[
-            \adv(\pkobf_b) = b
-        ~\middle|
-            \begin{array}{c}
-                b \getsr \bin, \pkobf_1 \getsr \bin^{\obfpklen}, \\
-                (\pk_0, \sk_0, \pkobf_0) \getsr \OKEM.\kgen()
-            \end{array}
-        \right]
-        - \frac{1}{2}
-        \right|
-    \]
-    
-    For an unbounded adversary~$\adv$, we call the advantage~$\advantage{\pkunif}{\OKEM}[(\adv)]$ \emph{statistical}.
-\end{definition}
 
 \begin{definition}[Ciphertext uniformity]\label{def:ctxt-uniformity}
     Let $\OKEM$ be an OKEM.
@@ -145,12 +116,12 @@ In addition to the above properties, which an OKEM should also fulfill, an obfus
         \advantage{\ctxtunif}{\OKEM}[(\adv)] := 
         2 \cdot \left|
         \Pr\left[
-            \adv(\pk, c_b) = b
+            \adv(\pk, \hat c_b) = b
         ~\middle|
             \begin{array}{c}
-                b \getsr \bin, c_1 \getsr \bin^{\obfctxtlen}, \\
-                (\pk,\sk,\pkobf) \getsr \OKEM.\kgen(),\\
-                (c_0, K_0) \getsr \OKEM.\encaps(\pk)
+                b \getsr \bin, \hat c_1 \getsr \bin^{\obfctxtlen}, \\
+                (\pk,\sk) \getsr \OKEM.\kgen(),\\
+                (\hat c_0, K_0) \getsr \OKEM.\encaps(\pk)
             \end{array}
         \right]
         - \frac{1}{2}
@@ -160,97 +131,75 @@ In addition to the above properties, which an OKEM should also fulfill, an obfus
     For an unbounded adversary~$\adv$, we call the advantage~$\advantage{\ctxtunif}{\OKEM}[(\adv)] $ \emph{statistical}.
 \end{definition}
 
+\subsection{OKEM construction}
 
-% TODO from here
+To construct an OKEM, a regular KEM can be augmented with encoding functions like \textsf{Elligator2}~\cite{CCS:BHKL13} or \textsf{Kemeleon}~\cite[Sec. 2.4]{CCS:GunSteVei24}. We define the following construct to bundle such functions.
 
-\subsection{OKEM constructions}
-
-To construct an OKEM, a regular KEM can be augmented with encoding functions like \textsf{Elligator2}~\cite{CCS:BHKL13} or \textsf{Kemeleon}~\cite[Sec. 2.4]{CCS:GunSteVei24}.
-
-\begin{definition}\label{def:keygen-encap-then-encode}
-\label{def:first-keygen-success}
-\label{def:first-encap-success}
+\begin{definition}[KEM Encoding]
+\label{def:kem-encoding}
     Let $\KEM = (\kgen, \encaps, \decaps)$ be a KEM.
-    Let $\obfpklen, \obfctxtlen \in \mathbb N$.
-    Further define the following algorithms operating on the appropriate input/output spaces of $\KEM$:
+    Let $\obfctxtlen \in \mathbb N$.
+    We then define a \emph{KEM encoding} for $\KEM$ to consist of the following algorithms operating on the appropriate input/output spaces of $\KEM$:
     \begin{itemize}
-        \item $\ul{\encode}(\pk) \to \pkobf$
-        is a (possibly randomized) \emph{encoding} algorithm that on input of a public key~$\pk$ outputs an obfuscated public key~$\pkobf \in \bin^{\obfpklen}$ or an error $\bot$.
-        \item $\ul{\decode}(\pkobf) \to \pk$
-        is a deterministic \emph{decoding} algorithm that on input of an obfuscated public key~$\pkobf \in \bin^{\obfpklen}$ outputs a public key~$\pk$.
         \item $\ul{\encodectxt}(c) \to \hat c$
-        is a (possibly randomized) \emph{ciphertext encoding} algorithm that on input of a ciphertext~$c$ outputs an obfuscated ciphertext~$\hat c \in \bin^{\obfctxtlen}$ or an error $\bot$.
+        is a (possibly randomized) \emph{ciphertext encoding} algorithm that on input of a ciphertext~$c$ from the ciphertext space of $\KEM$ outputs an obfuscated ciphertext~$\hat c \in \bin^{\obfctxtlen}$ or an error $\bot$.
         \item $\ul{\decodectxt}(\hat c) \to c$
-        is a deterministic \emph{ciphertext decoding} algorithm that on input of an obfuscated ciphertext~$\hat c \in \bin^{\obfctxtlen}$ outputs a ciphertext~$c$.
+        is a deterministic \emph{ciphertext decoding} algorithm that on input of an obfuscated ciphertext~$\hat c \in \bin^{\obfctxtlen}$ outputs a ciphertext~$c$ from the ciphertext space of $\KEM$.
     \end{itemize}
 
     We demand that these encoding/decoding algorithms are perfectly correct, i.e.:
-    \[
-        \Pr\left[
-            \decode(\pkobf) = \pk
-        ~\middle|
-            \begin{array}{c}
-                (\pk, \sk) \getsr \kgen(),\\
-                \pkobf \getsr \encode(\pk),\\
-                \pkobf \neq \bot
-            \end{array}
-        \right] = 1.
-    \]
-    as well as the analogously for ciphertext encoding/decoding, but note that we only consider public keys for which encoding was previously successful:
     \[
         \Pr\left[
             \decodectxt(\hat c) = c
         ~\middle|
             \begin{array}{c}
                 (\pk, \sk) \getsr \kgen(),\\
-                \pkobf \getsr \encode(\pk),\\
                 (c, K) \getsr \encaps(\pk),\\
                 \hat c \getsr \encodectxt(c),\\
-                \hat c \neq \bot, \pkobf \neq \bot
+                \hat c \neq \bot
             \end{array}
         \right] = 1.
     \]
+\end{definition}
 
-    Given $\KEM$ and these four algorithms, we define the corresponding \emph{keygen/encapsulate-then-encode} obfuscated KEM $\OKEM = (\kgen', \encaps', \decaps', \decode)$ with the following new algorithms:
-
-    \input{algorithms/prelim-okem-construction}
-
-    And we define the \emph{first-keygen success probability} as the probability that \cref{ln:kgen-encode} was executed only once in a given execution of $\kgen'$, i.e.
-    \[
-        \epsilon^\firstkeygensuccess_\OKEM :=
-        \Pr\left[
-            \encode(\pk) \neq \bot
-        ~\middle|
-            (\pk, \sk) \getsr \kgen()
-        \right] = 1.
-    \]
-    
-    and analogously the \emph{first-encaps success probability} for \cref{ln:encaps-encode} in a given execution of $\encaps'$:
+\begin{definition}[First-encaps Success Probability]
+\label{def:first-encaps-success}
+    Let $\KEM = (\kgen, \encaps, \decaps)$ be a KEM.
+    Let $\encodectxt, \decodectxt$ be a KEM encoding for $\KEM$.
+    We then define the \emph{first-encaps success probability} as the probability that \cref{ln:encaps-encode} was executed only once in a given execution of $\encaps'$, i.e.
     \[
         \epsilon^\firstencapssuccess_\OKEM :=
         \Pr\left[
             \encodectxt(c) \neq \bot
         ~\middle|
             \begin{array}{c}
-                (\pkobf, \sk) \getsr \kgen'(), \\
-                \pk \gets \decode(\pkobf), \\
+                (\pk, \sk) \getsr \kgen(), \\
                 c \getsr \encaps(\pk)
             \end{array}
-        \right] = 1.
+        \right]
     \]
 \end{definition}
 
-For an OKEM constructed in this way, it was shown \cite[Theorems 2.12 and 2.13]{CCS:GunSteVei24} that the keygen-encapsulate-then-encode construction of an OKEM from a KEM and appropriate encoding/decoding functions preserves the central security notions:
+\begin{definition}[Encapsulate-then-Encode Transformation]
+\label{def:encaps-then-encode}
+    Let $\KEM = (\kgen, \encaps, \decaps)$ be a KEM.
+    Let $\encodectxt, \decodectxt$ be a KEM encoding for $\KEM$.
+    We then define the corresponding \emph{encapsulate-then-encode} obfuscated KEM $\ete[\KEM, \encodectxt, \decodectxt] = (\KEM.\kgen, \encaps', \decaps')$ with the following new algorithms:
 
-\begin{theorem}\label{thm:keygen-encap-then-encode-security}
+    \input{algorithms/prelim-okem-construction}
+\end{definition}
 
-    Let $\OKEM$ be a keygen/encapsulate-then-encode obfuscated KEM based on a regular KEM $\KEM$ as per \cref{def:keygen-encap-then-encode}.
+Note that in this construction, the first-encaps success probability from \cref{def:first-encaps-success} is precisely the probability that \cref{ln:encaps-encode} was executed only once in a given execution of $\encaps'$.
+
+For an OKEM constructed according to \cref{def:encaps-then-encode} using appropriate encoding/decoding functions, it was shown in \cite[Theorems 2.12 and 2.13]{CCS:GunSteVei24} that the central security notions are preserved:
+
+\begin{theorem}\label{thm:encaps-then-encode-security}
+    Let $\OKEM$ be a encapsulate-then-encode obfuscated KEM based on a regular KEM $\KEM$ as per \cref{def:encaps-then-encode}.
     For any adversary $\adv$ against the $\indcca$ security of $\OKEM$, there exists an algorithm $\bdv$ such that
     \[
         \advantage{\indcca}{\OKEM}[(\adv)]
         \leq
-        1/\epsilon^\firstkeygensuccess_\OKEM
-        \cdot 1/\epsilon^\firstencapssuccess_\OKEM
+        1/\epsilon^\firstencapssuccess_\OKEM
         \cdot \advantage{\indcca}{\KEM}[(\bdv)]
     \]
 
@@ -258,16 +207,17 @@ For an OKEM constructed in this way, it was shown \cite[Theorems 2.12 and 2.13]{
     \begin{align*}
         \advantage{\sprcca}{\OKEM}[(\adv)]
         \leq\ 
-        & 1/\epsilon^\firstkeygensuccess_\OKEM 
-        \cdot 1/\epsilon^\firstencapssuccess_\OKEM
+        & 1/\epsilon^\firstencapssuccess_\OKEM
         \cdot \advantage{\sprcca}{\KEM, \mathcal S_\mathsf{unif}}[(\bdv)] \\
         &+ \advantage{\ctxtunif}{\OKEM}[(\cdv)]
     \end{align*}
     
-    where $\mathcal S_\mathsf{unif}$ is a ``uniform-encapsulation'' simulator for KEM.
+    where $\mathcal S_\mathsf{unif}$ is a ``uniform-encapsulation'' simulator for KEM, i.e. a simulator that outputs uniformly random ciphertexts from the appropriate output space.
 \end{theorem}
 
-Finally, the public key and ciphertext uniformity may be analyzed directly on the output distributions of the $\encode$ and $\encodectxt$ algorithms and the latter may assume that public key encoding was successful.
+Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directly on the output distribution of the $\encodectxt$ algorithm.
+
+TODO: continue from here
 
 \subsection{Obfuscated Key Exchange}
 
