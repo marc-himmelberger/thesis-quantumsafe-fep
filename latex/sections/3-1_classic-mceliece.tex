@@ -26,8 +26,12 @@ We define the same assumptions about computational hardness as in \cite[Definiti
     \item \textbf{modified Decisional Syndrome Decoding assumption:} It is computationally hard to distinguish ciphertexts generated using uniformly random generator matrices from uniformly random $(n-k)$-bit vectors.
 \end{itemize}
 
-For both games $\mathsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of an adversary $\adv$ against these games as follows:
-\[ \advantage{\mathsf{goal}}{}[(\adv)] := 2 \cdot \left| \Pr\left[\mathsf{goal}(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| \leq \epsilon \]
+For both games $\mathsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of an adversary $\adv$ against these games as
+\[
+    \advantage{\mathsf{goal}}{}[(\adv)]
+    := 2 \cdot \left| \Pr\left[\mathsf{goal}(\adv) \Rightarrow 1\right] - \frac{1}{2} \right|
+    \leq \epsilon.
+\]
 
 \begin{figure}
     \input{algorithms/classic-mceliece-assumptions}
@@ -65,11 +69,11 @@ Given the $\prkey$ assumption, public keys are computationally hard to distingui
     Over $\mathbb F_2$, the scaling of rows is not needed and swapping of rows can be accomplished via a sequence of 3 row additions. Any Gauss-Jordan reduction to systematic form can thus be expressed as merely a sequence of row additions.
     The systematic form of $\hat H$ over $\mathbb F_2$, just like reduced row echelon forms over any field, is also unique. Thus it suffices to consider an arbitrary sequence of row additions transforming $\hat H$ to systematic form.
 
-    Note in particular, that during such a sequence of row additions, the rank of $\hat H$ is preserved. It is thus impossible for the sequence to ever add any row onto itself, i.e. all row additions are between distinct rows. Any such row addition would lower the rank by 1 and no row addition may increase the rank of a matrix.
+    Note in particular, that during such a sequence of row additions, the row rank of $\hat H$ must be preserved, as the systematic form has full row rank. It is thus impossible for the sequence to ever add any row onto itself, i.e. all row additions must be between distinct rows. Any addition of a row onto itself would lower the rank by 1 and, trivially, no row addition can increase the rank of a matrix.
     
-    Due to the number of rows, a reduction is possible in $(mt)^2$ row additions: The diagonal can be filled with ones using at most $mt$ additions. After another $(mt)^2-mt$ additions at the latest, all other entries in the leftmost $mt$ columns are zeroes. To determine one such order of row additions which bring $\hat H$ into systematic form, it suffices to consider only the leftmost $mt$ columns.
+    Due to the number of rows, a reduction is possible in at most $(mt)^2$ row additions: The diagonal can be filled with ones using at most $mt$ additions. After another $(mt)^2-mt$ additions at the latest, all other entries in the leftmost $mt$ columns are zeroes. To determine one such order of row additions which bring $\hat H$ into systematic form, it suffices to consider only the leftmost $mt$ columns.
     
-    Let $M_0$ denote the rightmost columns of $\hat H$, which form (by definition) a $mt \times k$ matrix of uniformly random i.i.d. entries from $\mathbb F_2$, in particular, independent from the leftmost columns of $\hat H$.
+    Let $M_0$ denote the rightmost columns of $\hat H$, which form a $mt \times k$ matrix of (by definition) uniformly random i.i.d. entries from $\mathbb F_2$, in particular, independent from the leftmost columns of $\hat H$.
     
     As the addition of any one row of uniformly random bits onto any other row of independent uniformly random bits produces a row of uniformly random i.i.d. bits, the resulting matrix after one row addition, say $M_1$, is statistically indistinguishable from $M_0$.
     
@@ -99,14 +103,15 @@ The notions of public key and ciphertext uniformity are discussed in \cref{def:p
     Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\mathsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\mathsf{cl} = n-k$.
     
     For any adversary $\adv$ against the public key uniformity of $\mathsf{CM}$, there exists an adversary $\bdv$ against the $\prkey$ assumption, such that
-    \[ \advantage{\pkunif}{\mathsf{CM}}[(\adv)] \leq \advantage{\prkey}{}[(\bdv)] \]
+    \[
+        \advantage{\pkunif}{\mathsf{CM}}[(\adv)]
+        \leq \advantage{\prkey}{}[(\bdv)].
+    \]
 \end{lemma}
 \begin{proof}
-    The reduction $\bdv$ takes in a public key matrix $T_b$ and forwards its corresponding bitstring to $\adv$. Let $b$ be the output of $\adv$, then $\bdv$ returns the bit $1-b$.
+    The reduction $\bdv$ takes in a public key matrix $T_b$ and forwards its corresponding bitstring to $\adv$. Let $b$ be the output of $\adv$, then $\bdv$ also returns the bit $b$.
 
-    This perfectly simulates the $\pkunif$ game towards $\adv$ because the output of $\textsf{RandGen}()$ is statistically indistinguishable from $\textsf{RandGen}'()$ as shown in \cref{lem:classic-mceliece-randgen-prime}. The output of $\textsf{RandGen}'()$ corresponds to uniformly random bitstrings as required in $\pkunif$.
-
-    The output bit needs to be flipped as $b=0$ corresponds to the real key generation in the game $\prkey$ but $b=1$ is used to denote the same in the $\pkunif$ game.
+    This perfectly simulates the $\pkunif$ game towards $\adv$ because the output of $\textsf{RandGen}()$ is statistically indistinguishable from $\textsf{RandGen}'()$ as shown in \cref{lem:classic-mceliece-randgen-prime}. The output of $\textsf{RandGen}'()$ corresponds to uniformly random bitstrings as required to simulate $\pkunif$.
 \end{proof}
 
 \begin{lemma}[Ciphertext uniformity of Classic McEliece]
@@ -114,29 +119,75 @@ The notions of public key and ciphertext uniformity are discussed in \cref{def:p
     Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\mathsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\mathsf{cl} = n-k$.
     
     For any adversary $\adv$ against the ciphertext uniformity of $\mathsf{CM}$, there exist adversaries $\bdv, \cdv$ against the $\prkey$ and $\mdsd$ assumptions respectively, such that
-    \[ \advantage{\ctxtunif}{\mathsf{CM}}[(\adv)] \leq 2 \cdot \left( \advantage{\prkey}{}[(\bdv)] + \advantage{\mdsd}{}[(\cdv)] \right) \]
+    \[
+        \advantage{\ctxtunif}{\mathsf{CM}}[(\adv)]
+        \leq 2 \cdot \left(
+            \advantage{\prkey}{}[(\bdv)] + \advantage{\mdsd}{}[(\cdv)]
+        \right).
+    \]
 \end{lemma}
 \begin{proof}
     We proceed via a series of two game hops, and consider the following three games:
     \begin{itemize}
         \item Let $G_0$ denote the $\ctxtunif$ game as in \cref{def:ctxt-uniformity}
         \item Let $G_1$ denote the same game as $G_0$ but with the change that $\pk$ is generated using $\textsf{RandGen}()$
-        \item Let $G_2$ denote the same game as $G_1$ but with the change that $c_1 \gets \bin^\mathsf{cl}$
+        \item Let $G_2$ denote the same game as $G_1$ but with the change that $\hat c_0 \getsr \bin^\mathsf{cl}$, i.e. both ciphertexts are uniformly random bitstrings
     \end{itemize}
 
-    As $G_0$ denotes the original $\ctxtunif$ game, we have:
-    \[ 2 \cdot \left| \Pr\left[G_0(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| = \advantage{\ctxtunif}{\mathsf{CM}}[(\adv)] \]
+    As $G_0$ denotes the original $\ctxtunif$ game, we have
+    \[
+        2 \cdot \left|
+            \Pr\left[G_0(\adv) \Rightarrow 1\right] - \frac{1}{2}
+        \right|
+        = \advantage{\ctxtunif}{\mathsf{CM}}[(\adv)].
+    \]
 
-    To bound the difference in advantage between $G_0$ and $G_1$, notice that we can define an adversary $\bdv$ against the $\prkey$ assumption which simulates the $\ctxtunif$ games towards $\adv$ using a new random bit for that simulation, and using the public key received from its $\prkey$ challenger. If $b=0$ in this $\prkey$ game, then $\adv$ is playing in $G_0$, if $b=1$, then $\adv$ is playing in $G_1$. Let $\bdv$ output its guess for the bit $b$ in the $\prkey$ game as $b=1$ if and only if $\adv$ wins the simulated game.
+    To bound the difference in advantage between $G_0$ and $G_1$, notice that we can define an adversary $\bdv$ against the $\prkey$ as follows:
+    Let $b$ denote the bit from the $\prkey$ game. Let $\bdv$ then be a reduction which samples a uniformly random bit $b'$ and (using the public key received from its $\prkey$ challenger) simulates the $\ctxtunif$ games towards $\adv$. Thus, if $b'=0$, then $\adv$ receives a ciuphertext output by $\encaps(\pk)$ and if $b'=1$, $\adv$ receives a randomly sampled bitstring.
+    Let $b''$ denote the subsequent output of $\adv$.
+    Finally, let $\bdv$ output its guess for the bit $b$ in the $\prkey$ game as $b=1$ if and only if $\adv$ wins the simulated game, i.e. $b'' = b'$.
 
-    Thus, any change in the probability of $\adv$ winning in $G_0$ vs $G_1$ directly corresponds to a change in the probability of $\bdv$ winning the $\prkey$ game. This means:
-    \[ \left| \Pr\left[G_0(\adv) \Rightarrow 1\right] - \Pr\left[G_1(\adv) \Rightarrow 1\right] \right| \leq \advantage{\prkey}{}[(\bdv)] \]
+    Therefore, if $b=0$ in the $\prkey$ game, then $\adv$ is playing in $G_0$, if $b=1$, then $\adv$ is playing in $G_1$.
+    And any change in the probability of $\adv$ winning in $G_0$ vs $G_1$ directly corresponds to a change in the probability of $\bdv$ winning the $\prkey$ game. 
 
-    The analogous argument applies to the switch from $G_1$ to $G_2$: we can define an adversary $\cdv$ against the $\mdsd$ assumption which simulates the (modified) $\ctxtunif$ games towards $\adv$. If $b=0$ in the $\mdsd$ game, then $\adv$ is playing in $G_1$, if $b=1$, then $\adv$ is playing in $G_2$ (note that we translate in the obvious way between vectors of bits and bitstrings of the appropriate length). Thus:
-    \[ \left| \Pr\left[G_1(\adv) \Rightarrow 1\right] - \Pr\left[G_2(\adv) \Rightarrow 1\right] \right| \leq \advantage{\mdsd}{}[(\cdv)] \]
+    We can conclude that
+    \begin{align*}
+        \left|
+            \Pr\left[G_0(\adv) \Rightarrow 1 \right] - \Pr\left[G_1(\adv) \Rightarrow 1 \right]
+        \right|
+        &= 
+        \left|
+            \Pr\left[b''=b' \mid b=0 \right] - \Pr\left[b''=b' \mid b=1 \right]
+        \right| \\
+        &= \advantage{\prkey}{}[(\bdv)],
+    \end{align*}
+    where the first equality follows from the fact that $\bdv$ perfectly simulates the two games and $b$ determines which game $\adv$ plays, and the second equality is standard advantage rewriting.
 
-    Finally, because both $c_0$ and $c_1$ are uniformly random bitstrings in game $G_2$,
-    \[ \left| \Pr\left[G_2(\adv) \Rightarrow 1\right] - \frac{1}{2} \right| = 0 \]
+    The analogous argument applies to the switch from $G_1$ to $G_2$: Let $b$ denote the bit from the $\mdsd$ game. We define an adversary $\cdv$ against the $\mdsd$ assumption which receives a public key from $\textsf{RandGen}()$ and a real-or-random ciphertext $u$. Let $\cdv$ then sample a new uniformly random bit $b'$ and forward to $\adv$ the received public key along with $u$, if $b'=0$, or along with a new bitstring, sampled uniformly at random, if $b'=1$.
+    Let $\cdv$ output a guess that $b=1$ if and only if $\adv$ ouputs $b'$.
+    
+    Then, $\cdv$ perfectly simulates simulates one of two variants of the $\ctxtunif$ game towards $\adv$: If $b=0$ in the $\mdsd$ game, then $\adv$ is playing in $G_1$, if $b=1$, then $\adv$ is playing in $G_2$ (note that we translate in the obvious way between vectors of bits and bitstrings of the appropriate length). Thus,
+    \[
+        \left|
+            \Pr\left[G_1(\adv) \Rightarrow 1 \right] - \Pr\left[G_2(\adv) \Rightarrow 1 \right]
+        \right|
+        = \advantage{\mdsd}{}[(\cdv)].
+    \]
 
-    Combining the above inequalities using the triangle inequality yields the required bound.
+    And finally, because both $\hat c_0$ and $\hat c_1$ are independent and uniformly random bitstrings in game $G_2$,
+    \[
+        \left|
+            \Pr\left[G_2(\adv) \Rightarrow 1\right] - \frac{1}{2}
+        \right|
+        = 0.
+    \]
+
+    Combining the above inequalities using the triangle inequality yields
+    \[
+        \left|
+            \Pr\left[G_0(\adv) \Rightarrow 1 \right] - \frac{1}{2}
+        \right|
+        \leq \advantage{\prkey}{}[(\bdv)] + \advantage{\mdsd}{}[(\cdv)] + 0,
+    \]
+    which directly implies the required bound after a multiplication by two on both sides.
 \end{proof}

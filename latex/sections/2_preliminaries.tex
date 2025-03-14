@@ -126,7 +126,7 @@ In addition to the above properties, an obfuscated KEM should fulfill stronger r
             \end{array}
         \right]
         - \frac{1}{2}
-        \right|
+        \right|.
     \]
     
     For an unbounded adversary~$\adv$, we call the advantage~$\advantage{\ctxtunif}{\OKEM}[(\adv)] $ \emph{statistical}.
@@ -177,7 +177,7 @@ To construct an OKEM, a regular KEM can be augmented with encoding functions lik
                 (\pk, \sk) \getsr \kgen(), \\
                 c \getsr \encaps(\pk)
             \end{array}
-        \right]
+        \right].
     \]
 \end{definition}
 
@@ -202,17 +202,17 @@ For an OKEM constructed according to \cref{def:encaps-then-encode} using appropr
         \advantage{\indcca}{\OKEM}[(\adv)]
         \leq
         1/\epsilon^\firstencapssuccess_\OKEM
-        \cdot \advantage{\indcca}{\KEM}[(\bdv)]
+        \cdot \advantage{\indcca}{\KEM}[(\bdv)].
     \]
 
     Further, for any adversary $\adv$ against the $\sprcca$ security of $\OKEM$, there exist algorithms $\bdv$, $\cdv$ such that
-    \begin{align*}
+    \[
         \advantage{\sprcca}{\OKEM}[(\adv)]
         \leq\ 
-        & 1/\epsilon^\firstencapssuccess_\OKEM
-        \cdot \advantage{\sprcca}{\KEM, \mathcal S_\mathsf{unif}}[(\bdv)] \\
-        &+ \advantage{\ctxtunif}{\OKEM}[(\cdv)]
-    \end{align*}
+        1/\epsilon^\firstencapssuccess_\OKEM
+        \cdot \advantage{\sprcca}{\KEM, \mathcal S_\mathsf{unif}}[(\bdv)]
+        + \advantage{\ctxtunif}{\OKEM}[(\cdv)].
+    \]
     
     where $\mathcal S_\mathcal{C}$ is a simulator that outputs uniformly random ciphertexts from the ciphertext space of $\KEM$.
 \end{theorem}
@@ -247,5 +247,5 @@ When we construct OKEMs in later sections, we will show that they achieve the re
         \item $\ctxtunif$ security of $\OKEM$
     \end{itemize}
 
-    and, in addition, the $\sObfKE$ security also depends on the $\prf$ and $\swapprf$ security of two pseudorandom functions, both of which we instantiate with HMAC, whose required security for fixed-length keys is proven in \cite{C:BBGS23}.
+    and, in addition, the $\sObfKE$ security also depends on the $\prf$ and $\swapprf$ security of two functions, both of which we instantiate with HMAC, whose required security for fixed-length keys is proven in \cite{C:BBGS23}.
 \end{theorem}
