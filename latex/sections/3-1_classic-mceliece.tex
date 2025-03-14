@@ -3,7 +3,7 @@
 Throughout this \cref{sec:obfuscating-classic-mceliece}, we use the positive integer variables $m,n,t,k$ where $n < 2^m$ and $k=mt-n$ as defined in \cite{NISTPQC-R4:ClassicMcEliece22}. We work with matrices and vectors over $\mathbb F_2$ when examining the KEM and use bitstrings in the defintion and analysis of OKEMs. As the dimensions of the matrices and vectors are fixed for a given parameter set, we associate the matrices and vectors with their canonical encoding as bitstrings of appropriate length.
 
 \paragraph{Original generation and distribution}
-Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in round 4 of the NIST PQC standardization. We only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
+Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in Round 4 of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}. Although NIST announced in early 2025 that Classic McEliece would not be standardized as part of this process \cite{nist-ir-8545}. We only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
 
 In Classic McEliece, public keys are the $k$ rightmost columns of a $mt \times n$ generator matrix in systematic form ($k = n - mt$). Ciphertexts are the $mt$ data bits corresponding to $n$-bit codewords with Hamming weight exactly $t$.
 
@@ -22,8 +22,8 @@ For encapsulation, rejection-sampling is used to generate a uniformly random vec
 
 We define the same assumptions about computational hardness as in \cite[Definition~K.1]{EC:Xagawa22}. These have appeared in more general forms in previous literature studying the Niederreiter and McEliece cryptosystems, e.g. \cite{AC:CouFinSen01,EC:SaiXagYam18}. \cref{fig:classic-mceliece-assumptions} shows corresponding game-based definitions.
 \begin{itemize}
-    \item \textbf{modified PR-Key assumption:} It is computationally hard to distinguish real public keys from the rightmost columns of the systematic forms of uniformly random generator matrices (conditioned on the systematic form existing).
-    \item \textbf{modified Decisional Syndrome Decoding assumption:} It is computationally hard to distinguish ciphertexts generated using uniformly random generator matrices from uniformly random $(n-k)$-bit vectors.
+    \item \textbf{PR-Key assumption:} It is computationally hard to distinguish real public keys from the rightmost columns of the systematic forms of uniformly random generator matrices (conditioned on the systematic form existing).
+    \item \textbf{modified Decisional Syndrome Decoding ($\mdsd$) assumption:} It is computationally hard to distinguish ciphertexts generated using uniformly random generator matrices from uniformly random $(n-k)$-bit vectors.
 \end{itemize}
 
 For both games $\mathsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of an adversary $\adv$ against these games as
@@ -42,9 +42,10 @@ For both games $\mathsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of
     \label{fig:classic-mceliece-assumptions}
 \end{figure}
 
-\paragraph{Classic McEliece is already obfuscated}
+\paragraph{Classic McEliece has uniformly random public keys}
+Although we do not require uniformly random encodings of public keys for this thesis, we believe to have found an equivalent but simplified form of the $\prkey$ assumption, that we found worthy of inclusion.
 
-Given the $\prkey$ assumption, public keys are computationally hard to distinguish from outputs of $\textsf{RandGen}()$. We claim that $\textsf{RandGen}()$ can be simplified to a new algorithm $\textsf{RandGen}'()$, also shown in \cref{fig:classic-mceliece-assumptions}, with statistical indistinguishability between these two algorithms. Thus, we would show computational indistinguishability between McEliece public keys and outputs of $\textsf{RandGen}'()$.
+Given the $\prkey$ assumption, public keys are computationally hard to distinguish from outputs of $\textsf{RandGen}()$. We claim that $\textsf{RandGen}()$ can be simplified to a new algorithm $\textsf{RandGen}'()$, also shown in \cref{fig:classic-mceliece-assumptions}, with statistical indistinguishability between these two algorithms. This claim would imply computational indistinguishability between Classic McEliece's public keys and the outputs of $\textsf{RandGen}'()$.
 
 \begin{lemma}[Simplifying \textsf{RandGen}] \label{lem:classic-mceliece-randgen-prime}
     Let $\textsf{RandGen}(), \textsf{RandGen}'()$ be defined as in \cref{fig:classic-mceliece-assumptions}.
@@ -80,43 +81,16 @@ Given the $\prkey$ assumption, public keys are computationally hard to distingui
     Repeating this argument for a maximum of $(mt)^2$ times, we can conclude that $\hat T$ is statistically indistinguishable from a uniformly random $mt \times k$ matrix over $\mathbb F_2$ as in $\textsf{RandGen}'()$.
 \end{proof}
 
-Ciphertexts, in turn, are computationally indistinguishable from uniform random bit vectors following the $\prkey$ and $\mdsd$ assumptions. Implementers should note that padding public keys and ciphertexts to the byte boundary may require \emph{randomized} padding. This is only needed if the number of bits is not evenly divisible by 8, and occurs only for the parameter set 'mceliece6960119'.  All other parameter sets have $mt = 0 \mod 8$. Padding of these values with zero bits (as suggested in the specification) would break the public key and ciphertext uniformity.
+\paragraph{Classic McEliece is already obfuscated}
+We now return to our examination of ciphertext uniformity in Classic McEliece.
 
-\begin{theorem}[$\indcca$ and $\sprcca$ of Classic McEliece]
-    Classic McEliece, as specified in \cite{NISTPQC-R4:ClassicMcEliece22}, is an obfuscated KEM without requiring any special encoding of public keys or ciphertexts.
+Ciphertext uniformity follows directly from the $\prkey$ and $\mdsd$ assumptions, and we show this reduction, and thus computational indistinguishability from uniformly random bit vectors below. Additionally, implementers should note that padding public keys and ciphertexts to the byte boundary may require \emph{randomized} padding. This is only needed if the number of bits is not evenly divisible by 8, and occurs only for the parameter set ``mceliece6960119''.  All other parameter sets have $mt = 0 \mod 8$. Padding of these values with zero bits (as suggested in the Classic McEliece specification) would trivially break the desired ciphertext uniformity.
 
-    Classic McEliece, as an OKEM, achieves $\indcca$ and $\sprcca$ security according to \cref{def:kem-security}.
-\end{theorem}
-\begin{proof}
-    The $\indcca$ and $\sprcca$ security notions for OKEMs defined in \cref{def:kem-security} match the established notions for KEMs of the same names. These have been shown for Classic McEliece in previous work \cite{EC:Xagawa22}, \cite[security.pdf: Section 5]{NISTPQC-R4:ClassicMcEliece22}.
-
-    The $\prkey$ and $\mdsd$ assumptions are not needed here.
-\end{proof}
-
-\paragraph{Uniformity}
-
-We analyze the public key and ciphertext uniformity of Classic McEliece and reduce to the two assumptions made above. As no further encoding is done here, there is no discussion of success rate as for other KEMs.
-The notions of public key and ciphertext uniformity are discussed in \cref{def:pk-uniformity,def:ctxt-uniformity} respectively.
-
-\begin{lemma}[Public key uniformity of Classic McEliece]
-\label{lem:classic-mceliece-pk-unif}
-    Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\mathsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\mathsf{cl} = n-k$.
-    
-    For any adversary $\adv$ against the public key uniformity of $\mathsf{CM}$, there exists an adversary $\bdv$ against the $\prkey$ assumption, such that
-    \[
-        \advantage{\pkunif}{\mathsf{CM}}[(\adv)]
-        \leq \advantage{\prkey}{}[(\bdv)].
-    \]
-\end{lemma}
-\begin{proof}
-    The reduction $\bdv$ takes in a public key matrix $T_b$ and forwards its corresponding bitstring to $\adv$. Let $b$ be the output of $\adv$, then $\bdv$ also returns the bit $b$.
-
-    This perfectly simulates the $\pkunif$ game towards $\adv$ because the output of $\textsf{RandGen}()$ is statistically indistinguishable from $\textsf{RandGen}'()$ as shown in \cref{lem:classic-mceliece-randgen-prime}. The output of $\textsf{RandGen}'()$ corresponds to uniformly random bitstrings as required to simulate $\pkunif$.
-\end{proof}
+As we require no KEM encoding to achieve ciphertext uniformity, there is no need to discuss first-encaps success probability.
 
 \begin{lemma}[Ciphertext uniformity of Classic McEliece]
 \label{lem:classic-mceliece-ctxt-unif}
-    Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} and using obfuscated key length $\mathsf{ol} = mt \cdot k$ as well as obfuscated ciphertext length $\mathsf{cl} = n-k$.
+    Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} with obfuscated ciphertext length $\mathsf{cl} = n-k$.
     
     For any adversary $\adv$ against the ciphertext uniformity of $\mathsf{CM}$, there exist adversaries $\bdv, \cdv$ against the $\prkey$ and $\mdsd$ assumptions respectively, such that
     \[
@@ -191,3 +165,17 @@ The notions of public key and ciphertext uniformity are discussed in \cref{def:p
     \]
     which directly implies the required bound after a multiplication by two on both sides.
 \end{proof}
+
+\paragraph{Security of Classic McEliece}
+
+We have seen that Classic McEliece, as specified in \cite{NISTPQC-R4:ClassicMcEliece22}, is an obfuscated KEM without requiring any special encoding of ciphertexts. Additionally, Classic McEliece satisfies the required KEM security notions:
+
+\begin{theorem}[$\indcca$ and $\sprcca$ of Classic McEliece]
+    Classic McEliece, as a KEM, achieves $\indcca$ and $\sprcca$ security.
+    $\sprcca$ security holds with respect to the simulator $\simulunif$.
+\end{theorem}
+\begin{proof}
+    The $\indcca$ and $\sprcca$ security notions for KEMs defined in \cref{def:kem-security} match the established notions for KEMs of the same names. These have been shown for Classic McEliece in previous work \cite{EC:Xagawa22}, and \cite[security.pdf: Section 5]{NISTPQC-R4:ClassicMcEliece22}.
+\end{proof}
+
+However, because we need 
