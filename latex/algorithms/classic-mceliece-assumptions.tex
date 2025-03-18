@@ -3,8 +3,8 @@
 \begin{pcvstack}[space=0.05em]
 \procedure[linenumbering]{$\textbf{GAME } \textsf{PR-Key}(\adv)$}{
     b \getsr \bin \\
-    (T_0,\sk) \getsr \kgen() \\
-    T_1 \getsr \textsf{RandGen}() \\
+    (T_1,\sk) \getsr \kgen() \\
+    T_0 \getsr \textsf{RandGen}() \\
     b' \getsr \adv(T_b) \\
     \pcreturn \llbracket b' = b \rrbracket
 }
@@ -13,8 +13,8 @@
     b \getsr \bin \\
     \hat T \getsr \textsf{RandGen}() \\
     e \getsr \textsf{FixedWeight}() \\
-    u_0 \gets \left[ I_{mt} \mid \hat T \right] \cdot e \\
-    u_1 \getsr U(\mathbb F_2^{mt}) \\
+    u_1 \gets \left[ I_{mt} \mid \hat T \right] \cdot e \\
+    u_0 \getsr U(\mathbb F_2^{mt}) \\
     b' \getsr \adv(\hat T, u_b) \\
     \pcreturn \llbracket b' = b \rrbracket
 }

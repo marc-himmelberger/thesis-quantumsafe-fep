@@ -128,9 +128,9 @@ In addition to the above properties, an obfuscated KEM should fulfill stronger r
             \adv(\pk, \hat c_b) = b
         ~\middle|
             \begin{array}{c}
-                b \getsr \bin, \hat c_1 \getsr \bin^{\obfctxtlen}, \\
+                b \getsr \bin, \hat c_0 \getsr \bin^{\obfctxtlen}, \\
                 (\pk,\sk) \getsr \OKEM.\kgen(),\\
-                (\hat c_0, K_0) \getsr \OKEM.\encaps(\pk)
+                (\hat c_1, K_1) \getsr \OKEM.\encaps(\pk)
             \end{array}
         \right]
         - \frac{1}{2}
@@ -251,36 +251,63 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
     \]
 \end{lemma}
 \begin{proof}
-    The rewriting of $\epsilon^\firstencapssuccess_{\KEM,\encodectxt}$ follows trivially from the fact that $\encodectxt$ is deterministic.
+    The rewriting of $\epsilon^\firstencapssuccess_{\KEM,\encodectxt}$ follows trivially from the fact that $\encodectxt$ is deterministic and that the simulator $\simulunif$ samples ciphertexts uniformly.
 
-    Let $\bdv$ be a reduction which, given $\pk, c, K$, computes $\hat c \gets \encodectxt(c)$, aborts if $\hat c = \bot$, and if not, outputs $\adv(\pk, \hat c)$.
-    Assuming $\bdv$ does not abort, then this perfectly simulates the $\ctxtunif$ game towards $\adv$ because in the event that $b=1$, the uniformly random ciphertext sent to $\bdv$ will map to a uniformly random bitstring that is sent to $\adv$ (simulating the case that $b=1$ in the $\ctxtunif$ game), and if $b=0$, the same procedure as during $\encaps$ is executed (simulating the case that $b=0$ in the $\ctxtunif$ game).
-    
-    Let $b$ be the bit from the $\sprcca$ game, $b'$ the output of $\bdv$, and $Z$ the event that $\bdv$ aborts. Then we have
+    To prove the reduction, we define three games, each representing a slightly modified version of the $\ctxtunif$ game:
+    \begin{itemize}
+        \item Let $G_0$ be the $b=0$ version of $\ctxtunif$, i.e. an adversary such as $\adv$ would receive $\pk, \hat c$ where 
+        $(\pk,\sk) \getsr \OKEM.\kgen(), \hat c \getsr \bin^\obfctxtlen$.
+        \item Let $G_1$ be the $b=1$ version of $\ctxtunif$, i.e. an adversary would receive $\pk, \hat c$ where\\
+        $(\pk,\sk) \getsr \OKEM.\kgen(), (\hat c, K) \getsr \OKEM.\encaps(\pk)$.
+        \item Let $G'$ be a mix of $G_0$ and $G_1$ employing the simulator instead of $\KEM.\encaps$, i.e. an adversary such as $\adv$ would receive $\pk, \hat c$ where\\
+        $(\pk,\sk) \getsr \OKEM.\kgen(), \pcdo\ c \getsr \simulunif, \hat c \gets \encodectxt(c)\ \pcwhile \hat c = \bot$.
+    \end{itemize}
+
+    We analyze the probability of the $\ctxtunif$ adversary $\adv$ outputting the bit $1$ in each of these games, which we denote by $p_0, p_1$ and $p'$ respectively.
+    We now have
     \[
-        \advantage{\sprcca}{\KEM, \simulunif}[(\bdv)]
-        =
-        2 \cdot \left|
-            \Pr\left[b'=b \land \neg Z \right] - \frac{1}{2}
-        \right|
-        =
-        \left|
-            \Pr\left[b'=1 \land \neg Z \mid b=1 \right] - \Pr\left[b'=1 \lor Z \mid b=0 \right]
-        \right|
-        =
-        \left|
-              \Pr\left[b'=1 \mid b=1 \land \neg Z \right]\Pr\left[\neg Z \mid b=1 \right]
-            - \Pr\left[b'=1 \lor Z \mid b=0 \right]
-        \right|
+        \advantage{\ctxtunif}{\OKEM}[(\adv)] = \left| p_0 - p_1 \right|
+    \]
 
-        \advantage{\ctxtunif}{\OKEM}[(\adv)]
-        =
+    Because $\simulunif$ samples a uniformly random encodeable ciphertext $c \in \mathcal{C}'$ (independent of $\pk$), $\encodectxt$ will output a uniformly random bitstring. This makes $G'$ and $G_0$ statistically indistinguishable, i.e.
+    \[ p' = p_0. \]
+
+    To bound the difference between $p_1$ and $p'$, we reduce to the $\sprcca$ security of $\KEM$:
+    Let $b$ be the bit from the $\sprcca$ game. Let $\bdv$ be a reduction which, given $\pk, c, K$, computes $\hat c \gets \encodectxt(c)$, aborts if $\hat c = \bot$, and if not, outputs $\adv(\pk, \hat c)$.
+    Assuming $\bdv$ does not abort, this perfectly simulates either game $G_1$ (if $b=1$) or game $G'$ (if $b=0$) towards $\adv$.
+    
+    Let $\mathsf{ABRT}$ denote the event that $\bdv$ aborts, and let $b'$ be the output of $\adv$. Using advantage rewriting we can then express the advantage of $\bdv$ in the $\sprcca$ game as follows:
+    \begin{align*}
+        \advantage{\sprcca}{\KEM, \simulunif}[(\bdv)]
+        &=
+        2 \cdot \left|
+            \Pr\left[b'=b \land \neg \mathsf{ABRT} \right] - \frac{1}{2}
+        \right| \\
+        &=
         \left|
-            \Pr\left[b'=1 \mid b=1 \right] - \Pr\left[b'=1 \mid b=0 \right]
+            \Pr\left[b'=1 \land \neg \mathsf{ABRT} \mid b=1 \right] - \Pr\left[b'=1 \land \neg \mathsf{ABRT} \mid b=0 \right]
+        \right| \\
+        &=
+        \Pr\left[\neg \mathsf{ABRT}\right] \cdot
+        \left|
+            \Pr\left[b'=1 \mid b=1 \land \neg \mathsf{ABRT} \right]
+        \right.\\   
+        &\qquad\qquad\qquad\  - \left.
+            \Pr\left[b'=1 \mid b=0 \land \neg \mathsf{ABRT} \right]
+        \right| \\
+        &=
+        \Pr\left[\neg \mathsf{ABRT}\right] \cdot
+        \left|
+            p_1 - p'
         \right|
+    \end{align*}
+
+    We conclude that
+    \[
+    \left| p_1 - p' \right| = 1/\epsilon^\firstencapssuccess_{\KEM,\encodectxt} \cdot \advantage{\sprcca}{\KEM, \simulunif}[(\bdv)].
     \]
     
-    There is no loss due to encoding failures, and unlike \cref{thm:encaps-then-encode-security} in general, the $\indcca$ security of $\KEM$ is not required.
+    Combining these results with the triangle inequality, we obtain the claimed bound.
 \end{proof}
 
 \subsection{Obfuscated Key Exchange}
@@ -334,7 +361,7 @@ Throughout this thesis, we follow the recommendations outlined in \cite[Section~
 
 \begin{corollary}
 \label{cor:drivel-security-encaps-encode}
-    It follows from \cref{thm:s-obfuscated-keyex-security,thm:encaps-then-encode-security} that, for an OKEM constructed as $\OKEM = \ete[\KEM', \encodectxt, \decodectxt]$, the OKEM properties required for $\drivel$ further reduce to the following:
+    It follows from \cref{thm:drivel-security,thm:encaps-then-encode-security} that, for an OKEM constructed as $\OKEM = \ete[\KEM', \encodectxt, \decodectxt]$, the OKEM properties required for $\drivel$ further reduce to the following:
     \begin{itemize}
         \item Low chance of public key collisions across all bridges, as measured by $\pkcoll{\KEM'}$
         \item KEM Correctness $\delta_\KEM'$

@@ -90,7 +90,7 @@ As we require no KEM encoding to achieve ciphertext uniformity, there is no need
 
 \begin{lemma}[Ciphertext uniformity of Classic McEliece]
 \label{lem:classic-mceliece-ctxt-unif}
-    Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} with obfuscated ciphertext length $\mathsf{cl} = n-k$.
+    Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} with obfuscated ciphertext length $\obfctxtlen = n-k$.
     
     For any adversary $\adv$ against the ciphertext uniformity of $\mathsf{CM}$, there exist adversaries $\bdv, \cdv$ against the $\prkey$ and $\mdsd$ assumptions respectively, such that
     \[
@@ -101,11 +101,16 @@ As we require no KEM encoding to achieve ciphertext uniformity, there is no need
     \]
 \end{lemma}
 \begin{proof}
+    This follows directly from \cref{lem:ctxt-unif-for-bijections} because we can define $\encodectxt: \mathcal{C} \to \bin^\obfctxtlen$ to simply map vectors to their canonical representation as bitstrings. This encoding function is deterministic, bijective and never fails, i.e. $\epsilon^\firstencapssuccess_{\mathsf{CM},\encodectxt} = 1$.
+
+    A reduction from $\sprcca$ with $\simulunif$ to the $\prkey$ and $\mdsd$ assumptions is given in \cite[Theorem~K.1]{EC:Xagawa22}.
+
+
     We proceed via a series of two game hops, and consider the following three games:
     \begin{itemize}
         \item Let $G_0$ denote the $\ctxtunif$ game as in \cref{def:ctxt-uniformity}
         \item Let $G_1$ denote the same game as $G_0$ but with the change that $\pk$ is generated using $\textsf{RandGen}()$
-        \item Let $G_2$ denote the same game as $G_1$ but with the change that $\hat c_0 \getsr \bin^\mathsf{cl}$, i.e. both ciphertexts are uniformly random bitstrings
+        \item Let $G_2$ denote the same game as $G_1$ but with the change that $\hat c_0 \getsr \bin^\obfctxtlen$, i.e. both ciphertexts are uniformly random bitstrings
     \end{itemize}
 
     As $G_0$ denotes the original $\ctxtunif$ game, we have
