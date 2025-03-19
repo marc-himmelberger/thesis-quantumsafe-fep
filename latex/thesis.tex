@@ -6,7 +6,7 @@
 
 
 %% We use the memoir class because it offers a many easy to use features.
-\documentclass[11pt,a4paper,titlepage]{memoir}
+\documentclass[11pt,a4paper]{memoir}
 
 %% CUSTOM Marc: Decrease Margins
 \setlrmarginsandblock{3cm}{3cm}{*}
@@ -82,6 +82,10 @@
 \usepackage[linkcolor=black,colorlinks=true,citecolor=black,filecolor=black]{hyperref}
 
 % ######## CUSTOM package load before cleverref ########
+\RequirePackage{silence}
+\WarningFilter{latexfont}{Font shape `}
+\WarningFilter{latexfont}{Size substitutions}
+
 \usepackage{stmaryrd}
 \usepackage[advantage,adversary,sets,ff,primitives,events,keys,notions]{cryptocode}
 \usepackage{siunitx}
@@ -154,6 +158,7 @@
 \providecommand{\encodectxt}{\pcalgostyle{EncodeCtxt}}
 \providecommand{\decodectxt}{\pcalgostyle{DecodeCtxt}}
 \providecommand{\sprcca}{\pcnotionstyle{SPR\pcmathhyphen{}CCA}}
+\providecommand{\sprcpa}{\pcnotionstyle{SPR\pcmathhyphen{}CPA}}
 
 \providecommand{\sObfKE}{\pcnotionstyle{sObfKE}}
 \providecommand{\swapprf}{\pcnotionstyle{swap\pcmathhyphen{}PRF}}

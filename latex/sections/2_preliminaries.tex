@@ -53,12 +53,14 @@ This captures the goal that ciphertexts must "look randomly chosen" among a set 
 This is expressed through the use of a simulator $\mathcal S$ and $\sprcca$ is always achieved with respect to such a simulator.
 This notion is first introduced \cite{EC:Xagawa22} in this form by Xagawa, and it is satisfied by many KEMs that are being considered for use in quantum-safe communication \cite{EC:Xagawa22}. We use $\sprcca$ security as a stepping stone to argue about the distribution of ciphertext bits.
 
-\begin{definition}[$\indcca$ and $\sprcca$ security] \label{def:kem-security}
+\begin{definition}[KEM security] \label{def:kem-security}
     We define two security notions $\indcca$ and $\sprcca$ using the games shown in \cref{fig:kem-security} and we define the respective advantages of an adversary~$\adv$ against the $\mathsf{goal} \in \{\indcca, \sprcca\}$ security of a KEM~$\KEM$ as
     \[
         \advantage{\mathsf{goal}}{\KEM(, \mathcal{S})}[(\adv)] := 2 \cdot \left| \Pr \left[ G^{\mathsf{goal}}_{\KEM(, \mathcal{S})}(\adv) \Rightarrow 1 \right] - \frac{1}{2} \right|,
     \]
     where the simulator $\mathcal{S}$ is only included for $\sprcca$ security.
+
+    We also define the weaker versions of $\indcpa,\sprcpa$ security as the same games but with the restriction that adversaries may not make any queries to their decapsulation oracle $\decapsoracle$.
 
     We also define two common choices for simulators used in the $\sprcca$ game:
     \begin{itemize}
@@ -204,7 +206,7 @@ For an OKEM constructed according to \cref{def:encaps-then-encode} using appropr
 
 \begin{theorem}[Encapsulate-then-Encode Security]
 \label{thm:encaps-then-encode-security}
-    Let $\OKEM$ be a encapsulate-then-encode obfuscated KEM based on a regular KEM $\KEM$ and a corresponding encoding $\encodectxt,\decodectxt$ as per \cref{def:encaps-then-encode}.
+    Let $\OKEM$ be an encapsulate-then-encode obfuscated KEM based on a regular KEM $\KEM$ and a corresponding encoding $\encodectxt,\decodectxt$ as per \cref{def:encaps-then-encode}.
     For any adversary $\adv$ against the $\indcca$ security of $\OKEM$, there exists an algorithm $\bdv$ such that
     \[
         \advantage{\indcca}{\OKEM}[(\adv)]
@@ -230,7 +232,7 @@ For an OKEM constructed according to \cref{def:encaps-then-encode} using appropr
 
 Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directly on the output distribution of the $\encodectxt$ algorithm. The following case is a generalization of the proof of \cite[Lemma~2.15]{CCS:GunSteVei24}, and we will use it to simplify later proofs.
 
-\begin{lemma}
+\begin{lemma}[Ciphertext Uniformity from SPR-CPA]
 \label{lem:ctxt-unif-for-bijections}
     Let $\OKEM$ be a encapsulate-then-encode obfuscated KEM based on a regular KEM $\KEM$ and a corresponding \emph{deterministic} encoding $\encodectxt,\decodectxt$ as per \cref{def:encaps-then-encode}.
 
@@ -243,11 +245,11 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
         \epsilon^\firstencapssuccess_{\KEM,\encodectxt} = \frac{|\mathbf{C}'|}{|\mathbf{C}|}.
     \]
 
-    Additionally, for any adversary against the ciphertext uniformity of $\OKEM$, there exists an adversary $\bdv$ against the $\sprcca$ security of $\KEM$ with respect to the simulator $\simulunif$ such that
+    Additionally, for any adversary against the ciphertext uniformity of $\OKEM$, there exists an adversary $\bdv$ against the $\sprcpa$ security of $\KEM$ with respect to the simulator $\simulunif$ such that
     \[
         \advantage{\ctxtunif}{\OKEM}[(\adv)]
         \leq 1/\epsilon^\firstencapssuccess_{\KEM,\encodectxt}
-        \cdot \advantage{\sprcca}{\KEM, \simulunif}[(\bdv)]
+        \cdot \advantage{\sprcpa}{\KEM, \simulunif}[(\bdv)]
     \]
 \end{lemma}
 \begin{proof}
@@ -272,13 +274,13 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
     Because $\simulunif$ samples a uniformly random encodeable ciphertext $c \in \mathcal{C}'$ (independent of $\pk$), $\encodectxt$ will output a uniformly random bitstring. This makes $G'$ and $G_0$ statistically indistinguishable, i.e.
     \[ p' = p_0. \]
 
-    To bound the difference between $p_1$ and $p'$, we reduce to the $\sprcca$ security of $\KEM$:
-    Let $b$ be the bit from the $\sprcca$ game. Let $\bdv$ be a reduction which, given $\pk, c, K$, computes $\hat c \gets \encodectxt(c)$, aborts if $\hat c = \bot$, and if not, outputs $\adv(\pk, \hat c)$.
+    To bound the difference between $p_1$ and $p'$, we reduce to the $\sprcpa$ security of $\KEM$:
+    Let $b$ be the bit from the $\sprcpa$ game. Let $\bdv$ be a reduction which, given $\pk, c, K$, computes $\hat c \gets \encodectxt(c)$, aborts if $\hat c = \bot$, and if not, outputs $\adv(\pk, \hat c)$.
     Assuming $\bdv$ does not abort, this perfectly simulates either game $G_1$ (if $b=1$) or game $G'$ (if $b=0$) towards $\adv$.
     
-    Let $\mathsf{ABRT}$ denote the event that $\bdv$ aborts, and let $b'$ be the output of $\adv$. Using advantage rewriting we can then express the advantage of $\bdv$ in the $\sprcca$ game as follows:
+    Let $\mathsf{ABRT}$ denote the event that $\bdv$ aborts, and let $b'$ be the output of $\adv$. Using advantage rewriting we can then express the advantage of $\bdv$ in the $\sprcpa$ game as follows:
     \begin{align*}
-        \advantage{\sprcca}{\KEM, \simulunif}[(\bdv)]
+        \advantage{\sprcpa}{\KEM, \simulunif}[(\bdv)]
         &=
         2 \cdot \left|
             \Pr\left[b'=b \land \neg \mathsf{ABRT} \right] - \frac{1}{2}
@@ -304,7 +306,7 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
 
     We conclude that
     \[
-    \left| p_1 - p' \right| = 1/\epsilon^\firstencapssuccess_{\KEM,\encodectxt} \cdot \advantage{\sprcca}{\KEM, \simulunif}[(\bdv)].
+    \left| p_1 - p' \right| = 1/\epsilon^\firstencapssuccess_{\KEM,\encodectxt} \cdot \advantage{\sprcpa}{\KEM, \simulunif}[(\bdv)].
     \]
     
     Combining these results with the triangle inequality, we obtain the claimed bound.
@@ -318,7 +320,7 @@ However, $\pqobfs$ gives even stronger guarantees when node public key and node 
 
 Additionally, \cite{CCS:GunSteVei24} provides a formal security model and proofs for both $\obfsfour$ and $\pqobfs$ demonstrating the various guarantees.
 
-To define the security of their obfuscated key exchange protocol, \cite{CCS:GunSteVei24} introduces the security notion of strong Obfuscated Key Exchange security ($\sObfKE$), capturing key indistinguishability, explicit server authentication, and strong obfuscation.
+To define the security of their obfuscated key exchange protocol, \cite{CCS:GunSteVei24} introduces the security notion of strong Obfuscated Key Exchange security ($\sObfKE$), capturing key indistinguishability, explicit server authentication, strong obfuscation and probing resistance. Strong obfuscation describes the protocol's ability (with respect to a simulator) to be unidentifiable by an adversary, so long as the server's private key is not revealed. Probing resistance, in turn, means that servers should not respond to messages from adversaries unless the server's public key was revealed \cite[Section~4.1]{CCS:GunSteVei24}.
 
 In their follow-up work, \cite{EPRINT:GRSV25} constructed the $\drivel$ protocol for the same general purpose. Compared to $\pqobfs$, $\drivel$ only has one conceptual difference, in that it allows the client to use a KEM instead of an OKEM.
 This is accomplished by the derivation of symetric encryption keys from the semi-secret server information combined with a shared secret generatede from an OKEM encapsulation against the server's public key (which was distributed out-of-band).
@@ -359,7 +361,7 @@ When we construct OKEMs in later sections, we will show that they achieve the re
 
 Throughout this thesis, we follow the recommendations outlined in \cite[Section~4.2]{EPRINT:GRSV25} and instantiate $F_1$ as \textsf{HDKF-Expand} with \textsf{SHA-256} \cite{C:Krawczyk10,rfc5869}, $F_2$ as \textsf{HMAC-SHA-256} \cite{C:BelCanKra96,KraBelCan97}, and the symmetric encryption scheme as XOR with appropriate key lengths.
 
-\begin{corollary}
+\begin{corollary}[Encapsulate-then-Encode Obfuscated Key Exchange Security]
 \label{cor:drivel-security-encaps-encode}
     It follows from \cref{thm:drivel-security,thm:encaps-then-encode-security} that, for an OKEM constructed as $\OKEM = \ete[\KEM', \encodectxt, \decodectxt]$, the OKEM properties required for $\drivel$ further reduce to the following:
     \begin{itemize}
