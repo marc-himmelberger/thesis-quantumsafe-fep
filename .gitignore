@@ -1,3 +1,5 @@
 docker/.bridgeinfo
 latex/.git
 .DS_Store
+liboqs
+liboqs-go

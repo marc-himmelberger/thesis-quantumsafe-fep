@@ -2,6 +2,43 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "go: clean",
+			"type": "shell",
+			"command": "go clean -cache",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/lyrebird",
+				"env": {
+					"CGO_ENABLED": "0"
+				}
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"group": "build",
+		},
+		{
+			"label": "static-oqs",
+			"type": "shell",
+			"command": "./static_oqs.sh",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"env": {
+					"CGO_ENABLED": "0"
+				}
+			},
+			"dependsOn": [
+				"go: clean"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"group": "build",
+		},
+		{
 			"label": "go: test lyrebird",
 			"type": "go",
 			"command": "test",
@@ -18,6 +55,9 @@
 					"CGO_ENABLED": "0"
 				}
 			},
+			"dependsOn": [
+				"static-oqs"
+			],
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated"
