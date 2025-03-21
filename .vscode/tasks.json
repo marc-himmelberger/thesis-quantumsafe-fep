@@ -9,7 +9,7 @@
 			"options": {
 				"cwd": "${workspaceFolder}/lyrebird",
 				"env": {
-					"CGO_ENABLED": "0"
+					"CGO_ENABLED": "1",
 				}
 			},
 			"presentation": {
@@ -26,7 +26,7 @@
 			"options": {
 				"cwd": "${workspaceFolder}",
 				"env": {
-					"CGO_ENABLED": "0"
+					"CGO_ENABLED": "1"
 				}
 			},
 			"dependsOn": [
@@ -52,7 +52,7 @@
 			"options": {
 				"cwd": "${workspaceFolder}/lyrebird",
 				"env": {
-					"CGO_ENABLED": "0"
+					"CGO_ENABLED": "1",
 				}
 			},
 			"dependsOn": [
@@ -78,12 +78,9 @@
 			"options": {
 				"cwd": "${workspaceFolder}/lyrebird",
 				"env": {
-					"CGO_ENABLED": "0"
+					"CGO_ENABLED": "1",
 				}
 			},
-			"dependsOn": [
-				"go: test lyrebird"
-			],
 			"presentation": {
 				"reveal": "always",
 				"panel": "dedicated"
