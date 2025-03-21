@@ -1,6 +1,11 @@
 # build lyrebird
 FROM golang AS builder
 
+RUN apt update && apt install -y astyle cmake gcc ninja-build python3-pytest \
+    python3-pytest-xdist unzip xsltproc doxygen graphviz python3-yaml valgrind pkg-config
+RUN apt clean
+RUN rm -rf /var/lib/apt/lists/*
+
 COPY ./lyrebird /lyrebird
 WORKDIR /lyrebird
 RUN make build

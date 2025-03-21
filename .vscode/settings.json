@@ -34,6 +34,10 @@
     },
     "todo-tree.tree.scanMode": "workspace only",
     "go.testEnvVars": {
-        "PKG_CONFIG_PATH": "$PKG_CONFIG_PATH:${workspaceFolder}/liboqs-go/.config-static",
+        "PKG_CONFIG_PATH": "$PKG_CONFIG_PATH:${workspaceFolder}/lyrebird/liboqs-go/.config-static",
     },
+    "git.ignoredRepositories": [
+        "${workspaceFolder}/lyrebird/liboqs",
+        "${workspaceFolder}/lyrebird/liboqs-go"
+    ],
 }

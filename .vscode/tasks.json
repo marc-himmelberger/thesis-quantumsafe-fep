@@ -2,32 +2,12 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "go: clean",
+			"label": "go: test lyrebird",
 			"type": "shell",
-			"command": "go clean -cache && rm -f lyrebird",
+			"command": "make test",
 			"problemMatcher": [],
 			"options": {
 				"cwd": "${workspaceFolder}/lyrebird",
-				"env": {
-					"CGO_ENABLED": "1",
-				}
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated"
-			},
-			"group": "build",
-		},
-		{
-			"label": "static-oqs",
-			"type": "shell",
-			"command": "./static_oqs.sh",
-			"problemMatcher": [],
-			"options": {
-				"cwd": "${workspaceFolder}",
-				"env": {
-					"CGO_ENABLED": "1"
-				}
 			},
 			"dependsOn": [
 				"go: clean"
@@ -39,54 +19,16 @@
 			"group": "build",
 		},
 		{
-			"label": "go: test lyrebird",
-			"type": "go",
-			"command": "test",
-			"args": [
-				"-ldflags=-X main.lyrebirdVersion=lyrebird-drivel-test",
-				"./..."
-			],
-			"problemMatcher": [
-				"$go"
-			],
-			"options": {
-				"cwd": "${workspaceFolder}/lyrebird",
-				"env": {
-					"CGO_ENABLED": "1",
-					"PKG_CONFIG_PATH": "$PKG_CONFIG_PATH:${workspaceFolder}/liboqs-go/.config-static"
-				}
-			},
-			"dependsOn": [
-				"go: clean",
-				"static-oqs"
-			],
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated"
-			},
-			"group": "build",
-		},
-		{
 			"label": "go: build lyrebird",
-			"type": "go",
-			"command": "build",
-			"args": [
-				"-ldflags=-X main.lyrebirdVersion=lyrebird-drivel-test",
-				"./cmd/lyrebird"
-			],
-			"problemMatcher": [
-				"$go"
-			],
+			"type": "shell",
+			"command": "make build",
+			"problemMatcher": [],
 			"dependsOn": [
 				"go: clean",
 				"go: test lyrebird"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}/lyrebird",
-				"env": {
-					"CGO_ENABLED": "1",
-					"PKG_CONFIG_PATH": "$PKG_CONFIG_PATH:${workspaceFolder}/liboqs-go/.config-static",
-				}
 			},
 			"presentation": {
 				"reveal": "always",
