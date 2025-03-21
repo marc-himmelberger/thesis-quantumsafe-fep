@@ -1,31 +1,42 @@
-#!/bin/sh
+#!/bin/bash
 
-echo "############"
-echo "# /test.sh #"
-echo "############"
+set -e
+
+log () {
+    echo $(date -u "+%Y/%m/%d %H:%M:%S") $1
+}
+
+log "############"
+log "# /test.sh #"
+log "############"
 
 # Check tor with version
 tor --version
 if [ "$?" = "0" ]; then
-    echo "[PASS] Tor present"
+    log "[PASS] Tor present"
 else
-    echo "[FAIL] Tor executable not present"
+    log "[FAIL] Tor executable not present"
 fi
 
-# Read Bridge Line
-cat /.bridgeinfo >> /etc/tor/torrc
+# Read Bridge Line, only add to torrc if not already present (otherwise prevents restarts)
+if ! grep -q "iat-mode" /etc/tor/torrc; then
+    cat /.bridgeinfo >> /etc/tor/torrc
+fi
 
 # Set control password
 torpass=$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)
 torhash=$(su tor-client -c "tor --hash-password \"$torpass\" 2>/dev/null")
-echo "HashedControlPassword $torhash\n" >> /etc/tor/torrc
+echo "HashedControlPassword $torhash" >> /etc/tor/torrc
+
+log "Current torrc:"
+cat /etc/tor/torrc
 
 # Start tor
 /etc/init.d/tor start 2>&1 > test_initd.log
 if [ "$?" = "0" ]; then
-    echo "[PASS] Tor service started"
+    log "[PASS] Tor service started"
 else
-    echo "[FAIL] Tor service failed to start"
+    log "[FAIL] Tor service failed to start"
 fi
 
 # Check that tor circuit is established
@@ -39,10 +50,10 @@ EOF
     echo "$nc_out" > "test_$1.log"
     grep "$2" "test_$1.log" > /dev/null
     if [ "$?" = "0" ]; then
-        echo "[PASS] Tor info about $1 looks good"
+        log "[PASS] Tor info about $1 looks good"
     else
-        echo "[FAIL] Tor info about $1 does not contain '$2':"
-        echo "$nc_out" | awk '{print "  " $0}'
+        log "[FAIL] Tor info about $1 does not contain '$2':"
+        log "$nc_out" | awk '{print "  " $0}'
     fi
 }
 
@@ -54,18 +65,18 @@ tor_getinfo "entry-guards" " up"
 # Check IP with and without Tor
 IPCHECKER_DOMAIN="4.myip.is"
 IPCHECKER_IP=$(dig +answer $IPCHECKER_DOMAIN +short)
-echo "  using $IPCHECKER_DOMAIN at $IPCHECKER_IP"
+log "  using $IPCHECKER_DOMAIN at $IPCHECKER_IP"
 regular_json=$(curl -sS -k https://$IPCHECKER_DOMAIN --resolve $IPCHECKER_DOMAIN:443:$IPCHECKER_IP)
-    echo "  Regular IP: $regular_json"
+    log "  Regular IP: $regular_json"
 regular_ip=$(echo $regular_json | jq -r '.ip')
 torify_json=$(torify curl -sS -k https://$IPCHECKER_DOMAIN --resolve $IPCHECKER_DOMAIN:443:$IPCHECKER_IP)
-    echo "  Torify IP:  $torify_json"
+    log "  Torify IP:  $torify_json"
 torify_ip=$(echo $torify_json | jq -r '.ip')
 
 if [ "$regular_ip" != "$torify_ip" ]; then
-    echo "[PASS] Received a new IP"
+    log "[PASS] Received a new IP"
 else
-    echo "[FAIL] IP did not change"
+    log "[FAIL] IP did not change"
 fi
 
 # TODO check on bridge logs or different websites, to see what did or didn't work

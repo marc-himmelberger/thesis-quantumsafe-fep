@@ -8,6 +8,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 COPY ./lyrebird /lyrebird
 WORKDIR /lyrebird
+RUN rm -rf liboqs liboqs-go
 RUN make build
 
 # Base docker image
