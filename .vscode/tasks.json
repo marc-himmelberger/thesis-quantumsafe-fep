@@ -4,7 +4,7 @@
 		{
 			"label": "go: clean",
 			"type": "shell",
-			"command": "go clean -cache",
+			"command": "go clean -cache && rm -f lyrebird",
 			"problemMatcher": [],
 			"options": {
 				"cwd": "${workspaceFolder}/lyrebird",
@@ -53,9 +53,11 @@
 				"cwd": "${workspaceFolder}/lyrebird",
 				"env": {
 					"CGO_ENABLED": "1",
+					"PKG_CONFIG_PATH": "$PKG_CONFIG_PATH:${workspaceFolder}/liboqs-go/.config-static"
 				}
 			},
 			"dependsOn": [
+				"go: clean",
 				"static-oqs"
 			],
 			"presentation": {
@@ -75,10 +77,15 @@
 			"problemMatcher": [
 				"$go"
 			],
+			"dependsOn": [
+				"go: clean",
+				"go: test lyrebird"
+			],
 			"options": {
 				"cwd": "${workspaceFolder}/lyrebird",
 				"env": {
 					"CGO_ENABLED": "1",
+					"PKG_CONFIG_PATH": "$PKG_CONFIG_PATH:${workspaceFolder}/liboqs-go/.config-static",
 				}
 			},
 			"presentation": {
