@@ -54,32 +54,15 @@
 			"group": "build",
 		},
 		{
-			"label": "Docker Compose: build",
+			"label": "Docker Compose: exec_test",
 			"type": "shell",
-			"command": "docker compose --profile \"*\" build",
+			"command": "./exec_test.sh",
 			"problemMatcher": [],
 			"options": {
 				"cwd": "${workspaceFolder}/docker"
 			},
 			"dependsOn": [
-				"Docker Compose: down"
-			],
-			"presentation": {
-				"reveal": "always",
-				"panel": "dedicated"
-			},
-			"group": "build",
-		},
-		{
-			"label": "Docker Compose: up (nodebug)",
-			"type": "shell",
-			"command": "docker compose --profile nodebug up --force-recreate --abort-on-container-exit",
-			"problemMatcher": [],
-			"options": {
-				"cwd": "${workspaceFolder}/docker"
-			},
-			"dependsOn": [
-				"Docker Compose: build"
+				"go: build lyrebird"
 			],
 			"presentation": {
 				"reveal": "always",
@@ -99,7 +82,7 @@
 				"cwd": "${workspaceFolder}/docker"
 			},
 			"dependsOn": [
-				"Docker Compose: build"
+				"go: build lyrebird"
 			],
 			"presentation": {
 				"reveal": "always",

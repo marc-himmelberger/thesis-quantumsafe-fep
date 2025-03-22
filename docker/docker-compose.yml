@@ -51,6 +51,7 @@ services:
     profiles:
       - nodebug
       - debugbridge
+    stop_grace_period: 1s # SIGKILL after 1s
 
   client-logs:
     image: busybox
@@ -59,6 +60,18 @@ services:
       - data-client:/var/lib/tor:ro
     profiles:
       - nodebug
+    stop_grace_period: 1s # SIGKILL after 1s
+
+  tcpdump:
+    image: kaazing/tcpdump
+    networks:
+      drivel_network:
+        ipv4_address: 172.16.113.99
+    volumes:
+      - ./tcpdump:/tcpdump
+    profiles:
+      - nodebug
+      - debugbridge
 
   bridge-debugbridge:
     build:
