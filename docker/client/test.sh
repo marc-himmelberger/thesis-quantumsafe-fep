@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 log () {
     echo $(date -u "+%Y/%m/%d %H:%M:%S") $1
 }
@@ -57,7 +55,9 @@ EOF
     fi
 }
 
+log "Waiting 10s"
 sleep 10
+log "Continuing..."
 tor_getinfo "circuit-status" " BUILT "
 tor_getinfo "orconn-status" " CONNECTED"
 tor_getinfo "entry-guards" " up"

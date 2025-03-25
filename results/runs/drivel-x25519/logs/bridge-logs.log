@@ -1,0 +1,11 @@
+2025/03/25 12:23:00 [NOTICE]:  - launched
+2025/03/25 12:23:00 [INFO]: lyrebird - initializing server transport listeners
+2025/03/25 12:23:00 [INFO]: drivel - registered listener: [scrubbed]:28483
+2025/03/25 12:23:00 [INFO]: lyrebird - accepting connections
+2025/03/25 12:23:10 [INFO]: drivel([scrubbed]:58306) - new connection
+2025/03/25 12:23:10 [INFO]: This server has received a first handshake message
+2025/03/25 12:23:10 [INFO]: creating serverHandshake
+2025/03/25 12:23:10 [INFO]: padding range [0, 0]
+2025/03/25 12:23:10 [INFO]: serverHandshake.parseClientHandshake(173 B)
+2025/03/25 12:23:10 [INFO]: This server has completed a handshake and has wrapped its connection
+2025/03/25 12:23:10 [INFO]: serverHandshake.generateHandshake()
