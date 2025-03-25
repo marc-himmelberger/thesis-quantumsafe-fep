@@ -64,9 +64,7 @@ services:
 
   tcpdump:
     image: kaazing/tcpdump
-    networks:
-      drivel_network:
-        ipv4_address: 172.16.113.99
+    network_mode: service:client
     volumes:
       - ./tcpdump:/tcpdump
     profiles:
