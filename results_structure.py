@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import re
 import shutil
 
 import pandas as pd
+from scapy.all import *
+from scapy.layers.inet import IP, TCP
 
 # This file parses Go benchmark logs and Docker logs into structured data for use in R.
 
 RESULTS_FOLDER = Path("results")
 OUT_FOLDER = RESULTS_FOLDER.joinpath("structured")
+
+BRIDGE_IP = "172.16.113.5"
+CLIENT_IP = "172.16.113.6"
 
 
 def structure_benchmarks(folder_bench: Path) -> pd.DataFrame:
@@ -67,6 +73,306 @@ def structure_benchmarks(folder_bench: Path) -> pd.DataFrame:
     return df
 
 
+def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    logs:
+        - did the tests work
+        - was the expected protocol used
+        - how much padding was used (should be fixed number)
+        - what sizes are the various components
+    tcpdump:
+        - should have only two non-loopback TCP streams (myip and bridge)
+        - exact timing of handshake messages
+        - sizes of first two messages in detail
+        - visualization of packet content of first two messages
+        - packets from both TCP streams (including time, directionality, purpose and size)
+    Output as one or more data frames
+    """
+
+    # One row per container (client, bridge) and per run
+    df_runs = pd.DataFrame(
+        columns=[
+            "protocol",  # obfs4 | drivel
+            "run config",  # x25519, etc (see benchmark.sh: ensure_drivel_*)
+            "container",  # client | bridge
+            "padding size",  # [B]
+            "KEM public key size",  # [B]
+            "KEM ciphertext size",  # [B]
+            "OKEM ciphertex size",  # [B]
+            "mark size",  # [B]
+            "mac size",  # [B]
+            "auth size",  # [B]
+        ]
+    )
+    # One row per relevant packet
+    df_traffic = pd.DataFrame(
+        columns=[
+            "type",  # handshake | data
+            "peer",  # bridge | 4.myip.is
+            "timestamp",
+            "direction",  # upstream | downstream
+            "payload size",  # [B]
+        ]
+    )
+
+    for run_folder in folder_runs.glob("*"):
+        assert len(run_folder.name.split("-")) in [1, 2], "Bad run config name"
+        run_protocol = run_folder.name.split("-")[0]
+        run_config = None
+        try:
+            run_config = run_folder.name.split("-")[1]
+        except IndexError:
+            pass
+
+        padding_client: int | None = None
+        padding_bridge: int | None = None
+        size_kem_pk: int | None = None
+        size_kem_ctxt: int | None = None
+        size_okem_ctxt: int | None = None
+        size_mark: int | None = None
+        size_mac: int | None = None
+        size_auth: int | None = None
+
+        # Handle Docker logs
+        for log_file in run_folder.joinpath("logs").glob("*.log"):
+            container_name = log_file.with_suffix("").name
+            with open(log_file, "r") as f:
+                logs = f.read()
+
+            if container_name.endswith("-logs"):
+                assert "completed a handshake and has wrapped its connection" in logs
+
+                m = re.search(r"padding range \[(\d+), (\d+)\]", logs)
+                assert m, "Unable to find padding range in logs"
+                assert len(m.groups()) == 2, "Unable to parse padding range in logs"
+
+                pad_min = m.group(1)
+                pad_max = m.group(2)
+                assert pad_min == pad_max, "Padding not fixed"
+                pad = int(pad_min)
+
+                container_type = container_name[:-5]
+                match container_type:
+                    case "client":
+                        padding_client = pad
+                    case "bridge":
+                        padding_bridge = pad
+                    case _:
+                        assert False, "Unknown container type"
+
+                if run_folder.name.startswith("drivel"):
+                    # Extract all sizes from logs, compare with saved or update
+                    _size_kem_pk = re.search(r"size_kem_pk (\d+)", logs)
+                    assert _size_kem_pk is not None and len(_size_kem_pk.groups()) == 1
+                    _size_kem_pk = int(_size_kem_pk.group(1))
+                    _size_kem_ctxt = re.search(r"size_kem_ctxt (\d+)", logs)
+                    assert (
+                        _size_kem_ctxt is not None and len(_size_kem_ctxt.groups()) == 1
+                    )
+                    _size_kem_ctxt = int(_size_kem_ctxt.group(1))
+                    _size_okem_ctxt = re.search(r"size_okem_ctxt (\d+)", logs)
+                    assert (
+                        _size_okem_ctxt is not None
+                        and len(_size_okem_ctxt.groups()) == 1
+                    )
+                    _size_okem_ctxt = int(_size_okem_ctxt.group(1))
+                    _size_mark = re.search(r"size_mac (\d+)", logs)
+                    assert _size_mark is not None and len(_size_mark.groups()) == 1
+                    _size_mark = int(_size_mark.group(1))
+                    _size_mac = re.search(r"size_mac (\d+)", logs)
+                    assert _size_mac is not None and len(_size_mac.groups()) == 1
+                    _size_mac = int(_size_mac.group(1))
+                    _size_auth = re.search(r"size_auth (\d+)", logs)
+                    assert _size_auth is not None and len(_size_auth.groups()) == 1
+                    _size_auth = int(_size_auth.group(1))
+
+                    if size_kem_pk is None:
+                        size_kem_pk = _size_kem_pk
+                    else:
+                        assert size_kem_pk == _size_kem_pk, "Inconsistent size_kem_pk"
+                    if size_kem_ctxt is None:
+                        size_kem_ctxt = _size_kem_ctxt
+                    else:
+                        assert (
+                            size_kem_ctxt == _size_kem_ctxt
+                        ), "Inconsistent size_kem_ctxt"
+                    if size_okem_ctxt is None:
+                        size_okem_ctxt = _size_okem_ctxt
+                    else:
+                        assert (
+                            size_okem_ctxt == _size_okem_ctxt
+                        ), "Inconsistent size_okem_ctxt"
+                    if size_mark is None:
+                        size_mark = _size_mark
+                    else:
+                        assert size_mark == _size_mark, "Inconsistent size_mark"
+                    if size_mac is None:
+                        size_mac = _size_mac
+                    else:
+                        assert size_mac == _size_mac, "Inconsistent size_mac"
+                    if size_auth is None:
+                        size_auth = _size_auth
+                    else:
+                        assert size_auth == _size_auth, "Inconsistent size_auth"
+                elif run_folder.name.startswith("obfs4"):
+                    # statically known, no need to parse logs
+                    size_kem_pk = 32  # X'
+                    size_kem_ctxt = 32  # Y'
+                    size_okem_ctxt = 0  # -
+                    size_mark = 16  # M_C, M_S
+                    size_mac = 16  # MAC_C, MAC_S
+                    size_auth = 32  # auth
+
+                entry_padding = pd.DataFrame.from_dict(
+                    {
+                        "protocol": [run_protocol],
+                        "run config": [run_config],
+                        "container": [container_type],
+                        "padding size": [pad],
+                        "KEM public key size": [size_kem_pk],
+                        "KEM ciphertext size": [size_kem_ctxt],
+                        "OKEM ciphertex size": [size_okem_ctxt],
+                        "mark size": [size_mark],
+                        "mac size": [size_mac],
+                        "auth size": [size_auth],
+                    }
+                )
+                df_runs = pd.concat([df_runs, entry_padding], ignore_index=True)
+            elif container_name == "client":
+                assert "[PASS] Received a new IP" in logs, "Client logs contain no pass"
+                assert "[FAIL]" not in logs, "Client logs contain failure"
+
+                regular_ip_str = re.search(r"Regular IP: (.*)", logs)
+                assert regular_ip_str is not None and len(regular_ip_str.groups()) == 1
+                torify_ip_str = re.search(r"Torify IP: (.*)", logs)
+                assert torify_ip_str is not None and len(torify_ip_str.groups()) == 1
+
+                regular_ip = json.loads(regular_ip_str.group(1))
+                torify_ip = json.loads(torify_ip_str.group(1))
+
+                assert "ip" in regular_ip, "Regular IP not found"
+                assert "ip" in torify_ip, "Torify IP not found"
+                assert regular_ip["ip"] != torify_ip["ip"], "IPs shouldn't match"
+            elif container_name == "bridge":
+                assert f"transport '{run_protocol}'" in logs, "Protocol not found"
+                assert "Bootstrapped 100% (done): Done" in logs, "Bridge setup not done"
+            elif container_name == "tcpdump":
+                num_packets = re.search(r"(\d+) packets captured", logs)
+                assert num_packets is not None and len(num_packets.groups()) == 1
+                num_packets = int(num_packets.group(1))
+                assert num_packets > 10
+            else:
+                assert False, "Unknown container name"
+
+        class ClientHs(Packet):
+            name = "ClientHs "
+            fields_desc: list = [
+                StrFixedLenField("KEM pk", default=None, length=size_kem_pk),
+                StrFixedLenField(
+                    "OKEM ciphertext", default=None, length=size_okem_ctxt
+                ),
+                StrFixedLenField("padding", default=None, length=padding_client),
+                StrFixedLenField("mark", default=None, length=size_mark),
+                StrFixedLenField("mac", default=None, length=size_mac),
+            ]
+
+        class BridgeHs(Packet):
+            name = "BridgeHs "
+            fields_desc: list = [
+                StrFixedLenField("KEM ctxt", default=None, length=size_kem_ctxt),
+                StrFixedLenField("auth value", default=None, length=size_auth),
+                StrFixedLenField("padding", default=None, length=padding_bridge),
+                StrFixedLenField("mark", default=None, length=size_mark),
+                StrFixedLenField("mac", default=None, length=size_mac),
+            ]
+
+        # Handle tcpdump
+        packets = rdpcap(str(run_folder.joinpath("tcpdump", "tcpdump.pcap")))
+
+        myip_ip = None
+        tcp_bridge: list[Packet] = []
+        tcp_myip: list[Packet] = []
+        for p in packets:
+            if p.haslayer(TCP):
+                ip: IP = p[IP]
+                if ip.src == "127.0.0.1":
+                    # exclude loopback packets
+                    continue
+                if ip.src == BRIDGE_IP or ip.dst == BRIDGE_IP:
+                    tcp_bridge.append(p)
+                else:
+                    if myip_ip is None:
+                        assert ip.src == CLIENT_IP, "Unexpected extra TCP traffic"
+                        myip_ip = ip.dst
+                    else:
+                        assert (ip.src == CLIENT_IP and ip.dst == myip_ip) or (
+                            ip.src == myip_ip and ip.dst == CLIENT_IP
+                        ), "Unexpected extra TCP traffic"
+                    tcp_myip.append(p)
+
+        tunnel: list[Packet] = tcp_bridge[7:]
+        handshake: list[Packet] = tcp_bridge[:7]
+        assert handshake[0][TCP].flags == "S", "1st not SYN"
+        assert handshake[1][TCP].flags == "SA", "2nd not SYN, ACK"
+        assert handshake[2][TCP].flags == "A", "3rd not ACK"
+        assert handshake[3][TCP].flags == "PA", "4th not PSH, ACK"
+        assert handshake[4][TCP].flags == "A", "5th not ACK"
+        assert handshake[5][TCP].flags == "PA", "6th not PSH, ACK"
+        assert handshake[6][TCP].flags == "A", "7th not ACK"
+
+        assert handshake[3].haslayer(Raw), "4th not raw data"
+        assert handshake[5].haslayer(Raw), "6th not raw data"
+
+        client_hs: Packet = handshake[3]
+        bridge_hs: Packet = handshake[5]
+        client_hs_data: bytes = client_hs[TCP].payload
+        bridge_hs_data: bytes = bridge_hs[TCP].payload
+        client_hs_pkt = ClientHs(client_hs_data)
+        bridge_hs_pkt = BridgeHs(bridge_hs_data)
+
+        client_hs_pkt.show()
+        bridge_hs_pkt.show()
+
+        entries_hs = pd.DataFrame.from_dict(
+            {
+                "type": ["handshake", "handshake"],
+                "peer": ["bridge", "bridge"],
+                "timestamp": [client_hs.time, bridge_hs.time],
+                "direction": ["upstream", "downstream"],
+                "payload size": [len(client_hs_data), len(bridge_hs_data)],
+            }
+        )
+        entries_tunnel = pd.DataFrame.from_dict(
+            {
+                "type": ["data"] * len(tunnel),
+                "peer": ["bridge"] * len(tunnel),
+                "timestamp": [p.time for p in tunnel],
+                "direction": [
+                    "upstream" if p[IP].src == CLIENT_IP else "downstream"
+                    for p in tunnel
+                ],
+                "payload size": [len(p[TCP].payload) for p in tunnel],
+            }
+        )
+        entries_myip = pd.DataFrame.from_dict(
+            {
+                "type": ["data"] * len(tcp_myip),
+                "peer": ["4.myip.is"] * len(tcp_myip),
+                "timestamp": [p.time for p in tcp_myip],
+                "direction": [
+                    "upstream" if p[IP].src == CLIENT_IP else "downstream"
+                    for p in tcp_myip
+                ],
+                "payload size": [len(p[TCP].payload) for p in tcp_myip],
+            }
+        )
+        df_traffic = pd.concat(
+            [df_traffic, entries_hs, entries_tunnel, entries_myip], ignore_index=True
+        )
+
+    return df_runs, df_traffic
+
+
 def main():
     assert RESULTS_FOLDER.exists()
     if OUT_FOLDER.exists():
@@ -75,6 +381,10 @@ def main():
 
     data_bench = structure_benchmarks(RESULTS_FOLDER.joinpath("benchmarks"))
     data_bench.to_csv(OUT_FOLDER.joinpath("benchmarks.csv"))
+
+    data_runs, data_traffic = structure_runs(RESULTS_FOLDER.joinpath("runs"))
+    data_runs.to_csv(OUT_FOLDER.joinpath("runs.csv"))
+    data_traffic.to_csv(OUT_FOLDER.joinpath("traffic.csv"))
 
 
 if __name__ == "__main__":
