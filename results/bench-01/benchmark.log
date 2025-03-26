@@ -1,0 +1,737 @@
+Found clean lyrebird/ working tree. Proceeding...
+2025/03/26 15:00:37 ###############
+2025/03/26 15:00:37 # START BENCH #
+2025/03/26 15:00:37 ###############
+Your branch is up to date with 'origin/obfs4-bench'.
+CGO_ENABLED=0 go build -ldflags="-X main.lyrebirdVersion=0.5.0-4-g47ae2d3" ./cmd/lyrebird
+=> Starting benchmark
+Your branch is up to date with 'origin/main'.
+go clean -cache
+rm -f lyrebird
+go build -ldflags="-X main.lyrebirdVersion=0.5.0-49-g2418781" ./cmd/lyrebird
+=> Starting benchmark
+2025/03/26 15:03:35 ###############
+2025/03/26 15:03:35 # END BENCH #
+2025/03/26 15:03:35 # START RUNS #
+2025/03/26 15:03:35 ###############
+### FULL RUN: obfs4,  ###
+Compose now can delegate build to bake for better performances
+Just set COMPOSE_BAKE=true
+#0 building with "default" instance using docker driver
+
+#1 [bridge-debugbridge internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.67kB done
+#1 DONE 0.0s
+
+#2 [bridge internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.68kB done
+#2 DONE 0.0s
+
+#3 [bridge-debugbridge auth] library/debian:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#4 [bridge auth] library/golang:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#5 [bridge internal] load metadata for docker.io/library/debian:stable-slim
+#5 DONE 1.2s
+
+#6 [bridge-debugbridge internal] load .dockerignore
+#6 transferring context: 2B done
+#6 DONE 0.0s
+
+#7 [bridge  1/20] FROM docker.io/library/debian:stable-slim@sha256:70b337e820bf51d399fa5bfa96a0066fbf22f3aa2c3307e2401b91e2207ac3c3
+#7 DONE 0.0s
+
+#8 [bridge internal] load metadata for docker.io/library/golang:latest
+#8 DONE 1.2s
+
+#9 [bridge internal] load .dockerignore
+#9 transferring context: 2B done
+#9 DONE 0.0s
+
+#10 [bridge builder 1/9] FROM docker.io/library/golang:latest@sha256:52ff1b35ff8de185bf9fd26c70077190cd0bed1e9f16a2d498ce907e5c421268
+#10 DONE 0.0s
+
+#11 [bridge internal] load build context
+#11 transferring context: 1.31MB 0.4s done
+#11 DONE 0.4s
+
+#12 [bridge-debugbridge internal] load build context
+#12 transferring context: 1.31MB 0.4s done
+#12 DONE 0.4s
+
+#13 [bridge-debugbridge  9/20] COPY ./lyrebird /lyrebird
+#13 CACHED
+
+#14 [bridge-debugbridge 11/20] RUN chmod 0755 /lyrebird
+#14 CACHED
+
+#15 [bridge-debugbridge  6/20] RUN wget https://go.dev/dl/go1.23.6.linux-amd64.tar.gz
+#15 CACHED
+
+#16 [bridge-debugbridge 10/20] RUN chown debian-tor:debian-tor /lyrebird
+#16 CACHED
+
+#17 [bridge-debugbridge 18/20] RUN chmod 0755 /usr/local/bin/start-tor.sh
+#17 CACHED
+
+#18 [bridge-debugbridge  2/20] RUN groupadd -g 101 debian-tor
+#18 CACHED
+
+#19 [bridge-debugbridge  4/20] RUN printf "deb http://deb.debian.org/debian stable-backports main\n" >> /etc/apt/sources.list.d/backports.list
+#19 CACHED
+
+#20 [bridge-debugbridge 19/20] COPY docker/bridge-debug/get-bridge-line /usr/local/bin
+#20 CACHED
+
+#21 [bridge-debugbridge  3/20] RUN useradd -m -u 101 -g 101 -s /bin/false -d /var/lib/tor debian-tor
+#21 CACHED
+
+#22 [bridge-debugbridge  8/20] RUN GOBIN=/usr/local/bin/ go install github.com/go-delve/delve/cmd/dlv@latest
+#22 CACHED
+
+#23 [bridge-debugbridge  7/20] RUN tar -C /usr/local -xzf go1.23.6.linux-amd64.tar.gz
+#23 CACHED
+
+#24 [bridge-debugbridge 15/20] RUN chown debian-tor:debian-tor /etc/tor
+#24 CACHED
+
+#25 [bridge-debugbridge 17/20] COPY docker/bridge-debug/start-tor.sh /usr/local/bin
+#25 CACHED
+
+#26 [bridge-debugbridge 13/20] RUN chmod +x /usr/bin/wrapper.sh
+#26 CACHED
+
+#27 [bridge-debugbridge 16/20] RUN chown debian-tor:debian-tor /var/log/tor
+#27 CACHED
+
+#28 [bridge-debugbridge 14/20] RUN rm /etc/tor/torrc
+#28 CACHED
+
+#29 [bridge-debugbridge 12/20] COPY docker/bridge-debug/wrapper.sh /usr/bin/wrapper.sh
+#29 CACHED
+
+#30 [bridge-debugbridge  5/20] RUN apt-get update && apt-get install -y -t stable-backports     ca-certificates     libcap2-bin     tor     tor-geoipdb     wget     --no-install-recommends &&     apt-get clean && rm -rf /var/lib/apt/lists/*
+#30 CACHED
+
+#31 [bridge-debugbridge 20/20] RUN chmod 0755 /usr/local/bin/get-bridge-line
+#31 CACHED
+
+#32 [bridge-debugbridge] exporting to image
+#32 exporting layers done
+#32 writing image sha256:2b8dba615fdfba6d2300b45af17a60e662384e6609832d28ebfe4004d100bfb5 done
+#32 naming to docker.io/library/docker-bridge-debugbridge
+#32 naming to docker.io/library/docker-bridge-debugbridge 0.0s done
+#32 DONE 0.0s
+
+#33 [bridge stage-1  7/16] COPY docker/bridge/wrapper.sh /usr/bin/wrapper.sh
+#33 CACHED
+
+#34 [bridge stage-1 15/16] COPY docker/bridge/get-bridge-line /usr/local/bin
+#34 CACHED
+
+#35 [bridge stage-1 14/16] RUN chmod 0755 /usr/local/bin/start-tor.sh
+#35 CACHED
+
+#36 [bridge builder 9/9] RUN make build
+#36 CACHED
+
+#37 [bridge stage-1 11/16] RUN chown debian-tor:debian-tor /etc/tor
+#37 CACHED
+
+#38 [bridge stage-1 12/16] RUN chown debian-tor:debian-tor /var/log/tor
+#38 CACHED
+
+#39 [bridge builder 2/9] RUN apt update && apt install -y astyle cmake gcc ninja-build python3-pytest     python3-pytest-xdist unzip xsltproc doxygen graphviz python3-yaml valgrind pkg-config
+#39 CACHED
+
+#40 [bridge builder 4/9] RUN rm -rf /var/lib/apt/lists/*
+#40 CACHED
+
+#41 [bridge stage-1 10/16] RUN rm /etc/tor/torrc
+#41 CACHED
+
+#42 [bridge builder 6/9] WORKDIR /lyrebird
+#42 CACHED
+
+#43 [bridge builder 8/9] RUN make liboqs-go
+#43 CACHED
+
+#44 [bridge stage-1  8/16] RUN chmod +x /usr/bin/wrapper.sh
+#44 CACHED
+
+#18 [bridge  2/20] RUN groupadd -g 101 debian-tor
+#18 CACHED
+
+#19 [bridge  4/20] RUN printf "deb http://deb.debian.org/debian stable-backports main\n" >> /etc/apt/sources.list.d/backports.list
+#19 CACHED
+
+#21 [bridge  3/20] RUN useradd -m -u 101 -g 101 -s /bin/false -d /var/lib/tor debian-tor
+#21 CACHED
+
+#45 [bridge stage-1 13/16] COPY docker/bridge/start-tor.sh /usr/local/bin
+#45 CACHED
+
+#46 [bridge builder 5/9] COPY ./lyrebird /lyrebird
+#46 CACHED
+
+#47 [bridge stage-1  6/16] COPY --from=builder /lyrebird/lyrebird /usr/bin/lyrebird
+#47 CACHED
+
+#48 [bridge builder 7/9] RUN rm -rf liboqs liboqs-go
+#48 CACHED
+
+#49 [bridge builder 3/9] RUN apt clean
+#49 CACHED
+
+#50 [bridge stage-1  9/16] RUN setcap cap_net_bind_service=+ep /usr/bin/lyrebird
+#50 CACHED
+
+#51 [bridge stage-1  5/16] RUN apt-get update && apt-get install -y -t stable-backports     ca-certificates     libcap2-bin     tor     tor-geoipdb     --no-install-recommends &&     apt-get clean && rm -rf /var/lib/apt/lists/*
+#51 CACHED
+
+#52 [bridge stage-1 16/16] RUN chmod 0755 /usr/local/bin/get-bridge-line
+#52 CACHED
+
+#53 [bridge] exporting to image
+#53 exporting layers done
+#53 writing image sha256:7a5e00e64b750f411c5d7753d3b2e0030d15d65c12f1aeac88c581d09296d0d2 done
+#53 naming to docker.io/library/docker-bridge 0.0s done
+#53 DONE 0.0s
+
+#54 [bridge-debugbridge] resolving provenance for metadata file
+#54 DONE 0.0s
+
+#55 [bridge] resolving provenance for metadata file
+#55 DONE 0.0s
+
+#56 [client internal] load build definition from Dockerfile
+#56 transferring dockerfile: 857B done
+#56 DONE 0.0s
+
+#57 [client internal] load metadata for docker.io/library/ubuntu:latest
+#57 DONE 0.0s
+
+#8 [client internal] load metadata for docker.io/library/golang:latest
+#8 DONE 1.5s
+
+#58 [client internal] load .dockerignore
+#58 transferring context: 2B done
+#58 DONE 0.0s
+
+#10 [client builder 1/9] FROM docker.io/library/golang:latest@sha256:52ff1b35ff8de185bf9fd26c70077190cd0bed1e9f16a2d498ce907e5c421268
+#10 DONE 0.0s
+
+#59 [client stage-1  1/10] FROM docker.io/library/ubuntu:latest
+#59 DONE 0.0s
+
+#60 [client internal] load build context
+#60 transferring context: 1.10MB 0.5s done
+#60 DONE 0.5s
+
+#61 [client stage-1  3/10] RUN apt update && apt install -y jq curl netcat-openbsd dnsutils
+#61 CACHED
+
+#39 [client builder 2/9] RUN apt update && apt install -y astyle cmake gcc ninja-build python3-pytest     python3-pytest-xdist unzip xsltproc doxygen graphviz python3-yaml valgrind pkg-config
+#39 CACHED
+
+#62 [client builder 9/9] RUN make build
+#62 CACHED
+
+#63 [client stage-1  9/10] COPY docker/client/test.sh /test.sh
+#63 CACHED
+
+#64 [client stage-1  7/10] RUN useradd -ms /bin/bash tor-client
+#64 CACHED
+
+#65 [client builder 5/9] COPY ./lyrebird /lyrebird
+#65 CACHED
+
+#66 [client builder 7/9] RUN rm -rf liboqs liboqs-go
+#66 CACHED
+
+#67 [client stage-1  5/10] RUN rm -rf /var/lib/apt/lists/*
+#67 CACHED
+
+#68 [client stage-1  8/10] COPY docker/client/torrc /etc/tor/torrc
+#68 CACHED
+
+#69 [client stage-1  6/10] COPY --from=builder /lyrebird/lyrebird /usr/bin/lyrebird
+#69 CACHED
+
+#70 [client builder 6/9] WORKDIR /lyrebird
+#70 CACHED
+
+#71 [client builder 8/9] RUN make liboqs-go
+#71 CACHED
+
+#72 [client stage-1  2/10] RUN apt update && apt install -y tor
+#72 CACHED
+
+#49 [client builder 3/9] RUN apt clean
+#49 CACHED
+
+#40 [client builder 4/9] RUN rm -rf /var/lib/apt/lists/*
+#40 CACHED
+
+#73 [client stage-1  4/10] RUN apt clean
+#73 CACHED
+
+#74 [client stage-1 10/10] RUN chmod +x /test.sh
+#74 CACHED
+
+#75 [client] exporting to image
+#75 exporting layers done
+#75 writing image sha256:8b25d562ea5b60f4b966218ac3876ee6a603e1c98c5da0f3c101f7734eb2e210 done
+#75 naming to docker.io/library/docker-client done
+#75 DONE 0.0s
+
+#76 [client] resolving provenance for metadata file
+#76 DONE 0.0s
+Attaching to bridge-1, bridge-logs-1, client-1, client-logs-1, tcpdump-1
+bridge-1       | Using NICKNAME=DrivelBridgeDev, OR_PORT=27797, PT_PORT=28483, and EMAIL=himarc@ethz.ch.
+bridge-1       | Starting tor.
+bridge-1       | Mar 26 15:03:40.860 [notice] Tor 0.4.8.14 running on Linux with Libevent 2.1.12-stable, OpenSSL 3.0.15, Zlib 1.2.13, Liblzma 5.4.1, Libzstd 1.5.4 and Glibc 2.36 as libc.
+bridge-1       | Mar 26 15:03:40.860 [notice] Tor can't help you if you use it wrong! Learn how to be safe at https://support.torproject.org/faq/staying-anonymous/
+bridge-1       | Mar 26 15:03:40.860 [notice] Read configuration file "/etc/tor/torrc".
+bridge-1       | Mar 26 15:03:40.862 [notice] Based on detected system memory, MaxMemInQueues is set to 5886 MB. You can override this by setting MaxMemInQueues by hand.
+bridge-1       | Mar 26 15:03:40.863 [notice] Opening OR listener on 0.0.0.0:27797
+bridge-1       | Mar 26 15:03:40.863 [notice] Opened OR listener connection (ready) on 0.0.0.0:27797
+bridge-1       | Mar 26 15:03:40.863 [notice] Opening OR listener on [::]:27797
+bridge-1       | Mar 26 15:03:40.863 [notice] Opened OR listener connection (ready) on [::]:27797
+bridge-1       | Mar 26 15:03:40.863 [notice] Opening Extended OR listener on 127.0.0.1:0
+bridge-1       | Mar 26 15:03:40.863 [notice] Extended OR listener listening on port 33669.
+bridge-1       | Mar 26 15:03:40.863 [notice] Opened Extended OR listener connection (ready) on 127.0.0.1:33669
+bridge-1       | Mar 26 15:03:41.000 [notice] Parsing GEOIP IPv4 file /usr/share/tor/geoip.
+bridge-1       | Mar 26 15:03:41.000 [notice] Parsing GEOIP IPv6 file /usr/share/tor/geoip6.
+bridge-1       | Mar 26 15:03:41.000 [notice] Configured to measure statistics. Look for the *-stats files that will first be written to the data directory in 24 hours from now.
+bridge-1       | Mar 26 15:03:41.000 [notice] Your Tor server's identity key fingerprint is 'DrivelBridgeDev 80D130BA9400ACED55C79418ACBADA0837201FC4'
+bridge-1       | Mar 26 15:03:41.000 [notice] Your Tor bridge's hashed identity key fingerprint is 'DrivelBridgeDev EDC9E61CB626E9DA2BD004891D63D7B0137C7EBF'
+bridge-1       | Mar 26 15:03:41.000 [notice] Your Tor server's identity key ed25519 fingerprint is 'DrivelBridgeDev dklTbdgncAQlH/wNYXgSrkrqhgBKZCabh71iNRiN1hQ'
+bridge-1       | Mar 26 15:03:41.000 [notice] You can check the status of your bridge relay at https://bridges.torproject.org/status?id=EDC9E61CB626E9DA2BD004891D63D7B0137C7EBF
+bridge-1       | Mar 26 15:03:41.000 [notice] Bootstrapped 0% (starting): Starting
+bridge-logs-1  | 2025/03/26 15:03:41 [NOTICE]:  - launched
+bridge-logs-1  | 2025/03/26 15:03:41 [INFO]: lyrebird - initializing server transport listeners
+bridge-logs-1  | 2025/03/26 15:03:41 [INFO]: obfs4 - registered listener: [scrubbed]:28483
+bridge-logs-1  | 2025/03/26 15:03:41 [INFO]: lyrebird - accepting connections
+bridge-1       | Mar 26 15:03:42.000 [notice] Starting with guard context "default"
+bridge-1       | Mar 26 15:03:49.000 [notice] Registered server transport 'obfs4' at '[::]:28483'
+bridge-1       | Mar 26 15:03:50.000 [notice] Bootstrapped 5% (conn): Connecting to a relay
+bridge-1       | Mar 26 15:03:50.000 [notice] Unable to find IPv4 address for ORPort 27797. You might want to specify IPv6Only to it or set an explicit address or set Address.
+bridge-1       | Mar 26 15:03:50.000 [notice] Bootstrapped 10% (conn_done): Connected to a relay
+bridge-1       | Mar 26 15:03:50.000 [notice] Bootstrapped 14% (handshake): Handshaking with a relay
+bridge-1       | Mar 26 15:03:50.000 [notice] Bootstrapped 15% (handshake_done): Handshake with a relay done
+bridge-1       | Mar 26 15:03:50.000 [notice] Bootstrapped 75% (enough_dirinfo): Loaded enough directory info to build circuits
+bridge-1       | Mar 26 15:03:50.000 [notice] Bootstrapped 90% (ap_handshake_done): Handshake finished with a relay to build circuits
+bridge-1       | Mar 26 15:03:50.000 [notice] Bootstrapped 95% (circuit_create): Establishing a Tor circuit
+bridge-1       | Mar 26 15:03:50.000 [notice] Bootstrapped 100% (done): Done
+bridge-1       | Mar 26 15:03:51.000 [notice] External address seen and suggested by a directory authority: 31.10.128.188
+client-1       | 2025/03/26 15:03:51 ############
+client-1       | 2025/03/26 15:03:51 # /test.sh #
+client-1       | 2025/03/26 15:03:51 ############
+client-1       | Tor version 0.4.6.10.
+client-1       | Tor is running on Linux with Libevent 2.1.12-stable, OpenSSL 3.0.2, Zlib 1.2.11, Liblzma 5.2.5, Libzstd 1.4.8 and Glibc 2.35 as libc.
+client-1       | Tor compiled with GCC version 11.2.0
+client-1       | 2025/03/26 15:03:51 [PASS] Tor present
+client-1       | 2025/03/26 15:03:51 Current torrc:
+client-1       | # Enable Control Port for https://gitweb.torproject.org/torspec.git/tree/control-spec.txt
+client-1       | ControlPort 9051
+client-1       | 
+client-1       | # Using Bridges, obsf4
+client-1       | UseBridges 1
+client-1       | ClientTransportPlugin drivel exec /usr/bin/lyrebird --enableLogging --logLevel INFO
+client-1       | ClientTransportPlugin obfs4 exec /usr/bin/lyrebird --enableLogging --logLevel INFO
+client-1       | 
+client-1       | # Added by test.sh script: HashedControlPassword $torpass
+client-1       | # Added by test.sh script: Bridge info
+client-1       | Bridge obfs4 172.16.113.5:28483 80D130BA9400ACED55C79418ACBADA0837201FC4 cert=q4U9Rz63SaTGxsmk1Ppb5/VOM1D80Pw5zI8Go1jTiJ4bPWhLaLmHo+vMjO3Scr4daPQEAw iat-mode=0
+client-1       | HashedControlPassword 16:495D9F428B5968BC6024B8154B3A3B1AAB2C4EC7B0A63B17C0DBC49CE9
+client-1       | 2025/03/26 15:03:51 [PASS] Tor service started
+client-1       | 2025/03/26 15:03:51 Waiting 10s
+client-logs-1  | 2025/03/26 15:03:51 [NOTICE]:  - launched
+client-logs-1  | 2025/03/26 15:03:51 [INFO]: lyrebird - initializing client transport listeners
+client-logs-1  | 2025/03/26 15:03:51 [INFO]: obfs4 - registered listener: 127.0.0.1:39347
+client-logs-1  | 2025/03/26 15:03:51 [INFO]: lyrebird - accepting connections
+client-logs-1  | 2025/03/26 15:03:53 [INFO]: creating clientHandshake
+client-logs-1  | 2025/03/26 15:03:53 [INFO]: padding range [77, 77]
+client-logs-1  | 2025/03/26 15:03:53 [INFO]: clientHandshake.generateHandshake()
+client-logs-1  | 2025/03/26 15:03:53 [INFO]: clientHandshake.parseServerHandshake(141 B)
+bridge-logs-1  | 2025/03/26 15:03:53 [INFO]: obfs4([scrubbed]:46262) - new connection
+bridge-logs-1  | 2025/03/26 15:03:53 [INFO]: creating serverHandshake
+bridge-logs-1  | 2025/03/26 15:03:53 [INFO]: padding range [0, 0]
+bridge-logs-1  | 2025/03/26 15:03:53 [INFO]: serverHandshake.parseClientHandshake(141 B)
+bridge-logs-1  | 2025/03/26 15:03:53 [INFO]: serverHandshake.generateHandshake()
+client-1       | 2025/03/26 15:04:01 Continuing...
+client-1       | 2025/03/26 15:04:01 [PASS] Tor info about circuit-status looks good
+client-1       | 2025/03/26 15:04:01 [PASS] Tor info about orconn-status looks good
+client-1       | 2025/03/26 15:04:01 [PASS] Tor info about entry-guards looks good
+client-1       | 2025/03/26 15:04:01 using api.ipify.org at 104.26.13.205
+client-1       | 2025/03/26 15:04:01 Regular IP: {"ip":"31.10.128.188"}
+client-1       | 2025/03/26 15:04:02 Torify IP: {"ip":"192.42.116.214"}
+client-1       | 2025/03/26 15:04:02 [PASS] Received a new IP
+[Kclient-1 exited with code 0
+### FULL RUN: drivel, x25519 ###
+Compose now can delegate build to bake for better performances
+Just set COMPOSE_BAKE=true
+#0 building with "default" instance using docker driver
+
+#1 [bridge-debugbridge internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.67kB done
+#1 DONE 0.0s
+
+#2 [bridge internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.68kB done
+#2 DONE 0.0s
+
+#3 [bridge internal] load metadata for docker.io/library/debian:stable-slim
+#3 DONE 0.6s
+
+#4 [bridge-debugbridge internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [bridge internal] load metadata for docker.io/library/golang:latest
+#5 DONE 0.7s
+
+#6 [bridge  1/20] FROM docker.io/library/debian:stable-slim@sha256:70b337e820bf51d399fa5bfa96a0066fbf22f3aa2c3307e2401b91e2207ac3c3
+#6 DONE 0.0s
+
+#7 [bridge internal] load .dockerignore
+#7 transferring context: 2B done
+#7 DONE 0.0s
+
+#8 [bridge builder 1/9] FROM docker.io/library/golang:latest@sha256:52ff1b35ff8de185bf9fd26c70077190cd0bed1e9f16a2d498ce907e5c421268
+#8 DONE 0.0s
+
+#9 [bridge internal] load build context
+#9 ...
+
+#10 [bridge-debugbridge internal] load build context
+#10 transferring context: 1.15MB 0.4s done
+#10 DONE 0.4s
+
+#9 [bridge internal] load build context
+#9 transferring context: 1.15MB 0.4s done
+#9 DONE 0.4s
+
+#11 [bridge-debugbridge 16/20] RUN chown debian-tor:debian-tor /var/log/tor
+#11 CACHED
+
+#12 [bridge-debugbridge 17/20] COPY docker/bridge-debug/start-tor.sh /usr/local/bin
+#12 CACHED
+
+#13 [bridge-debugbridge  9/20] COPY ./lyrebird /lyrebird
+#13 CACHED
+
+#14 [bridge-debugbridge 15/20] RUN chown debian-tor:debian-tor /etc/tor
+#14 CACHED
+
+#15 [bridge-debugbridge  5/20] RUN apt-get update && apt-get install -y -t stable-backports     ca-certificates     libcap2-bin     tor     tor-geoipdb     wget     --no-install-recommends &&     apt-get clean && rm -rf /var/lib/apt/lists/*
+#15 CACHED
+
+#16 [bridge-debugbridge 18/20] RUN chmod 0755 /usr/local/bin/start-tor.sh
+#16 CACHED
+
+#17 [bridge-debugbridge 11/20] RUN chmod 0755 /lyrebird
+#17 CACHED
+
+#18 [bridge-debugbridge  7/20] RUN tar -C /usr/local -xzf go1.23.6.linux-amd64.tar.gz
+#18 CACHED
+
+#19 [bridge-debugbridge 14/20] RUN rm /etc/tor/torrc
+#19 CACHED
+
+#20 [bridge-debugbridge 13/20] RUN chmod +x /usr/bin/wrapper.sh
+#20 CACHED
+
+#21 [bridge-debugbridge 10/20] RUN chown debian-tor:debian-tor /lyrebird
+#21 CACHED
+
+#22 [bridge-debugbridge  8/20] RUN GOBIN=/usr/local/bin/ go install github.com/go-delve/delve/cmd/dlv@latest
+#22 CACHED
+
+#23 [bridge-debugbridge  6/20] RUN wget https://go.dev/dl/go1.23.6.linux-amd64.tar.gz
+#23 CACHED
+
+#24 [bridge-debugbridge 19/20] COPY docker/bridge-debug/get-bridge-line /usr/local/bin
+#24 CACHED
+
+#25 [bridge-debugbridge 12/20] COPY docker/bridge-debug/wrapper.sh /usr/bin/wrapper.sh
+#25 CACHED
+
+#26 [bridge-debugbridge 20/20] RUN chmod 0755 /usr/local/bin/get-bridge-line
+#26 CACHED
+
+#27 [bridge stage-1 12/16] RUN chown debian-tor:debian-tor /var/log/tor
+#27 CACHED
+
+#28 [bridge stage-1  7/16] COPY docker/bridge/wrapper.sh /usr/bin/wrapper.sh
+#28 CACHED
+
+#29 [bridge stage-1 13/16] COPY docker/bridge/start-tor.sh /usr/local/bin
+#29 CACHED
+
+#30 [bridge builder 8/9] RUN make liboqs-go
+#30 CACHED
+
+#31 [bridge stage-1 10/16] RUN rm /etc/tor/torrc
+#31 CACHED
+
+#32 [bridge builder 9/9] RUN make build
+#32 CACHED
+
+#33 [bridge  4/20] RUN printf "deb http://deb.debian.org/debian stable-backports main\n" >> /etc/apt/sources.list.d/backports.list
+#33 CACHED
+
+#34 [bridge  3/20] RUN useradd -m -u 101 -g 101 -s /bin/false -d /var/lib/tor debian-tor
+#34 CACHED
+
+#35 [bridge builder 5/9] COPY ./lyrebird /lyrebird
+#35 CACHED
+
+#36 [bridge stage-1 15/16] COPY docker/bridge/get-bridge-line /usr/local/bin
+#36 CACHED
+
+#37 [bridge stage-1  9/16] RUN setcap cap_net_bind_service=+ep /usr/bin/lyrebird
+#37 CACHED
+
+#38 [bridge stage-1  6/16] COPY --from=builder /lyrebird/lyrebird /usr/bin/lyrebird
+#38 CACHED
+
+#39 [bridge stage-1  5/16] RUN apt-get update && apt-get install -y -t stable-backports     ca-certificates     libcap2-bin     tor     tor-geoipdb     --no-install-recommends &&     apt-get clean && rm -rf /var/lib/apt/lists/*
+#39 CACHED
+
+#40 [bridge builder 7/9] RUN rm -rf liboqs liboqs-go
+#40 CACHED
+
+#41 [bridge stage-1  8/16] RUN chmod +x /usr/bin/wrapper.sh
+#41 CACHED
+
+#42 [bridge stage-1 11/16] RUN chown debian-tor:debian-tor /etc/tor
+#42 CACHED
+
+#43 [bridge  2/20] RUN groupadd -g 101 debian-tor
+#43 CACHED
+
+#44 [bridge builder 2/9] RUN apt update && apt install -y astyle cmake gcc ninja-build python3-pytest     python3-pytest-xdist unzip xsltproc doxygen graphviz python3-yaml valgrind pkg-config
+#44 CACHED
+
+#45 [bridge builder 3/9] RUN apt clean
+#45 CACHED
+
+#46 [bridge builder 4/9] RUN rm -rf /var/lib/apt/lists/*
+#46 CACHED
+
+#47 [bridge builder 6/9] WORKDIR /lyrebird
+#47 CACHED
+
+#48 [bridge stage-1 14/16] RUN chmod 0755 /usr/local/bin/start-tor.sh
+#48 CACHED
+
+#49 [bridge-debugbridge] exporting to image
+#49 exporting layers done
+#49 writing image sha256:14efe25805b516392262a37d8008c0a5568dd03471bf3309e771b4f7f689a8ee done
+#49 naming to docker.io/library/docker-bridge-debugbridge done
+#49 DONE 0.0s
+
+#50 [bridge stage-1 16/16] RUN chmod 0755 /usr/local/bin/get-bridge-line
+#50 CACHED
+
+#51 [bridge] exporting to image
+#51 exporting layers done
+#51 writing image sha256:6bb3d553d36aefce705a083e7693f2d6de0055cefc0413b3e2494f62e3278bac 0.0s done
+#51 naming to docker.io/library/docker-bridge 0.0s done
+#51 DONE 0.0s
+
+#52 [bridge-debugbridge] resolving provenance for metadata file
+#52 DONE 0.0s
+
+#53 [bridge] resolving provenance for metadata file
+#53 DONE 0.0s
+
+#54 [client internal] load build definition from Dockerfile
+#54 transferring dockerfile: 857B done
+#54 DONE 0.0s
+
+#55 [client internal] load metadata for docker.io/library/ubuntu:latest
+#55 DONE 0.0s
+
+#5 [client internal] load metadata for docker.io/library/golang:latest
+#5 DONE 0.9s
+
+#56 [client internal] load .dockerignore
+#56 transferring context: 2B done
+#56 DONE 0.0s
+
+#8 [client builder 1/9] FROM docker.io/library/golang:latest@sha256:52ff1b35ff8de185bf9fd26c70077190cd0bed1e9f16a2d498ce907e5c421268
+#8 DONE 0.0s
+
+#57 [client stage-1  1/10] FROM docker.io/library/ubuntu:latest
+#57 DONE 0.0s
+
+#58 [client internal] load build context
+#58 transferring context: 1.10MB 0.5s done
+#58 DONE 0.5s
+
+#59 [client builder 6/9] WORKDIR /lyrebird
+#59 CACHED
+
+#60 [client stage-1  4/10] RUN apt clean
+#60 CACHED
+
+#61 [client stage-1  2/10] RUN apt update && apt install -y tor
+#61 CACHED
+
+#46 [client builder 4/9] RUN rm -rf /var/lib/apt/lists/*
+#46 CACHED
+
+#45 [client builder 3/9] RUN apt clean
+#45 CACHED
+
+#62 [client builder 8/9] RUN make liboqs-go
+#62 CACHED
+
+#63 [client builder 7/9] RUN rm -rf liboqs liboqs-go
+#63 CACHED
+
+#64 [client stage-1  7/10] RUN useradd -ms /bin/bash tor-client
+#64 CACHED
+
+#65 [client builder 5/9] COPY ./lyrebird /lyrebird
+#65 CACHED
+
+#66 [client stage-1  3/10] RUN apt update && apt install -y jq curl netcat-openbsd dnsutils
+#66 CACHED
+
+#67 [client stage-1  6/10] COPY --from=builder /lyrebird/lyrebird /usr/bin/lyrebird
+#67 CACHED
+
+#68 [client stage-1  8/10] COPY docker/client/torrc /etc/tor/torrc
+#68 CACHED
+
+#69 [client stage-1  9/10] COPY docker/client/test.sh /test.sh
+#69 CACHED
+
+#70 [client stage-1  5/10] RUN rm -rf /var/lib/apt/lists/*
+#70 CACHED
+
+#44 [client builder 2/9] RUN apt update && apt install -y astyle cmake gcc ninja-build python3-pytest     python3-pytest-xdist unzip xsltproc doxygen graphviz python3-yaml valgrind pkg-config
+#44 CACHED
+
+#71 [client builder 9/9] RUN make build
+#71 CACHED
+
+#72 [client stage-1 10/10] RUN chmod +x /test.sh
+#72 CACHED
+
+#73 [client] exporting to image
+#73 exporting layers done
+#73 writing image sha256:8b25d562ea5b60f4b966218ac3876ee6a603e1c98c5da0f3c101f7734eb2e210 done
+#73 naming to docker.io/library/docker-client done
+#73 DONE 0.0s
+
+#74 [client] resolving provenance for metadata file
+#74 DONE 0.0s
+Attaching to bridge-1, bridge-logs-1, client-1, client-logs-1, tcpdump-1
+bridge-1       | Using NICKNAME=DrivelBridgeDev, OR_PORT=27797, PT_PORT=28483, and EMAIL=himarc@ethz.ch.
+bridge-1       | Starting tor.
+bridge-1       | Mar 26 15:04:10.926 [notice] Tor 0.4.8.14 running on Linux with Libevent 2.1.12-stable, OpenSSL 3.0.15, Zlib 1.2.13, Liblzma 5.4.1, Libzstd 1.5.4 and Glibc 2.36 as libc.
+bridge-1       | Mar 26 15:04:10.926 [notice] Tor can't help you if you use it wrong! Learn how to be safe at https://support.torproject.org/faq/staying-anonymous/
+bridge-1       | Mar 26 15:04:10.926 [notice] Read configuration file "/etc/tor/torrc".
+bridge-1       | Mar 26 15:04:10.927 [notice] Based on detected system memory, MaxMemInQueues is set to 5886 MB. You can override this by setting MaxMemInQueues by hand.
+bridge-1       | Mar 26 15:04:10.928 [notice] Opening OR listener on 0.0.0.0:27797
+bridge-1       | Mar 26 15:04:10.928 [notice] Opened OR listener connection (ready) on 0.0.0.0:27797
+bridge-1       | Mar 26 15:04:10.928 [notice] Opening OR listener on [::]:27797
+bridge-1       | Mar 26 15:04:10.928 [notice] Opened OR listener connection (ready) on [::]:27797
+bridge-1       | Mar 26 15:04:10.928 [notice] Opening Extended OR listener on 127.0.0.1:0
+bridge-1       | Mar 26 15:04:10.928 [notice] Extended OR listener listening on port 37011.
+bridge-1       | Mar 26 15:04:10.928 [notice] Opened Extended OR listener connection (ready) on 127.0.0.1:37011
+bridge-1       | Mar 26 15:04:11.000 [notice] Parsing GEOIP IPv4 file /usr/share/tor/geoip.
+bridge-1       | Mar 26 15:04:11.000 [notice] Parsing GEOIP IPv6 file /usr/share/tor/geoip6.
+bridge-1       | Mar 26 15:04:11.000 [notice] Configured to measure statistics. Look for the *-stats files that will first be written to the data directory in 24 hours from now.
+bridge-1       | Mar 26 15:04:11.000 [notice] Your Tor server's identity key fingerprint is 'DrivelBridgeDev 80D130BA9400ACED55C79418ACBADA0837201FC4'
+bridge-1       | Mar 26 15:04:11.000 [notice] Your Tor bridge's hashed identity key fingerprint is 'DrivelBridgeDev EDC9E61CB626E9DA2BD004891D63D7B0137C7EBF'
+bridge-1       | Mar 26 15:04:11.000 [notice] Your Tor server's identity key ed25519 fingerprint is 'DrivelBridgeDev dklTbdgncAQlH/wNYXgSrkrqhgBKZCabh71iNRiN1hQ'
+bridge-1       | Mar 26 15:04:11.000 [notice] You can check the status of your bridge relay at https://bridges.torproject.org/status?id=EDC9E61CB626E9DA2BD004891D63D7B0137C7EBF
+bridge-1       | Mar 26 15:04:11.000 [notice] Bootstrapped 0% (starting): Starting
+bridge-logs-1  | 2025/03/26 15:04:11 [NOTICE]:  - launched
+bridge-logs-1  | 2025/03/26 15:04:11 [INFO]: lyrebird - initializing server transport listeners
+bridge-logs-1  | 2025/03/26 15:04:11 [INFO]: drivel - registered listener: [scrubbed]:28483
+bridge-logs-1  | 2025/03/26 15:04:11 [INFO]: lyrebird - accepting connections
+bridge-1       | Mar 26 15:04:12.000 [notice] Starting with guard context "default"
+bridge-1       | Mar 26 15:04:18.000 [notice] Registered server transport 'drivel' at '[::]:28483'
+bridge-1       | Mar 26 15:04:19.000 [notice] Bootstrapped 5% (conn): Connecting to a relay
+bridge-1       | Mar 26 15:04:19.000 [notice] Unable to find IPv4 address for ORPort 27797. You might want to specify IPv6Only to it or set an explicit address or set Address.
+bridge-1       | Mar 26 15:04:19.000 [notice] Bootstrapped 10% (conn_done): Connected to a relay
+bridge-1       | Mar 26 15:04:19.000 [notice] Bootstrapped 14% (handshake): Handshaking with a relay
+bridge-1       | Mar 26 15:04:20.000 [notice] Bootstrapped 15% (handshake_done): Handshake with a relay done
+bridge-1       | Mar 26 15:04:20.000 [notice] Bootstrapped 75% (enough_dirinfo): Loaded enough directory info to build circuits
+bridge-1       | Mar 26 15:04:20.000 [notice] Bootstrapped 90% (ap_handshake_done): Handshake finished with a relay to build circuits
+bridge-1       | Mar 26 15:04:20.000 [notice] Bootstrapped 95% (circuit_create): Establishing a Tor circuit
+bridge-1       | Mar 26 15:04:20.000 [notice] Bootstrapped 100% (done): Done
+client-1       | 2025/03/26 15:04:21 ############
+client-1       | 2025/03/26 15:04:21 # /test.sh #
+client-1       | 2025/03/26 15:04:21 ############
+client-1       | Tor version 0.4.6.10.
+client-1       | Tor is running on Linux with Libevent 2.1.12-stable, OpenSSL 3.0.2, Zlib 1.2.11, Liblzma 5.2.5, Libzstd 1.4.8 and Glibc 2.35 as libc.
+client-1       | Tor compiled with GCC version 11.2.0
+client-1       | 2025/03/26 15:04:21 [PASS] Tor present
+client-1       | 2025/03/26 15:04:21 Current torrc:
+client-1       | # Enable Control Port for https://gitweb.torproject.org/torspec.git/tree/control-spec.txt
+client-1       | ControlPort 9051
+client-1       | 
+client-1       | # Using Bridges, obsf4
+client-1       | UseBridges 1
+client-1       | ClientTransportPlugin drivel exec /usr/bin/lyrebird --enableLogging --logLevel INFO
+client-1       | ClientTransportPlugin obfs4 exec /usr/bin/lyrebird --enableLogging --logLevel INFO
+client-1       | 
+client-1       | # Added by test.sh script: HashedControlPassword $torpass
+client-1       | # Added by test.sh script: Bridge info
+client-1       | Bridge drivel 172.16.113.5:28483 80D130BA9400ACED55C79418ACBADA0837201FC4 cert=lZm+gRTGiscfdZ8O9yeO/xqIhW1D2GTk7+0r8lJSYrzLUJFwubhJ2pFUlEmvTloJdttpdA== iat-mode=0
+client-1       | HashedControlPassword 16:E1A4D95E5D89F77460297B7B1B3FF19C8AC484615D29B9AAAF1AE55AF1
+client-1       | 2025/03/26 15:04:21 [PASS] Tor service started
+client-1       | 2025/03/26 15:04:21 Waiting 10s
+client-logs-1  | 2025/03/26 15:04:21 [NOTICE]:  - launched
+client-logs-1  | 2025/03/26 15:04:21 [INFO]: lyrebird - initializing client transport listeners
+client-logs-1  | 2025/03/26 15:04:21 [INFO]: drivel - registered listener: 127.0.0.1:39251
+client-logs-1  | 2025/03/26 15:04:21 [INFO]: lyrebird - accepting connections
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: drivel([scrubbed]:60494) - new connection
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: This server has received a first handshake message
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: creating serverHandshake
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: padding range [45, 45]
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: size_kem_pk 32
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: size_kem_ctxt 32
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: size_okem_ctxt 32
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: size_mark 32
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: size_mac 32
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: size_auth 32
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: padding range [0, 0]
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: serverHandshake.parseClientHandshake(173 B)
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: This server has completed a handshake and has wrapped its connection
+bridge-logs-1  | 2025/03/26 15:04:23 [INFO]: serverHandshake.generateHandshake()
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: This client has started a handshake
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: creating clientHandshake
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: padding range [45, 45]
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: size_kem_pk 32
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: size_kem_ctxt 32
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: size_okem_ctxt 32
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: size_mark 32
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: size_mac 32
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: size_auth 32
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: clientHandshake.generateHandshake()
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: clientHandshake.parseServerHandshake(173 B)
+client-logs-1  | 2025/03/26 15:04:23 [INFO]: This client has completed a handshake and has wrapped its connection
+client-1       | 2025/03/26 15:04:31 Continuing...
+client-1       | 2025/03/26 15:04:31 [PASS] Tor info about circuit-status looks good
+client-1       | 2025/03/26 15:04:31 [PASS] Tor info about orconn-status looks good
+client-1       | 2025/03/26 15:04:31 [PASS] Tor info about entry-guards looks good
+client-1       | 2025/03/26 15:04:31 using api.ipify.org at 104.26.13.205
+client-1       | 2025/03/26 15:04:31 Regular IP: {"ip":"31.10.128.188"}
+client-1       | 2025/03/26 15:04:32 Torify IP: {"ip":"192.42.116.208"}
+client-1       | 2025/03/26 15:04:32 [PASS] Received a new IP
+[Kclient-1 exited with code 0
+2025/03/26 15:04:35 ###############
+2025/03/26 15:04:35 # END RUNS #
+2025/03/26 15:04:35 ###############
+HEAD is now at 2418781 Logs of lengthDetails for analysis

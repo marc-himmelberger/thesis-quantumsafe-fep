@@ -2,6 +2,10 @@
 
 set -e
 
+log () {
+    echo $(date -u "+%Y/%m/%d %H:%M:%S") $1
+}
+
 sed_no_backup="-i"
 
 # MacOS specifics
@@ -34,71 +38,103 @@ ensure_drivel_x25519 () {
 
 # Removes padding from lyrebird, and starts a full run in Docker
 # Reuqires that lyrebird be up-to-date (main branch)
-# Results are saved to the results directory
-# Usage: full_run obfs4 OR full_run drivel <drivel_config>
+# Results are saved to the given out_folder directory
+# Usage: full_run out_folder obfs4 OR full_run out_folder drivel <drivel_config>
 full_run () {
-    echo "### FULL RUN: $1, $2 ###"
+    echo "### FULL RUN: $2, $3 ###"
     ensure_no_padding
-    ensure_bridge_$1
-    out_dir="$1"
-    if [ "$2" != "" ]; then
-        out_dir="$1-$2"
-        ensure_drivel_$2
+    ensure_bridge_$2
+    out_dir="$2"
+    if [ "$3" != "" ]; then
+        out_dir="$2-$3"
+        ensure_drivel_$3
     fi
     (cd docker; ./exec_test.sh)
-    mkdir -p results/runs/$out_dir
-    cp -r docker/logs results/runs/$out_dir
-    cp -r docker/tcpdump results/runs/$out_dir
+    mkdir -p $1/runs/$out_dir
+    cp -r docker/logs $1/runs/$out_dir
+    cp -r docker/tcpdump $1/runs/$out_dir
 }
 
-cd lyrebird
+single_complete_run () {
+    cd lyrebird
 
-# assert no changes to lyrebird working tree
-if ! git diff-index --quiet HEAD --; then
-    echo "Changes found in lyrebird/ working tree. Aborting benchmark."
-    git status -s
-    exit 1
-fi
+    # assert no changes to lyrebird working tree
+    if ! git diff-index --quiet HEAD --; then
+        echo "Changes found in lyrebird/ working tree. Aborting benchmark."
+        git status -s
+        exit 1
+    fi
 
-cd ..
+    cd ..
 
-echo "Found clean lyrebird/ working tree. Proceeding..."
-rm -rf results/
-mkdir -p results/benchmarks
+    echo "Found clean lyrebird/ working tree. Proceeding..."
+    rm -rf $1/
+    mkdir -p $1/benchmarks
 
-cd lyrebird
+    cd lyrebird
 
-# 1. Go benchmarks
-# 1a. obfs4-bench branch: Original obfs4, total handshake time
-git checkout obfs4-bench
-make build
-echo "=> Starting benchmark"
-make bench > ../results/benchmarks/obfs4-bench.txt
-# 1b. main branch: Up-to-date obfs4 & drivel, total handshake time
-git checkout main
-make build
-echo "=> Starting benchmark"
-make bench > ../results/benchmarks/main.txt
+    log "###############"
+    log "# START BENCH #"
+    log "###############"
 
-cd ..
+    # 1. Go benchmarks
+    # 1a. obfs4-bench branch: Original obfs4, total handshake time
+    git checkout obfs4-bench
+    make build
+    echo "=> Starting benchmark"
+    make bench > $1/benchmarks/obfs4-bench.txt
 
-# 2. Full-stack comparisons
-# 2a. Full run obfs4
-full_run obfs4
+    # 1b. main branch: Up-to-date obfs4 & drivel, total handshake time
+    git checkout main
+    make build
+    echo "=> Starting benchmark"
+    make bench > $1/benchmarks/main.txt
 
-# 2b. Full run drivel(x25519)
-full_run drivel x25519
+    log "###############"
+    log "#  END BENCH  #"
+    log "# START RUNS  #"
+    log "###############"
 
-cd lyrebird
-git reset --hard
-cd ..
+    cd ..
 
-# TODO 2c. Full runs with more KEM/OKEM combinations
+    # 2. Full-stack comparisons
+    # 2a. Full run obfs4
+    full_run $1 obfs4
+
+    # 2b. Full run drivel(x25519)
+    full_run $1 drivel x25519
+
+    # TODO 2c. Full runs with more KEM/OKEM combinations
+
+    log "###############"
+    log "#  END RUNS   #"
+    log "###############"
+
+    cd lyrebird
+    git reset --hard
+    cd ..
+}
+
+no_complete_replicas=8
+
+rm -r results/
+for i in {1..$no_complete_replicas}; do
+    out_dir=results/bench-$(printf "%02d" $i)
+    out_dir=$(realpath $out_dir)
+    mkdir -p $out_dir
+
+    log "Starting benchmark into $out_dir"
+    (single_complete_bench $out_dir) 2>&1 >$out_dir/benchmark.log
+    log "Completed benchmark for $out_dir"
+log "Completed all benchmarks :D"
 
 # Kick off data structuring and plotting
 # 1. Performance comparison obfs4(old) vs obfs4(new) vs drivel(x25519ell2) - using Benchmark(.*)Handshake
 # 2. Full-stack comparison obfs4(new) vs drivel(x25519ell2)
 # 3. Full-stack comparison drivel(x25519ell2) vs other combinations
 
+log "Structuring data..."
 python3 results_structure.py
+log "Plotting..."
 Rscript results_plot.R
+log "Done."

@@ -145,3 +145,8 @@ data_bench %>%
     geom_bar(position = "dodge", stat = "identity")
 
 warnings()
+
+# TODO compare Benchmarks with OQS performance numbers (marker in new layer?)
+# TODO plot for runs: stacked horizontal barplot - abstractly shows how many bytes are used for each field, maybe rename in python code for clarity
+# TODO plot for traffic: total traffic (barplot), traffic by timestamp (histogram)
+# TODO incorporate "replicate" - every time I see barplot, think boxplot

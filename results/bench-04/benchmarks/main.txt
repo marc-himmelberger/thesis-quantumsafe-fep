@@ -1,0 +1,176 @@
+go clean -cache
+rm -f lyrebird
+go test -run='^$' -bench=. -benchmem -ldflags="-X main.lyrebirdVersion=0.5.0-49-g2418781" ./...
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/cmd/lyrebird	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/csrand	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/drbg	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/log	[no test files]
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/ntor
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkHandshake-16    	    2185	    539216 ns/op	    7919 B/op	      99 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/ntor	1.182s
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/probdist	0.002s
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/replayfilter	0.002s
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/socks5	0.003s
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/uniformdh
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkHandshake-16    	     168	   7137598 ns/op	   37953 B/op	     110 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/uniformdh	1.202s
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/utlsutil	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/internal/cryptodata	[no test files]
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/internal/cryptofactory
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkKems/x25519-KeyGen-16         	   53949	     22145 ns/op	     192 B/op	       5 allocs/op
+BenchmarkKems/x25519-Encaps-16         	    9493	    125496 ns/op	     576 B/op	      14 allocs/op
+BenchmarkKems/x25519-Decaps-16         	   10000	    103098 ns/op	     352 B/op	       8 allocs/op
+BenchmarkKems/BIKE-L1-KeyGen-16        	    5404	    221024 ns/op	   14418 B/op	       7 allocs/op
+BenchmarkKems/BIKE-L1-Encaps-16        	   29697	     40431 ns/op	    3680 B/op	       6 allocs/op
+BenchmarkKems/BIKE-L1-Decaps-16        	    1172	   1039049 ns/op	      96 B/op	       4 allocs/op
+BenchmarkKems/BIKE-L3-KeyGen-16        	    1797	    653629 ns/op	   26960 B/op	       7 allocs/op
+BenchmarkKems/BIKE-L3-Encaps-16        	   12650	     94746 ns/op	    6496 B/op	       6 allocs/op
+BenchmarkKems/BIKE-L3-Decaps-16        	     385	   3067185 ns/op	      96 B/op	       4 allocs/op
+BenchmarkKems/BIKE-L5-KeyGen-16        	     697	   1680938 ns/op	   47697 B/op	       7 allocs/op
+BenchmarkKems/BIKE-L5-Encaps-16        	    5732	    207199 ns/op	   10848 B/op	       6 allocs/op
+BenchmarkKems/BIKE-L5-Decaps-16        	     162	   7367000 ns/op	      96 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-348864-KeyGen-16         	      28	  44263165 ns/op	  537446 B/op	       7 allocs/op
+BenchmarkKems/Classic-McEliece-348864-Encaps-16         	   70326	     16629 ns/op	     304 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-348864-Decaps-16         	   29570	     40658 ns/op	     112 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-348864f-KeyGen-16        	      33	  34140042 ns/op	  537447 B/op	       7 allocs/op
+BenchmarkKems/Classic-McEliece-348864f-Encaps-16        	   71467	     16559 ns/op	     304 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-348864f-Decaps-16        	   29530	     40862 ns/op	     112 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-460896-KeyGen-16         	       8	 133132178 ns/op	 1077368 B/op	       7 allocs/op
+BenchmarkKems/Classic-McEliece-460896-Encaps-16         	   34077	     35446 ns/op	     432 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-460896-Decaps-16         	   15746	     76117 ns/op	     112 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-460896f-KeyGen-16        	      10	 104071881 ns/op	 1077377 B/op	       7 allocs/op
+BenchmarkKems/Classic-McEliece-460896f-Encaps-16        	   33174	     35665 ns/op	     432 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-460896f-Decaps-16        	   15628	     76899 ns/op	     112 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-6688128-KeyGen-16        	       7	 187839118 ns/op	 2125954 B/op	       8 allocs/op
+BenchmarkKems/Classic-McEliece-6688128-Encaps-16        	   19543	     61292 ns/op	     528 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-6688128-Decaps-16        	   13234	     90638 ns/op	     112 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-6688128f-KeyGen-16       	       7	 149169240 ns/op	 2125996 B/op	       8 allocs/op
+BenchmarkKems/Classic-McEliece-6688128f-Encaps-16       	   19803	     61017 ns/op	     536 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-6688128f-Decaps-16       	   13311	     90278 ns/op	     120 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-6960119-KeyGen-16        	       8	 175930731 ns/op	 2125962 B/op	       8 allocs/op
+BenchmarkKems/Classic-McEliece-6960119-Encaps-16        	   20466	     59020 ns/op	     528 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-6960119-Decaps-16        	   14064	     85276 ns/op	     112 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-6960119f-KeyGen-16       	       8	 139049138 ns/op	 2125970 B/op	       8 allocs/op
+BenchmarkKems/Classic-McEliece-6960119f-Encaps-16       	   19956	     59571 ns/op	     536 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-6960119f-Decaps-16       	   14223	     84525 ns/op	     120 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-8192128-KeyGen-16        	       5	 224031705 ns/op	 2748569 B/op	       8 allocs/op
+BenchmarkKems/Classic-McEliece-8192128-Encaps-16        	   18594	     64057 ns/op	     528 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-8192128-Decaps-16        	   13281	     90339 ns/op	     112 B/op	       4 allocs/op
+BenchmarkKems/Classic-McEliece-8192128f-KeyGen-16       	       7	 161758290 ns/op	 2748588 B/op	       9 allocs/op
+BenchmarkKems/Classic-McEliece-8192128f-Encaps-16       	   19213	     63313 ns/op	     536 B/op	       6 allocs/op
+BenchmarkKems/Classic-McEliece-8192128f-Decaps-16       	   13442	     89060 ns/op	     120 B/op	       4 allocs/op
+BenchmarkKems/HQC-128-KeyGen-16                         	     680	   1763579 ns/op	   10136 B/op	       7 allocs/op
+BenchmarkKems/HQC-128-Encaps-16                         	     343	   3494718 ns/op	    9960 B/op	       6 allocs/op
+BenchmarkKems/HQC-128-Decaps-16                         	     225	   5302543 ns/op	     184 B/op	       4 allocs/op
+BenchmarkKems/HQC-192-KeyGen-16                         	     224	   5328844 ns/op	   19608 B/op	       7 allocs/op
+BenchmarkKems/HQC-192-Encaps-16                         	     100	  10739033 ns/op	   19176 B/op	       6 allocs/op
+BenchmarkKems/HQC-192-Decaps-16                         	      74	  16039936 ns/op	     184 B/op	       4 allocs/op
+BenchmarkKems/HQC-256-KeyGen-16                         	     122	   9783704 ns/op	   32920 B/op	       7 allocs/op
+BenchmarkKems/HQC-256-Encaps-16                         	      60	  19613010 ns/op	   33000 B/op	       6 allocs/op
+BenchmarkKems/HQC-256-Decaps-16                         	      40	  29307375 ns/op	     185 B/op	       4 allocs/op
+BenchmarkKems/Kyber512-KeyGen-16                        	  123074	      9461 ns/op	    5528 B/op	       7 allocs/op
+BenchmarkKems/Kyber512-Encaps-16                        	   98746	     11776 ns/op	    1704 B/op	       6 allocs/op
+BenchmarkKems/Kyber512-Decaps-16                        	  132936	      9098 ns/op	     168 B/op	       4 allocs/op
+BenchmarkKems/Kyber768-KeyGen-16                        	   78752	     15169 ns/op	    8088 B/op	       7 allocs/op
+BenchmarkKems/Kyber768-Encaps-16                        	   70077	     17230 ns/op	    2472 B/op	       6 allocs/op
+BenchmarkKems/Kyber768-Decaps-16                        	   88723	     13878 ns/op	     168 B/op	       4 allocs/op
+BenchmarkKems/Kyber1024-KeyGen-16                       	   59300	     20611 ns/op	   10144 B/op	       7 allocs/op
+BenchmarkKems/Kyber1024-Encaps-16                       	   50007	     23644 ns/op	    3760 B/op	       6 allocs/op
+BenchmarkKems/Kyber1024-Decaps-16                       	   61806	     19102 ns/op	     176 B/op	       4 allocs/op
+BenchmarkKems/ML-KEM-512-KeyGen-16                      	  111838	      9934 ns/op	    5448 B/op	       7 allocs/op
+BenchmarkKems/ML-KEM-512-Encaps-16                      	  119179	      9732 ns/op	    1624 B/op	       6 allocs/op
+BenchmarkKems/ML-KEM-512-Decaps-16                      	  420982	      2844 ns/op	      72 B/op	       4 allocs/op
+BenchmarkKems/ML-KEM-768-KeyGen-16                      	   74613	     15690 ns/op	    8008 B/op	       7 allocs/op
+BenchmarkKems/ML-KEM-768-Encaps-16                      	   81490	     14807 ns/op	    2392 B/op	       6 allocs/op
+BenchmarkKems/ML-KEM-768-Decaps-16                      	  323217	      3754 ns/op	      72 B/op	       4 allocs/op
+BenchmarkKems/ML-KEM-1024-KeyGen-16                     	   57826	     20760 ns/op	   10056 B/op	       7 allocs/op
+BenchmarkKems/ML-KEM-1024-Encaps-16                     	   58880	     20274 ns/op	    3672 B/op	       6 allocs/op
+BenchmarkKems/ML-KEM-1024-Decaps-16                     	  260179	      4664 ns/op	      72 B/op	       4 allocs/op
+BenchmarkKems/sntrup761-KeyGen-16                       	    3602	    339021 ns/op	    6304 B/op	       7 allocs/op
+BenchmarkKems/sntrup761-Encaps-16                       	   41332	     29735 ns/op	    2480 B/op	       6 allocs/op
+BenchmarkKems/sntrup761-Decaps-16                       	   53446	     22410 ns/op	     176 B/op	       4 allocs/op
+BenchmarkKems/FrodoKEM-640-AES-KeyGen-16                	    3484	    335259 ns/op	   60576 B/op	       7 allocs/op
+BenchmarkKems/FrodoKEM-640-AES-Encaps-16                	    2493	    480044 ns/op	   19600 B/op	       6 allocs/op
+BenchmarkKems/FrodoKEM-640-AES-Decaps-16                	    2552	    472788 ns/op	     144 B/op	       4 allocs/op
+BenchmarkKems/FrodoKEM-640-SHAKE-KeyGen-16              	    1297	    921745 ns/op	   60585 B/op	       7 allocs/op
+BenchmarkKems/FrodoKEM-640-SHAKE-Encaps-16              	    1164	   1031895 ns/op	   19608 B/op	       6 allocs/op
+BenchmarkKems/FrodoKEM-640-SHAKE-Decaps-16              	    1184	   1021445 ns/op	     152 B/op	       4 allocs/op
+BenchmarkKems/FrodoKEM-976-AES-KeyGen-16                	    1615	    723652 ns/op	   98465 B/op	       7 allocs/op
+BenchmarkKems/FrodoKEM-976-AES-Encaps-16                	    1248	    951268 ns/op	   32928 B/op	       6 allocs/op
+BenchmarkKems/FrodoKEM-976-AES-Decaps-16                	    1311	    921327 ns/op	     160 B/op	       4 allocs/op
+BenchmarkKems/FrodoKEM-976-SHAKE-KeyGen-16              	     602	   2026606 ns/op	   98473 B/op	       7 allocs/op
+BenchmarkKems/FrodoKEM-976-SHAKE-Encaps-16              	     550	   2165425 ns/op	   32936 B/op	       6 allocs/op
+BenchmarkKems/FrodoKEM-976-SHAKE-Decaps-16              	     561	   2129693 ns/op	     168 B/op	       4 allocs/op
+BenchmarkKems/FrodoKEM-1344-AES-KeyGen-16               	     939	   1261501 ns/op	  141994 B/op	       7 allocs/op
+BenchmarkKems/FrodoKEM-1344-AES-Encaps-16               	     729	   1632919 ns/op	   43704 B/op	       6 allocs/op
+BenchmarkKems/FrodoKEM-1344-AES-Decaps-16               	     759	   1584476 ns/op	     184 B/op	       4 allocs/op
+BenchmarkKems/FrodoKEM-1344-SHAKE-KeyGen-16             	     338	   3535057 ns/op	  141994 B/op	       7 allocs/op
+BenchmarkKems/FrodoKEM-1344-SHAKE-Encaps-16             	     313	   3819604 ns/op	   43705 B/op	       6 allocs/op
+BenchmarkKems/FrodoKEM-1344-SHAKE-Decaps-16             	     319	   3755225 ns/op	     184 B/op	       4 allocs/op
+BenchmarkOkems/EtE-x25519-KeyGen-16                     	   54036	     22217 ns/op	     304 B/op	       8 allocs/op
+BenchmarkOkems/EtE-x25519-Encaps-16                     	    4756	    255927 ns/op	    1230 B/op	      32 allocs/op
+BenchmarkOkems/EtE-x25519-Decaps-16                     	   10000	    107312 ns/op	     512 B/op	      12 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/internal/cryptofactory	113.490s
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/internal/kems	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/internal/okems	[no test files]
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/internal/x25519ell2
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkKeyGeneration-16    	   47463	     25390 ns/op	      48 B/op	       1 allocs/op
+BenchmarkMap-16              	  262395	      4521 ns/op	      96 B/op	       2 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/internal/x25519ell2	2.398s
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/base	[no test files]
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/drivel
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkHandshake-16    	    1501	    756569 ns/op	   73698 B/op	     381 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/drivel	1.143s
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/drivel/drivelcrypto	0.003s
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/drivel/framing
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkEncoder_Encode-16    	     729	   1645446 ns/op	   11799 B/op	    1469 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/drivel/framing	1.203s
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/meeklite	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs2	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs3	[no test files]
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs4
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkObfs4Handshake-16    	    1893	    636369 ns/op	   29406 B/op	     154 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs4	1.210s
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs4/framing
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkEncoder_Encode-16    	     730	   1650126 ns/op	   11799 B/op	    1469 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs4/framing	1.208s
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/scramblesuit	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/snowflake	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/webtunnel	[no test files]

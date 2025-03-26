@@ -140,8 +140,6 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 logs = f.read()
 
             if container_name.endswith("-logs"):
-                assert "completed a handshake and has wrapped its connection" in logs
-
                 m = re.search(r"padding range \[(\d+), (\d+)\]", logs)
                 assert m, "Unable to find padding range in logs"
                 assert len(m.groups()) == 2, "Unable to parse padding range in logs"
@@ -161,6 +159,10 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                         assert False, "Unknown container type"
 
                 if run_folder.name.startswith("drivel"):
+                    assert (
+                        "completed a handshake and has wrapped its connection" in logs
+                    )
+
                     # Extract all sizes from logs, compare with saved or update
                     _size_kem_pk = re.search(r"size_kem_pk (\d+)", logs)
                     assert _size_kem_pk is not None and len(_size_kem_pk.groups()) == 1
@@ -264,12 +266,14 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
             else:
                 assert False, "Unknown container name"
 
+        print(f"parsed logs files: {run_folder}")
+
         class ClientHs(Packet):
             name = "ClientHs "
             fields_desc: list = [
-                StrFixedLenField("KEM pk", default=None, length=size_kem_pk),
+                StrFixedLenField("KEM_pk", default=None, length=size_kem_pk),
                 StrFixedLenField(
-                    "OKEM ciphertext", default=None, length=size_okem_ctxt
+                    "OKEM_ciphertext", default=None, length=size_okem_ctxt
                 ),
                 StrFixedLenField("padding", default=None, length=padding_client),
                 StrFixedLenField("mark", default=None, length=size_mark),
@@ -279,11 +283,12 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         class BridgeHs(Packet):
             name = "BridgeHs "
             fields_desc: list = [
-                StrFixedLenField("KEM ctxt", default=None, length=size_kem_ctxt),
-                StrFixedLenField("auth value", default=None, length=size_auth),
+                StrFixedLenField("KEM_ctxt", default=None, length=size_kem_ctxt),
+                StrFixedLenField("auth_value", default=None, length=size_auth),
                 StrFixedLenField("padding", default=None, length=padding_bridge),
                 StrFixedLenField("mark", default=None, length=size_mark),
                 StrFixedLenField("mac", default=None, length=size_mac),
+                StrField("seedPacketPayload", default=None),
             ]
 
         # Handle tcpdump
@@ -325,13 +330,26 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
 
         client_hs: Packet = handshake[3]
         bridge_hs: Packet = handshake[5]
-        client_hs_data: bytes = client_hs[TCP].payload
-        bridge_hs_data: bytes = bridge_hs[TCP].payload
+        client_hs_data: bytes = client_hs[TCP].payload.load
+        bridge_hs_data: bytes = bridge_hs[TCP].payload.load
         client_hs_pkt = ClientHs(client_hs_data)
         bridge_hs_pkt = BridgeHs(bridge_hs_data)
 
-        client_hs_pkt.show()
-        bridge_hs_pkt.show()
+        with open(
+            run_folder.joinpath("tcpdump", "handshake.txt"), "w", encoding="utf-8"
+        ) as f:
+            msg1 = client_hs_pkt.show(dump=True)
+            msg2 = bridge_hs_pkt.show(dump=True)
+
+            assert isinstance(msg1, str) and isinstance(msg2, str)
+            f.write(msg1 + "\n")
+            f.write(msg2 + "\n")
+
+        print(f"processed packets: {run_folder}")
+        print("  drawing client", end="")
+        client_hs_pkt.pdfdump(str(run_folder.joinpath("tcpdump", "handshake1.pdf")))
+        print("  drawing bridge", end="")
+        bridge_hs_pkt.pdfdump(str(run_folder.joinpath("tcpdump", "handshake2.pdf")))
 
         entries_hs = pd.DataFrame.from_dict(
             {
@@ -379,12 +397,41 @@ def main():
         shutil.rmtree(OUT_FOLDER)
     OUT_FOLDER.mkdir()
 
-    data_bench = structure_benchmarks(RESULTS_FOLDER.joinpath("benchmarks"))
-    data_bench.to_csv(OUT_FOLDER.joinpath("benchmarks.csv"))
+    df_bench: pd.DataFrame | None = None
+    df_runs: pd.DataFrame | None = None
+    df_traffic: pd.DataFrame | None = None
 
-    data_runs, data_traffic = structure_runs(RESULTS_FOLDER.joinpath("runs"))
-    data_runs.to_csv(OUT_FOLDER.joinpath("runs.csv"))
-    data_traffic.to_csv(OUT_FOLDER.joinpath("traffic.csv"))
+    for repl_folder in sorted(RESULTS_FOLDER.glob("bench-*")):
+        repl = int(repl_folder.name[6:])
+
+        data_bench = structure_benchmarks(repl_folder.joinpath("benchmarks"))
+        data_runs, data_traffic = structure_runs(repl_folder.joinpath("runs"))
+
+        data_bench["replicate"] = repl
+        data_runs["replicate"] = repl
+        data_traffic["replicate"] = repl
+
+        df_bench = (
+            data_bench
+            if df_bench is None
+            else pd.concat([df_bench, data_bench], ignore_index=True)
+        )
+        df_runs = (
+            data_runs
+            if df_runs is None
+            else pd.concat([df_runs, data_runs], ignore_index=True)
+        )
+        df_traffic = (
+            data_traffic
+            if df_traffic is None
+            else pd.concat([df_traffic, data_traffic], ignore_index=True)
+        )
+
+    assert df_bench is not None and df_runs is not None and df_traffic is not None
+
+    df_bench.to_csv(OUT_FOLDER.joinpath("benchmarks.csv"))
+    df_runs.to_csv(OUT_FOLDER.joinpath("runs.csv"))
+    df_traffic.to_csv(OUT_FOLDER.joinpath("traffic.csv"))
 
 
 if __name__ == "__main__":
