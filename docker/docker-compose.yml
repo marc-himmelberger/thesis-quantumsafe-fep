@@ -24,7 +24,7 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "get-bridge-line > /.bridgeinfo && grep -q 'Bootstrapped 100%' /var/log/tor/log" ]
       interval: 2s
-      retries: 5
+      retries: 20
       timeout: 2s
   client:
     build:
@@ -97,7 +97,7 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "cat /var/log/tor/log | grep \"100% (done): Done\"" ]
       interval: 2s
-      retries: 5
+      retries: 20
       timeout: 2s
 
 volumes:

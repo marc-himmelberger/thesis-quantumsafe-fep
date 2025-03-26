@@ -63,13 +63,15 @@ tor_getinfo "orconn-status" " CONNECTED"
 tor_getinfo "entry-guards" " up"
 
 # Check IP with and without Tor
-IPCHECKER_DOMAIN="4.myip.is"
-IPCHECKER_IP=$(dig +answer $IPCHECKER_DOMAIN +short)
+# 'https://api.ipify.org?format=json'
+IPCHECKER_DOMAIN="api.ipify.org"
+IPCHECKER_IP=$(dig +answer $IPCHECKER_DOMAIN +short | head -n1)
 log "  using $IPCHECKER_DOMAIN at $IPCHECKER_IP"
-regular_json=$(curl -sS -k https://$IPCHECKER_DOMAIN --resolve $IPCHECKER_DOMAIN:443:$IPCHECKER_IP)
+# -s (silent) -S (show errors) -k (insecure)
+regular_json=$(curl -sS -k "https://$IPCHECKER_DOMAIN?format=json" --resolve $IPCHECKER_DOMAIN:443:$IPCHECKER_IP)
     log "  Regular IP: $regular_json"
 regular_ip=$(echo $regular_json | jq -r '.ip')
-torify_json=$(torify curl -sS -k https://$IPCHECKER_DOMAIN --resolve $IPCHECKER_DOMAIN:443:$IPCHECKER_IP)
+torify_json=$(torify curl -sS -k "https://$IPCHECKER_DOMAIN?format=json" --resolve $IPCHECKER_DOMAIN:443:$IPCHECKER_IP)
     log "  Torify IP:  $torify_json"
 torify_ip=$(echo $torify_json | jq -r '.ip')
 

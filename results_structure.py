@@ -81,7 +81,7 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         - how much padding was used (should be fixed number)
         - what sizes are the various components
     tcpdump:
-        - should have only two non-loopback TCP streams (myip and bridge)
+        - should have only two non-loopback TCP streams (extIP and bridge)
         - exact timing of handshake messages
         - sizes of first two messages in detail
         - visualization of packet content of first two messages
@@ -108,7 +108,7 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     df_traffic = pd.DataFrame(
         columns=[
             "type",  # handshake | data
-            "peer",  # bridge | 4.myip.is
+            "peer",  # bridge | extIP
             "timestamp",
             "direction",  # upstream | downstream
             "payload size",  # [B]
@@ -289,9 +289,9 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         # Handle tcpdump
         packets = rdpcap(str(run_folder.joinpath("tcpdump", "tcpdump.pcap")))
 
-        myip_ip = None
+        extIP_ip = None
         tcp_bridge: list[Packet] = []
-        tcp_myip: list[Packet] = []
+        tcp_extIP: list[Packet] = []
         for p in packets:
             if p.haslayer(TCP):
                 ip: IP = p[IP]
@@ -301,14 +301,14 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 if ip.src == BRIDGE_IP or ip.dst == BRIDGE_IP:
                     tcp_bridge.append(p)
                 else:
-                    if myip_ip is None:
+                    if extIP_ip is None:
                         assert ip.src == CLIENT_IP, "Unexpected extra TCP traffic"
-                        myip_ip = ip.dst
+                        extIP_ip = ip.dst
                     else:
-                        assert (ip.src == CLIENT_IP and ip.dst == myip_ip) or (
-                            ip.src == myip_ip and ip.dst == CLIENT_IP
+                        assert (ip.src == CLIENT_IP and ip.dst == extIP_ip) or (
+                            ip.src == extIP_ip and ip.dst == CLIENT_IP
                         ), "Unexpected extra TCP traffic"
-                    tcp_myip.append(p)
+                    tcp_extIP.append(p)
 
         tunnel: list[Packet] = tcp_bridge[7:]
         handshake: list[Packet] = tcp_bridge[:7]
@@ -354,20 +354,20 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 "payload size": [len(p[TCP].payload) for p in tunnel],
             }
         )
-        entries_myip = pd.DataFrame.from_dict(
+        entries_extIP = pd.DataFrame.from_dict(
             {
-                "type": ["data"] * len(tcp_myip),
-                "peer": ["4.myip.is"] * len(tcp_myip),
-                "timestamp": [p.time for p in tcp_myip],
+                "type": ["data"] * len(tcp_extIP),
+                "peer": ["extIP"] * len(tcp_extIP),
+                "timestamp": [p.time for p in tcp_extIP],
                 "direction": [
                     "upstream" if p[IP].src == CLIENT_IP else "downstream"
-                    for p in tcp_myip
+                    for p in tcp_extIP
                 ],
-                "payload size": [len(p[TCP].payload) for p in tcp_myip],
+                "payload size": [len(p[TCP].payload) for p in tcp_extIP],
             }
         )
         df_traffic = pd.concat(
-            [df_traffic, entries_hs, entries_tunnel, entries_myip], ignore_index=True
+            [df_traffic, entries_hs, entries_tunnel, entries_extIP], ignore_index=True
         )
 
     return df_runs, df_traffic
