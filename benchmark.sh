@@ -117,7 +117,8 @@ single_complete_run () {
 
 no_complete_replicas=8
 
-rm -r results/
+rm -rf results/
+mkdir -p results/
 for i in {1..$no_complete_replicas}; do
     out_dir=results/bench-$(printf "%02d" $i)
     out_dir=$(realpath $out_dir)

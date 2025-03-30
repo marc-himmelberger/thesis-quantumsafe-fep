@@ -39,7 +39,11 @@ def structure_benchmarks(folder_bench: Path) -> pd.DataFrame:
         with open(path_txt, "r") as f:
             for line in f.readlines():
                 if line.startswith("pkg: "):
-                    curr_pkg = line[5:].split("/")[-1].strip()
+                    curr_pkg = line[5:]
+                    assert curr_pkg.startswith(
+                        "gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/"
+                    ), "Benchmark from non-lyrebird package"
+                    curr_pkg = curr_pkg[72:]
                     continue
                 elif line.startswith("cpu: "):
                     continue
@@ -59,7 +63,7 @@ def structure_benchmarks(folder_bench: Path) -> pd.DataFrame:
                     entry = pd.DataFrame.from_dict(
                         {
                             "branch": [branch_name],
-                            "benchmark": [curr_pkg + "." + benchmark],
+                            "benchmark": [curr_pkg + " " + benchmark],
                             "subbench": [subbench],
                             "cpus": [cpus],
                             "iter": [values[1]],
@@ -111,7 +115,8 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
             "peer",  # bridge | extIP
             "timestamp",
             "direction",  # upstream | downstream
-            "payload size",  # [B]
+            "TCP payload size",  # [B]
+            "key exchange size",  # [B]
         ]
     )
 
@@ -140,7 +145,17 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 logs = f.read()
 
             if container_name.endswith("-logs"):
-                m = re.search(r"padding range \[(\d+), (\d+)\]", logs)
+                container_type = container_name[:-5]
+
+                m = re.search(container_type + r" padding range \[(\d+), (\d+)\]", logs)
+                # TODO: This is temporary until benchmark is rerun.
+                if m is None:
+                    m = re.search(r"padding range \[(\d+), (\d+)\]", logs)
+                    assert m
+                    if container_type == "bridge" and run_protocol == "drivel":
+                        _logs = logs[m.end() :]
+                        m = re.search(r"padding range \[(\d+), (\d+)\]", _logs)
+
                 assert m, "Unable to find padding range in logs"
                 assert len(m.groups()) == 2, "Unable to parse padding range in logs"
 
@@ -149,7 +164,6 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 assert pad_min == pad_max, "Padding not fixed"
                 pad = int(pad_min)
 
-                container_type = container_name[:-5]
                 match container_type:
                     case "client":
                         padding_client = pad
@@ -288,7 +302,6 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 StrFixedLenField("padding", default=None, length=padding_bridge),
                 StrFixedLenField("mark", default=None, length=size_mark),
                 StrFixedLenField("mac", default=None, length=size_mac),
-                StrField("seedPacketPayload", default=None),
             ]
 
         # Handle tcpdump
@@ -335,6 +348,9 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         client_hs_pkt = ClientHs(client_hs_data)
         bridge_hs_pkt = BridgeHs(bridge_hs_data)
 
+        assert len(client_hs_pkt) == len(client_hs_data), "Client packet lost data"
+        assert len(bridge_hs_pkt) == len(bridge_hs_data), "Bridge packet lost data"
+
         with open(
             run_folder.joinpath("tcpdump", "handshake.txt"), "w", encoding="utf-8"
         ) as f:
@@ -351,13 +367,20 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         print("  drawing bridge", end="")
         bridge_hs_pkt.pdfdump(str(run_folder.joinpath("tcpdump", "handshake2.pdf")))
 
+        # Remove any excess data in packets for analysis
+        client_hs_pkt.remove_payload()
+        bridge_hs_pkt.remove_payload()
+        assert len(client_hs_pkt) == len(client_hs_data), "Client packet had payload?"
+        assert len(bridge_hs_pkt) < len(bridge_hs_data), "Bridge packet had no payload?"
+
         entries_hs = pd.DataFrame.from_dict(
             {
                 "type": ["handshake", "handshake"],
                 "peer": ["bridge", "bridge"],
                 "timestamp": [client_hs.time, bridge_hs.time],
                 "direction": ["upstream", "downstream"],
-                "payload size": [len(client_hs_data), len(bridge_hs_data)],
+                "TCP payload size": [len(client_hs_data), len(bridge_hs_data)],
+                "key exchange size": [len(client_hs_pkt), len(bridge_hs_pkt)],
             }
         )
         entries_tunnel = pd.DataFrame.from_dict(
@@ -369,7 +392,8 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                     "upstream" if p[IP].src == CLIENT_IP else "downstream"
                     for p in tunnel
                 ],
-                "payload size": [len(p[TCP].payload) for p in tunnel],
+                "TCP payload size": [len(p[TCP].payload) for p in tunnel],
+                "key exchange size": [pd.NA] * len(tunnel),
             }
         )
         entries_extIP = pd.DataFrame.from_dict(
@@ -381,7 +405,8 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                     "upstream" if p[IP].src == CLIENT_IP else "downstream"
                     for p in tcp_extIP
                 ],
-                "payload size": [len(p[TCP].payload) for p in tcp_extIP],
+                "TCP payload size": [len(p[TCP].payload) for p in tcp_extIP],
+                "key exchange size": [pd.NA] * len(tcp_extIP),
             }
         )
         df_traffic = pd.concat(
