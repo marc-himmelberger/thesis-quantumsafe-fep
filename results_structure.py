@@ -111,6 +111,8 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     # One row per relevant packet
     df_traffic = pd.DataFrame(
         columns=[
+            "protocol",  # obfs4 | drivel
+            "run config",  # x25519, etc (see benchmark.sh: ensure_drivel_*)
             "type",  # handshake | data
             "peer",  # bridge | extIP
             "timestamp",
@@ -375,6 +377,8 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
 
         entries_hs = pd.DataFrame.from_dict(
             {
+                "protocol": run_protocol,
+                "run config": run_config,
                 "type": ["handshake", "handshake"],
                 "peer": ["bridge", "bridge"],
                 "timestamp": [client_hs.time, bridge_hs.time],
@@ -385,6 +389,8 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         )
         entries_tunnel = pd.DataFrame.from_dict(
             {
+                "protocol": run_protocol,
+                "run config": run_config,
                 "type": ["data"] * len(tunnel),
                 "peer": ["bridge"] * len(tunnel),
                 "timestamp": [p.time for p in tunnel],
@@ -398,6 +404,8 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         )
         entries_extIP = pd.DataFrame.from_dict(
             {
+                "protocol": run_protocol,
+                "run config": run_config,
                 "type": ["data"] * len(tcp_extIP),
                 "peer": ["extIP"] * len(tcp_extIP),
                 "timestamp": [p.time for p in tcp_extIP],
