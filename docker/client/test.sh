@@ -55,8 +55,8 @@ EOF
     fi
 }
 
-log "Waiting 10s"
-sleep 10
+log "Waiting 15s"
+sleep 15
 log "Continuing..."
 tor_getinfo "circuit-status" " BUILT "
 tor_getinfo "orconn-status" " CONNECTED"

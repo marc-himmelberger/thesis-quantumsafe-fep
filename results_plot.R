@@ -69,7 +69,10 @@ data_bench <- data_bench %>%
     )
 
 # Runs data
-data_runs <- read.csv("structured/runs.csv") %>%
+data_runs <- read.csv("structured/runs.csv")
+max_handshakes <- max(data_runs$handshakes)
+data_runs <- data_runs %>%
+    select(-c(handshakes)) %>%
     pivot_longer(
         c(padding.size:auth.size),
         names_to = "field",
@@ -79,8 +82,9 @@ data_runs <- read.csv("structured/runs.csv") %>%
         transport = ifelse(run.config == "", protocol, paste0(protocol, " (", run.config, ")")), # e.g. drivel (x25519)
         field = sub("\\.size", "", field),
         field = factor(field, levels = c(
-            "padding", "KEM.public.key", "KEM.ciphertext", "OKEM.ciphertex", "mark", "mac", "auth"
-        ))
+            "KEM.public.key", "KEM.ciphertext", "OKEM.ciphertext", "auth", "padding", "mark", "mac"
+        )),
+        container = factor(container, levels = c("client", "bridge"))
     ) %>%
     select(-c(protocol, run.config)) %>%
     # Assert that all replicas agree on all field sizes
@@ -91,8 +95,14 @@ data_runs <- read.csv("structured/runs.csv") %>%
     )
 stopifnot(all(data_runs$size_range == 0))
 data_runs <- data_runs %>%
-    select(-c(size_range))
-# TODO filter such that client only shows fields that they also _send_ and similar for bridge
+    select(-c(size_range)) %>%
+    # filter such that client only shows fields that they also _send_ and similar for bridge
+    filter(
+        (container == "client" & (field == "KEM.public.key" | field == "OKEM.ciphertext")) |
+            (container == "bridge" & (field == "KEM.ciphertext" | field == "auth")) |
+            (field %in% c("padding", "mark", "mac"))
+    ) %>%
+    filter(size > 0)
 
 
 # Traffic data
@@ -266,7 +276,7 @@ transform_traffic <- function(data, size_column, granularity) {
 # Shows traffic over entire test with peers and type colored
 c(n, data_traffic_overview) %<-% (
     data_traffic %>%
-        transform_traffic(TCP.payload.size, 1)
+        transform_traffic(TCP.payload.size, 2 - max_handshakes)
 )
 
 data_traffic_overview %>%
@@ -284,7 +294,7 @@ data_traffic_overview %>%
 c(n, data_traffic_handshake) %<-% (
     data_traffic %>%
         filter(grepl("handshake", packet_type)) %>%
-        transform_traffic(key.exchange.size, 3)
+        transform_traffic(key.exchange.size, 4 - max_handshakes)
 )
 
 data_traffic_handshake_totals <- data_traffic %>%
@@ -337,12 +347,13 @@ data_traffic %>%
 
 # Shows handshake packet contents by size (uses runs.csv, per transport and container - rest labels)
 data_runs %>%
-    ggplot(aes(y = container, x = size, fill = field)) +
+    ggplot(aes(x = container, y = size, fill = field)) +
     ggtitle("Composition of Handshake Packets") +
-    labs(fill = "Field in packet") +
-    xlab("Field size [B]") +
-    ylab("Packet origin") +
+    xlab("Packet origin") +
+    ylab("Field size [B]") +
+    scale_y_continuous(breaks = function(z) seq(0, range(z)[2], by = 32)) +
     geom_col() +
+    geom_text(aes(label = field), position = position_stack(vjust = 0.5)) +
     facet_wrap(~transport, nrow = 1)
 
 warnings()

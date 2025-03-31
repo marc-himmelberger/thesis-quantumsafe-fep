@@ -99,10 +99,11 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
             "protocol",  # obfs4 | drivel
             "run config",  # x25519, etc (see benchmark.sh: ensure_drivel_*)
             "container",  # client | bridge
+            "handshakes",  # number of handshakes observed in logs
             "padding size",  # [B]
             "KEM public key size",  # [B]
             "KEM ciphertext size",  # [B]
-            "OKEM ciphertex size",  # [B]
+            "OKEM ciphertext size",  # [B]
             "mark size",  # [B]
             "mac size",  # [B]
             "auth size",  # [B]
@@ -140,6 +141,8 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         size_mac: int | None = None
         size_auth: int | None = None
 
+        num_handshakes: int | None = None
+
         # Handle Docker logs
         for log_file in run_folder.joinpath("logs").glob("*.log"):
             container_name = log_file.with_suffix("").name
@@ -148,6 +151,14 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
 
             if container_name.endswith("-logs"):
                 container_type = container_name[:-5]
+
+                _num_handshakes = logs.count(".generateHandshake()")
+                if num_handshakes is None:
+                    num_handshakes = _num_handshakes
+                else:
+                    assert (
+                        num_handshakes == _num_handshakes
+                    ), "Inconsistent number of handshakes logged"
 
                 m = re.search(container_type + r" padding range \[(\d+), (\d+)\]", logs)
                 # TODO: This is temporary until benchmark is rerun.
@@ -246,10 +257,11 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                         "protocol": [run_protocol],
                         "run config": [run_config],
                         "container": [container_type],
+                        "handshakes": [num_handshakes],
                         "padding size": [pad],
                         "KEM public key size": [size_kem_pk],
                         "KEM ciphertext size": [size_kem_ctxt],
-                        "OKEM ciphertex size": [size_okem_ctxt],
+                        "OKEM ciphertext size": [size_okem_ctxt],
                         "mark size": [size_mark],
                         "mac size": [size_mac],
                         "auth size": [size_auth],
@@ -330,78 +342,108 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                         ), "Unexpected extra TCP traffic"
                     tcp_extIP.append(p)
 
-        tunnel: list[Packet] = tcp_bridge[7:]
-        handshake: list[Packet] = tcp_bridge[:7]
-        assert handshake[0][TCP].flags == "S", "1st not SYN"
-        assert handshake[1][TCP].flags == "SA", "2nd not SYN, ACK"
-        assert handshake[2][TCP].flags == "A", "3rd not ACK"
-        assert handshake[3][TCP].flags == "PA", "4th not PSH, ACK"
-        assert handshake[4][TCP].flags == "A", "5th not ACK"
-        assert handshake[5][TCP].flags == "PA", "6th not PSH, ACK"
-        assert handshake[6][TCP].flags == "A", "7th not ACK"
+        syn_packet_indices = []
+        for i, p in enumerate(tcp_bridge):
+            if p[TCP].flags != "S":
+                continue
+            # We could also weed out the former indices, in case TCP fails
+            assert (
+                len(syn_packet_indices) == 0 or i >= syn_packet_indices[-1] + 7
+            ), "SYN packets too close for handshakes"
+            syn_packet_indices.append(i)
 
-        assert handshake[3].haslayer(Raw), "4th not raw data"
-        assert handshake[5].haslayer(Raw), "6th not raw data"
+        assert (
+            len(syn_packet_indices) == num_handshakes
+        ), "Expected number of handshakes does not match SYN packets to bridge"
+        print(f"found {num_handshakes} handshakes: {run_folder}")
 
-        client_hs: Packet = handshake[3]
-        bridge_hs: Packet = handshake[5]
-        client_hs_data: bytes = client_hs[TCP].payload.load
-        bridge_hs_data: bytes = bridge_hs[TCP].payload.load
-        client_hs_pkt = ClientHs(client_hs_data)
-        bridge_hs_pkt = BridgeHs(bridge_hs_data)
+        for i, start_index in enumerate(syn_packet_indices):
+            handshake: list[Packet] = tcp_bridge[start_index : start_index + 7]
+            assert handshake[0][TCP].flags == "S", "1st not SYN"
+            assert handshake[1][TCP].flags == "SA", "2nd not SYN, ACK"
+            assert handshake[2][TCP].flags == "A", "3rd not ACK"
+            assert handshake[3][TCP].flags == "PA", "4th not PSH, ACK"
+            assert handshake[4][TCP].flags == "A", "5th not ACK"
+            assert handshake[5][TCP].flags == "PA", "6th not PSH, ACK"
+            assert handshake[6][TCP].flags == "A", "7th not ACK"
 
-        assert len(client_hs_pkt) == len(client_hs_data), "Client packet lost data"
-        assert len(bridge_hs_pkt) == len(bridge_hs_data), "Bridge packet lost data"
+            assert handshake[3].haslayer(Raw), "4th not raw data"
+            assert handshake[5].haslayer(Raw), "6th not raw data"
 
-        with open(
-            run_folder.joinpath("tcpdump", "handshake.txt"), "w", encoding="utf-8"
-        ) as f:
-            msg1 = client_hs_pkt.show(dump=True)
-            msg2 = bridge_hs_pkt.show(dump=True)
+            client_hs: Packet = handshake[3]
+            bridge_hs: Packet = handshake[5]
+            client_hs_data: bytes = client_hs[TCP].payload.load
+            bridge_hs_data: bytes = bridge_hs[TCP].payload.load
+            client_hs_pkt = ClientHs(client_hs_data)
+            bridge_hs_pkt = BridgeHs(bridge_hs_data)
 
-            assert isinstance(msg1, str) and isinstance(msg2, str)
-            f.write(msg1 + "\n")
-            f.write(msg2 + "\n")
+            assert len(client_hs_pkt) == len(client_hs_data), "Client packet lost data"
+            assert len(bridge_hs_pkt) == len(bridge_hs_data), "Bridge packet lost data"
 
-        print(f"processed packets: {run_folder}")
-        print("  drawing client", end="")
-        client_hs_pkt.pdfdump(str(run_folder.joinpath("tcpdump", "handshake1.pdf")))
-        print("  drawing bridge", end="")
-        bridge_hs_pkt.pdfdump(str(run_folder.joinpath("tcpdump", "handshake2.pdf")))
+            with open(
+                run_folder.joinpath("tcpdump", f"handshake-{i+1}.txt"),
+                "w",
+                encoding="utf-8",
+            ) as f:
+                msg1 = client_hs_pkt.show(dump=True)
+                msg2 = bridge_hs_pkt.show(dump=True)
 
-        # Remove any excess data in packets for analysis
-        client_hs_pkt.remove_payload()
-        bridge_hs_pkt.remove_payload()
-        assert len(client_hs_pkt) == len(client_hs_data), "Client packet had payload?"
-        assert len(bridge_hs_pkt) < len(bridge_hs_data), "Bridge packet had no payload?"
+                assert isinstance(msg1, str) and isinstance(msg2, str)
+                f.write(msg1 + "\n")
+                f.write(msg2 + "\n")
 
-        entries_hs = pd.DataFrame.from_dict(
-            {
-                "protocol": run_protocol,
-                "run config": run_config,
-                "type": ["handshake", "handshake"],
-                "peer": ["bridge", "bridge"],
-                "timestamp": [client_hs.time, bridge_hs.time],
-                "direction": ["upstream", "downstream"],
-                "TCP payload size": [len(client_hs_data), len(bridge_hs_data)],
-                "key exchange size": [len(client_hs_pkt), len(bridge_hs_pkt)],
-            }
-        )
-        entries_tunnel = pd.DataFrame.from_dict(
-            {
-                "protocol": run_protocol,
-                "run config": run_config,
-                "type": ["data"] * len(tunnel),
-                "peer": ["bridge"] * len(tunnel),
-                "timestamp": [p.time for p in tunnel],
-                "direction": [
-                    "upstream" if p[IP].src == CLIENT_IP else "downstream"
-                    for p in tunnel
-                ],
-                "TCP payload size": [len(p[TCP].payload) for p in tunnel],
-                "key exchange size": [pd.NA] * len(tunnel),
-            }
-        )
+            print(f"  processed handshake {i+1}")
+            print(f"    drawing client handshake {i+1}", end="")
+            client_hs_pkt.pdfdump(
+                str(run_folder.joinpath("tcpdump", f"handshake-client-{i+1}.pdf"))
+            )
+            print(f"    drawing bridge handshake {i+1}", end="")
+            bridge_hs_pkt.pdfdump(
+                str(run_folder.joinpath("tcpdump", f"handshake-bridge-{i+1}.pdf"))
+            )
+
+            # Remove any excess data in packets for analysis
+            client_hs_pkt.remove_payload()
+            bridge_hs_pkt.remove_payload()
+            assert len(client_hs_pkt) == len(
+                client_hs_data
+            ), "Client packet had payload?"
+            assert len(bridge_hs_pkt) < len(
+                bridge_hs_data
+            ), "Bridge packet had no payload?"
+
+            entries_hs = pd.DataFrame.from_dict(
+                {
+                    "protocol": run_protocol,
+                    "run config": run_config,
+                    "type": ["handshake", "handshake"],
+                    "peer": ["bridge", "bridge"],
+                    "timestamp": [client_hs.time, bridge_hs.time],
+                    "direction": ["upstream", "downstream"],
+                    "TCP payload size": [len(client_hs_data), len(bridge_hs_data)],
+                    "key exchange size": [len(client_hs_pkt), len(bridge_hs_pkt)],
+                }
+            )
+            df_traffic = pd.concat([df_traffic, entries_hs], ignore_index=True)
+        for i, p in enumerate(tcp_bridge):
+            # skip handshake packets, add rest
+            if any(i < start_index + 7 for start_index in syn_packet_indices):
+                continue
+            entry_tunnel = pd.DataFrame.from_dict(
+                {
+                    "protocol": run_protocol,
+                    "run config": run_config,
+                    "type": ["data"],
+                    "peer": ["bridge"],
+                    "timestamp": p.time,
+                    "direction": [
+                        "upstream" if p[IP].src == CLIENT_IP else "downstream"
+                    ],
+                    "TCP payload size": [len(p[TCP].payload)],
+                    "key exchange size": [pd.NA],
+                }
+            )
+            df_traffic = pd.concat([df_traffic, entry_tunnel], ignore_index=True)
         entries_extIP = pd.DataFrame.from_dict(
             {
                 "protocol": run_protocol,
@@ -417,9 +459,7 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 "key exchange size": [pd.NA] * len(tcp_extIP),
             }
         )
-        df_traffic = pd.concat(
-            [df_traffic, entries_hs, entries_tunnel, entries_extIP], ignore_index=True
-        )
+        df_traffic = pd.concat([df_traffic, entries_extIP], ignore_index=True)
 
     return df_runs, df_traffic
 
