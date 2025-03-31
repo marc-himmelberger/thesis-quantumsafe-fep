@@ -55,7 +55,7 @@ full_run () {
     cp -r docker/tcpdump $1/runs/$out_dir
 }
 
-single_complete_run () {
+single_complete_bench () {
     cd lyrebird
 
     # assert no changes to lyrebird working tree
@@ -68,7 +68,6 @@ single_complete_run () {
     cd ..
 
     echo "Found clean lyrebird/ working tree. Proceeding..."
-    rm -rf $1/
     mkdir -p $1/benchmarks
 
     cd lyrebird
@@ -76,7 +75,7 @@ single_complete_run () {
     log "###############"
     log "# START BENCH #"
     log "###############"
-
+    
     # 1. Go benchmarks
     # 1a. obfs4-bench branch: Original obfs4, total handshake time
     git checkout obfs4-bench
@@ -119,7 +118,7 @@ no_complete_replicas=8
 
 rm -rf results/
 mkdir -p results/
-for i in {1..$no_complete_replicas}; do
+for i in $(seq 1 $no_complete_replicas); do
     out_dir=results/bench-$(printf "%02d" $i)
     out_dir=$(realpath $out_dir)
     mkdir -p $out_dir
@@ -127,6 +126,7 @@ for i in {1..$no_complete_replicas}; do
     log "Starting benchmark into $out_dir"
     (single_complete_bench $out_dir) 2>&1 >$out_dir/benchmark.log
     log "Completed benchmark for $out_dir"
+done
 log "Completed all benchmarks :D"
 
 # Kick off data structuring and plotting
