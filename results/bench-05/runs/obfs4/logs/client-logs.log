@@ -1,8 +1,8 @@
-2025/03/26 15:18:58 [NOTICE]:  - launched
-2025/03/26 15:18:58 [INFO]: lyrebird - initializing client transport listeners
-2025/03/26 15:18:58 [INFO]: obfs4 - registered listener: 127.0.0.1:34733
-2025/03/26 15:18:58 [INFO]: lyrebird - accepting connections
-2025/03/26 15:19:00 [INFO]: creating clientHandshake
-2025/03/26 15:19:00 [INFO]: padding range [77, 77]
-2025/03/26 15:19:00 [INFO]: clientHandshake.generateHandshake()
-2025/03/26 15:19:00 [INFO]: clientHandshake.parseServerHandshake(141 B)
+2025/04/01 02:04:31 [NOTICE]:  - launched
+2025/04/01 02:04:31 [INFO]: lyrebird - initializing client transport listeners
+2025/04/01 02:04:31 [INFO]: obfs4 - registered listener: 127.0.0.1:44249
+2025/04/01 02:04:31 [INFO]: lyrebird - accepting connections
+2025/04/01 02:04:33 [INFO]: creating clientHandshake
+2025/04/01 02:04:33 [INFO]: padding range [77, 77]
+2025/04/01 02:04:33 [INFO]: clientHandshake.generateHandshake()
+2025/04/01 02:04:33 [INFO]: clientHandshake.parseServerHandshake(141 B)

@@ -281,8 +281,13 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 torify_ip = json.loads(torify_ip_str.group(1))
 
                 assert "ip" in regular_ip, "Regular IP not found"
-                assert "ip" in torify_ip, "Torify IP not found"
-                assert regular_ip["ip"] != torify_ip["ip"], "IPs shouldn't match"
+                if "error" in torify_ip:
+                    assert (
+                        torify_ip["error"] == "Too Many Requests"
+                    ), "Torify IP: unknown error"
+                else:
+                    assert "ip" in torify_ip, "Torify IP not found"
+                    assert regular_ip["ip"] != torify_ip["ip"], "IPs shouldn't match"
             elif container_name == "bridge":
                 assert f"transport '{run_protocol}'" in logs, "Protocol not found"
                 assert "Bootstrapped 100% (done): Done" in logs, "Bridge setup not done"

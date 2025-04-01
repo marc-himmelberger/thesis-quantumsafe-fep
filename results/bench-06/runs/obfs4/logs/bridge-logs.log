@@ -1,9 +1,9 @@
-2025/03/26 15:22:34 [NOTICE]:  - launched
-2025/03/26 15:22:34 [INFO]: lyrebird - initializing server transport listeners
-2025/03/26 15:22:34 [INFO]: obfs4 - registered listener: [scrubbed]:28483
-2025/03/26 15:22:34 [INFO]: lyrebird - accepting connections
-2025/03/26 15:22:46 [INFO]: obfs4([scrubbed]:43454) - new connection
-2025/03/26 15:22:46 [INFO]: creating serverHandshake
-2025/03/26 15:22:46 [INFO]: padding range [0, 0]
-2025/03/26 15:22:46 [INFO]: serverHandshake.parseClientHandshake(141 B)
-2025/03/26 15:22:46 [INFO]: serverHandshake.generateHandshake()
+2025/04/01 02:23:36 [NOTICE]:  - launched
+2025/04/01 02:23:36 [INFO]: lyrebird - initializing server transport listeners
+2025/04/01 02:23:36 [INFO]: obfs4 - registered listener: [scrubbed]:28483
+2025/04/01 02:23:36 [INFO]: lyrebird - accepting connections
+2025/04/01 02:23:46 [INFO]: obfs4([scrubbed]:59416) - new connection
+2025/04/01 02:23:46 [INFO]: creating serverHandshake
+2025/04/01 02:23:46 [INFO]: padding range [0, 0]
+2025/04/01 02:23:46 [INFO]: serverHandshake.parseClientHandshake(141 B)
+2025/04/01 02:23:46 [INFO]: serverHandshake.generateHandshake()

@@ -91,7 +91,7 @@ data_runs <- data_runs %>%
     group_by(transport, container, field) %>%
     summarise(
         size_range = max(size) - min(size),
-        size = min(size)
+        size = min(size), .groups = "drop"
     )
 stopifnot(all(data_runs$size_range == 0))
 data_runs <- data_runs %>%
@@ -217,7 +217,7 @@ data_kems %>%
     ylab("log Running time [ms/op]") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_y_continuous(trans = "log10") +
-    geom_bar(position = "dodge", stat = "identity", width = 1) # +
+    geom_col(position = "dodge", width = 1) # +
 # stat_summary(
 #     data = df_oqs,
 #     aes(y = perf, x = algo, fill = inter),
@@ -240,7 +240,7 @@ data_kems %>%
     ylab("log Bytes allocated [B/op]") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_y_continuous(trans = "log10") +
-    geom_bar(position = "dodge", stat = "identity")
+    geom_col(position = "dodge")
 
 # ---------- TRAFFIC DATA ----------
 transform_traffic <- function(data, size_column, granularity) {
@@ -336,13 +336,18 @@ ggarrange(p1, p2,
 
 # Shows frequency distribution of TCP payload sizes
 data_traffic %>%
-    ggplot(aes(x = TCP.payload.size, fill = packet_type)) +
-    ggtitle("Distribution of TCP payload sizes") +
+    mutate(
+        TCP.packet.size = ifelse(packet_type == "data", TCP.payload.size + 32, TCP.payload.size + 40)
+    ) %>%
+    ggplot(aes(x = TCP.packet.size, fill = packet_type)) +
+    ggtitle("Distribution of TCP Packet Sizes") +
     labs(fill = "Packet type (peer)") +
-    xlab("TCP payload size [B]") +
+    xlab("log TCP packet size [B]") +
     ylab("Frequency [% of packets]") +
     scale_y_continuous(labels = scales::percent) +
-    geom_histogram(aes(y = after_stat(count / sum(count)))) +
+    scale_x_log10() +
+    expand_limits(x = 10) +
+    geom_histogram(aes(y = after_stat(count / sum(count))), binwidth = 0.1) +
     facet_wrap(~transport, ncol = 1)
 
 # Shows handshake packet contents by size (uses runs.csv, per transport and container - rest labels)
