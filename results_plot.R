@@ -249,26 +249,26 @@ transform_traffic <- function(data, size_column, granularity) {
         mutate(
             time_bin = round(timestamp, granularity)
         ) %>%
-        group_by(transport, packet_type, direction, replicate, time_bin) %>%
+        group_by(.data$transport, .data$packet_type, .data$direction, .data$replicate, .data$time_bin) %>%
         summarise(bitrate = sum({{ size_column }}) / 10^-granularity / 1000, .groups = "drop")
 
     n <- df %>%
-        group_by(transport, packet_type, direction, replicate) %>%
+        group_by(.data$transport, .data$packet_type, .data$direction, .data$replicate) %>%
         summarise(n = n(), .groups = "drop") %>%
-        group_by(transport, packet_type, direction) %>%
+        group_by(.data$transport, .data$packet_type, .data$direction) %>%
         equal_group_size()
 
     # Average traffic over replicates, ensure all replicas have values (even 0) at all time_bins
     df <- df %>%
-        group_by(time_bin) %>%
-        complete(transport, packet_type, direction, replicate, fill = list(bitrate = 0)) %>%
-        group_by(transport, packet_type, direction, time_bin) %>%
-        summarise(bitrate = mean(bitrate), .groups = "drop") %>%
+        group_by(.data$time_bin) %>%
+        complete(.data$transport, .data$packet_type, .data$direction, .data$replicate, fill = list(bitrate = 0)) %>%
+        group_by(.data$transport, .data$packet_type, .data$direction, .data$time_bin) %>%
+        summarise(bitrate = mean(.data$bitrate), .groups = "drop") %>%
         # Remove direction column, but negate traffic with downstream flow (2 columns for bitrate)
         mutate(
-            bitrate = ifelse(direction == "upstream", bitrate, -bitrate)
+            bitrate = ifelse(.data$direction == "upstream", .data$bitrate, -.data$bitrate)
         ) %>%
-        select(-direction)
+        select(-"direction")
 
     list(n, df)
 }
