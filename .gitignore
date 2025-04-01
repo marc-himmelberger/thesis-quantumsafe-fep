@@ -1,5 +1,6 @@
 docker/.bridgeinfo
 docker/tcpdump
+docker/tcpdump-bridge
 docker/logs
 latex/.git
 .DS_Store

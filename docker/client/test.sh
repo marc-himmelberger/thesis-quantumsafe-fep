@@ -81,6 +81,9 @@ else
     log "[FAIL] IP did not change"
 fi
 
+# give time for tcpdump to ensure no packet loss
+sleep 5
+
 # TODO check on bridge logs or different websites, to see what did or didn't work
 # TODO also check during/after connection
 # TODO check without pluggable transport

@@ -71,6 +71,15 @@ services:
       - nodebug
       - debugbridge
 
+  tcpdump-bridge:
+    image: kaazing/tcpdump
+    network_mode: service:bridge
+    volumes:
+      - ./tcpdump-bridge:/tcpdump
+    profiles:
+      - nodebug
+      - debugbridge
+
   bridge-debugbridge:
     build:
       context: ..
