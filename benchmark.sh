@@ -13,6 +13,13 @@ if [ "Darwin" = "$(uname -s)" ]; then
 	sed_no_backup="-i ''"
 fi
 
+# Iteration count
+no_complete_replicas=8
+if [[ -n "$1" ]]; then
+    no_complete_replicas=$1
+fi
+echo "Performing $no_complete_replicas replicas"
+
 ensure_no_padding () {
     orig="MaxPadLength)"
     repl="MinPadLength)"
@@ -113,8 +120,6 @@ single_complete_bench () {
     git reset --hard
     cd ..
 }
-
-no_complete_replicas=8
 
 rm -rf results/
 mkdir -p results/
