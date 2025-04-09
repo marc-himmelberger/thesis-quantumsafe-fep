@@ -40,4 +40,8 @@
         "${workspaceFolder}/lyrebird/liboqs",
         "${workspaceFolder}/lyrebird/liboqs-go"
     ],
+    "go.testTimeout": "300s",
+    "go.testFlags": [
+        "-short"
+    ],
 }

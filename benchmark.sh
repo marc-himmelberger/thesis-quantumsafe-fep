@@ -42,6 +42,18 @@ ensure_drivel_x25519 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"x25519\"|g" lyrebird/transports/drivel/drivel.go
     sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-x25519\"|g" lyrebird/transports/drivel/drivel.go
 }
+ensure_drivel_classicmceliece_348864 () {
+    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-348864\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-Classic-McEliece-348864\"|g" lyrebird/transports/drivel/drivel.go
+}
+ensure_drivel_classicmceliece_6688128 () {
+    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-6688128\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-Classic-McEliece-6688128\"|g" lyrebird/transports/drivel/drivel.go
+}
+ensure_drivel_classicmceliece_6960119 () {
+    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-6960119\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-Classic-McEliece-6960119\"|g" lyrebird/transports/drivel/drivel.go
+}
 
 # Removes padding from lyrebird, and starts a full run in Docker
 # Reuqires that lyrebird be up-to-date (main branch)
@@ -110,7 +122,10 @@ single_complete_bench () {
     # 2b. Full run drivel(x25519)
     full_run $1 drivel x25519
 
-    # TODO 2c. Full runs with more KEM/OKEM combinations
+    # 2c. Full runs with more KEM/OKEM combinations
+    full_run $1 drivel classicmceliece_348864
+    full_run $1 drivel classicmceliece_6688128
+    full_run $1 drivel classicmceliece_6960119
 
     log "###############"
     log "#  END RUNS   #"

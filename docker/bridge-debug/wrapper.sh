@@ -1,4 +1,6 @@
 #!/bin/bash
+# Remove statefile (might contain incompatible key)
+rm /var/lib/tor/pt_state/drivel_state.json
 # Used to dump runtime arguments and env, and start Delve
 cd /lyrebird
 export LOGFILE=/tmp/logname

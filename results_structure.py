@@ -291,7 +291,7 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
             elif container_name == "bridge":
                 assert f"transport '{run_protocol}'" in logs, "Protocol not found"
                 assert "Bootstrapped 100% (done): Done" in logs, "Bridge setup not done"
-            elif container_name == "tcpdump":
+            elif container_name.startswith("tcpdump"):
                 num_packets = re.search(r"(\d+) packets captured", logs)
                 assert num_packets is not None and len(num_packets.groups()) == 1
                 num_packets = int(num_packets.group(1))
