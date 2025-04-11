@@ -14,7 +14,7 @@ services:
       - TORBRIDGE_Address=172.16.113.5
     volumes:
       - data-bridge:/var/lib/tor
-      - ./.bridgeinfo:/.bridgeinfo
+      - ./.drivel:/drivel
     ports:
       - 27797:27797
       - 28483:28483
@@ -22,7 +22,7 @@ services:
       - nodebug
     stop_grace_period: 1s # SIGKILL after 1s
     healthcheck:
-      test: [ "CMD-SHELL", "get-bridge-line > /.bridgeinfo && grep -q 'Bootstrapped 100%' /var/log/tor/log" ]
+      test: [ "CMD-SHELL", "get-bridge-line > /drivel/.bridgeinfo && cp /var/lib/tor/pt_state/drivel_key-*.json /drivel && grep -q 'Bootstrapped 100%' /var/log/tor/log" ]
       interval: 2s
       retries: 20
       timeout: 2s
@@ -35,7 +35,7 @@ services:
         ipv4_address: 172.16.113.6
     volumes:
       - data-client:/var/lib/tor
-      - ./.bridgeinfo:/.bridgeinfo:ro
+      - ./.drivel:/drivel:ro
     depends_on:
       bridge:
         condition: service_healthy
@@ -95,7 +95,7 @@ services:
       - TORBRIDGE_Address=172.16.113.5
     volumes:
       - data-bridge:/var/lib/tor
-      - ./.bridgeinfo:/.bridgeinfo
+      - ./.drivel:/drivel
     ports:
       - 27797:27797
       - 28483:28483
@@ -104,7 +104,7 @@ services:
       - debugbridge
     stop_grace_period: 1s # SIGKILL after 1s
     healthcheck:
-      test: [ "CMD-SHELL", "cat /var/log/tor/log | grep \"100% (done): Done\"" ]
+      test: [ "CMD-SHELL", "get-bridge-line > /drivel/.bridgeinfo && cp /var/lib/tor/pt_state/drivel_key-*.json /drivel && grep -q 'Bootstrapped 100%' /var/log/tor/log" ]
       interval: 2s
       retries: 20
       timeout: 2s

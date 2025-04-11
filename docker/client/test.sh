@@ -18,7 +18,8 @@ fi
 
 # Read Bridge Line, only add to torrc if not already present (otherwise prevents restarts)
 if ! grep -q "iat-mode" /etc/tor/torrc; then
-    cat /.bridgeinfo >> /etc/tor/torrc
+    cat /drivel/.bridgeinfo >> /etc/tor/torrc
+    cp /drivel/drivel_key-*.json /var/lib/tor/pt_state
 fi
 
 # Set control password

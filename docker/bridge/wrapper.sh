@@ -1,6 +1,6 @@
 #!/bin/bash
 # Remove statefile (might contain incompatible key)
-rm /var/lib/tor/pt_state/drivel_state.json
+rm -f /var/lib/tor/pt_state/drivel_*
 # Used to dump runtime arguments and env
 export LOGFILE=/tmp/logname
 echo `env` > $LOGFILE-env

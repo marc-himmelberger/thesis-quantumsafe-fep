@@ -2,9 +2,11 @@
 
 set -e
 
-mkdir -p tcpdump logs
-rm -f tcpdump/*
-rm -f logs/*
+for out_folder in tcpdump tcpdump-bridge logs .drivel; do
+    rm -rf "$out_folder"
+    mkdir -p "$out_folder"
+    chmod 777 "$out_folder"
+done
 
 docker compose --profile "*" down
 docker compose --profile "*" build

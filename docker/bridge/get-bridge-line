@@ -38,7 +38,7 @@ port=$(grep "Registered server transport 'drivel' at" "$TOR_LOG" | \
     sed "s/.*:\([0-9]\{1,5\}\)'$/\1/" | \
     tail -1)
 fingerprint=$(sed 's/.* //' "$FINGERPRINT")
-pt_args=$(grep '^Bridge drivel' "$PT_STATE" | sed 's/.*\(cert=.*\)/\1/' | \
+pt_args=$(grep '^Bridge drivel' "$PT_STATE" | sed 's/.*\(node-id=.*\)/\1/' | \
     tail -1)
 
 if [[ "$addr" = "" || "$port" = "" || "$fingerprint" = "" || "$pt_args" = "" ]]
