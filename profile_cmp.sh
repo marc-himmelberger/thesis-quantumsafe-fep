@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Quick and dirty script to compare CPU and Memory profiles between an obfs4 handshake and a Drivel handshake
 mkdir -p results
@@ -34,7 +34,10 @@ echo "Old entry: maxHandshakeLength changed back to '$old_line'"
 
 echo "Comparing profiles:"
 go tool pprof -http=":" -no_browser -diff_base $out_folder/obfs4.cpu.prof $out_folder/drivel.cpu.prof &
-pprof_pid=$!
-go tool pprof -http=":" -no_browser -diff_base $out_folder/obfs4.mem.prof $out_folder/drivel.mem.prof
-echo "killing background process too"
-kill -9 $pprof_pid
+pprof_pid1=$!
+go tool pprof -http=":" -no_browser -diff_base $out_folder/obfs4.mem.prof $out_folder/drivel.mem.prof &
+pprof_pid2=$!
+sleep 2
+read -p "Press key to continue... " -n1 -s
+echo "Killing background processes"
+kill -9 $pprof_pid1 $pprof_pid2
