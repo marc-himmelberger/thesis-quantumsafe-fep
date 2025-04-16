@@ -161,13 +161,10 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                     ), "Inconsistent number of handshakes logged"
 
                 m = re.search(container_type + r" padding range \[(\d+), (\d+)\]", logs)
-                # TODO: This is temporary until benchmark is rerun.
+                # In case the log line does not indicate client/server padding, deduce from container_type
                 if m is None:
                     m = re.search(r"padding range \[(\d+), (\d+)\]", logs)
                     assert m
-                    if container_type == "bridge" and run_protocol == "drivel":
-                        _logs = logs[m.end() :]
-                        m = re.search(r"padding range \[(\d+), (\d+)\]", _logs)
 
                 assert m, "Unable to find padding range in logs"
                 assert len(m.groups()) == 2, "Unable to parse padding range in logs"
@@ -398,14 +395,16 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 f.write(msg2 + "\n")
 
             print(f"  processed handshake {i+1}")
-            print(f"    drawing client handshake {i+1}", end="")
-            client_hs_pkt.pdfdump(
-                str(run_folder.joinpath("tcpdump", f"handshake-client-{i+1}.pdf"))
-            )
-            print(f"    drawing bridge handshake {i+1}", end="")
-            bridge_hs_pkt.pdfdump(
-                str(run_folder.joinpath("tcpdump", f"handshake-bridge-{i+1}.pdf"))
-            )
+            # Commented out as it takes a rather long time to render and is not very useful for larger settings
+            #
+            # print(f"    drawing client handshake {i+1}", end="")
+            # client_hs_pkt.pdfdump(
+            #     str(run_folder.joinpath("tcpdump", f"handshake-client-{i+1}.pdf"))
+            # )
+            # print(f"    drawing bridge handshake {i+1}", end="")
+            # bridge_hs_pkt.pdfdump(
+            #     str(run_folder.joinpath("tcpdump", f"handshake-bridge-{i+1}.pdf"))
+            # )
 
             # Remove any excess data in packets for analysis
             client_hs_pkt.remove_payload()

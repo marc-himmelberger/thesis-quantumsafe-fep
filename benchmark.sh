@@ -34,9 +34,11 @@ ensure_padding () {
 }
 ensure_bridge_obfs4 () {
     sed $sed_no_backup "s|drivel|obfs4|g" docker/bridge/start-tor.sh docker/bridge/get-bridge-line
+    sed $sed_no_backup "s|node-id=|cert=|g" docker/bridge/start-tor.sh docker/bridge/get-bridge-line
 }
 ensure_bridge_drivel () {
     sed $sed_no_backup "s|obfs4|drivel|g" docker/bridge/start-tor.sh docker/bridge/get-bridge-line
+    sed $sed_no_backup "s|cert=|node-id=|g" docker/bridge/start-tor.sh docker/bridge/get-bridge-line
 }
 ensure_drivel_x25519 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"x25519\"|g" lyrebird/transports/drivel/drivel.go
@@ -53,6 +55,18 @@ ensure_drivel_classicmceliece_6688128 () {
 ensure_drivel_classicmceliece_6960119 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-6960119\"|g" lyrebird/transports/drivel/drivel.go
     sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-Classic-McEliece-6960119\"|g" lyrebird/transports/drivel/drivel.go
+}
+ensure_drivel_mlkem_512 () {
+    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"ML-KEM-512\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-ML-KEM-512\"|g" lyrebird/transports/drivel/drivel.go
+}
+ensure_drivel_mlkem_768 () {
+    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"ML-KEM-768\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-ML-KEM-768\"|g" lyrebird/transports/drivel/drivel.go
+}
+ensure_drivel_mlkem_1024 () {
+    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"ML-KEM-1024\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-ML-KEM-1024\"|g" lyrebird/transports/drivel/drivel.go
 }
 
 # Removes padding from lyrebird, and starts a full run in Docker
@@ -126,6 +140,9 @@ single_complete_bench () {
     full_run $1 drivel classicmceliece_348864
     full_run $1 drivel classicmceliece_6688128
     full_run $1 drivel classicmceliece_6960119
+    full_run $1 drivel mlkem_512
+    full_run $1 drivel mlkem_768
+    full_run $1 drivel mlkem_1024
 
     log "###############"
     log "#  END RUNS   #"

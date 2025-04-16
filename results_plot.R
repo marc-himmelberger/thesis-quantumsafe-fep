@@ -154,6 +154,7 @@ data_preexist %>%
 
 # Shows handshake performance with branches colored
 # Filter only where benchmarks are "...Handshake"
+# TODO need to respect that there are now _many_ more BenchmarkDrivelHandshake subbenches
 data_handshake <- data_bench %>%
     filter(
         grepl("transports/drivel", benchmark) |

@@ -22,7 +22,7 @@ services:
       - nodebug
     stop_grace_period: 1s # SIGKILL after 1s
     healthcheck:
-      test: [ "CMD-SHELL", "get-bridge-line > /drivel/.bridgeinfo && cp /var/lib/tor/pt_state/drivel_key-*.json /drivel && grep -q 'Bootstrapped 100%' /var/log/tor/log" ]
+      test: [ "CMD-SHELL", "cp /var/lib/tor/pt_state/drivel_key-*.json /drivel; get-bridge-line > /drivel/.bridgeinfo && grep -q 'Bootstrapped 100%' /var/log/tor/log" ]
       interval: 2s
       retries: 20
       timeout: 2s
@@ -104,7 +104,7 @@ services:
       - debugbridge
     stop_grace_period: 1s # SIGKILL after 1s
     healthcheck:
-      test: [ "CMD-SHELL", "get-bridge-line > /drivel/.bridgeinfo && cp /var/lib/tor/pt_state/drivel_key-*.json /drivel && grep -q 'Bootstrapped 100%' /var/log/tor/log" ]
+      test: [ "CMD-SHELL", "cp /var/lib/tor/pt_state/drivel_key-*.json /drivel; get-bridge-line > /drivel/.bridgeinfo && grep -q 'Bootstrapped 100%' /var/log/tor/log" ]
       interval: 2s
       retries: 20
       timeout: 2s
