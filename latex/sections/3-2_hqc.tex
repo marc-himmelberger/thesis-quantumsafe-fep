@@ -1,0 +1,54 @@
+\section{Obfuscating HQC} \label{sec:obfuscating-hqc}
+
+Throughout this \cref{sec:obfuscating-hqc}, we use the integer variables $r, n_1, n_2, w$ as defined in \cite{NISTPQC-R4:HQC22}.
+As for \cref{sec:obfuscating-classic-mceliece}, TODO something something matrices, vectors, bitstrings.
+
+\paragraph{Original generation and distribution}
+HQC is a code-based KEM selected for standardization as part of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization,nist-ir-8545}. HQC consists of threee parameter sets, namely HQC-128, HQC-192, and HQC-256.
+ 
+In HQC, public keys are pairs of polynomials $(h_0, h_1) \in \mathbb{F}_2[x]$ such that $h_1 = x + h_0 y$ where $x,y,h_0$ have degree $<r$ and $x,y$ have hamming weight exactly $w$.
+Ciphertexts are pairs of a polynomial $u$, with degree $<r$, and a bitstring of length $n_1n_2$.
+
+TODO Notes:
+Public Keys are not uniformly random, even though $h_0$ is, because $x,y$ have a set HW.
+Ciphertexts are strongly disjoint-simulatable (1323), SPR-CCA.
+Hardness assumptions (1323): Syndrome decoding as 2-DQCSD, 3-DQCSD, and codeword finding 3-CQCCF for collision freeness. Decisional => IND-CPA of PKE + OW-CPA of PKE + ciphertext indistinguishability if correct parity is used (Lemma P.2, p. 59)
+Plan: Reject PKs during generation to force parity = 0, should have success rate 1/2, then ciphertexts are already random bitstrings (trim lowest bit in polynomial u, as parity is fixed, this can be reconstructed).
+
+\newpage
+TODO: adapt text from here
+
+The generation of public keys is a multistep process ...
+This key generation process, among other algorithms from the Round 4 specification of HQC are reproduced in \cref{fig:hqc-spec}.
+
+For encapsulation, rejection-sampling is used to generate ... which is then mapped ... using ... defined by the public key.
+
+\paragraph{Constructed encoding}
+\paragraph{Uniformity and success rate}
+
+We analyze the public key and ciphertext uniformity of our encoding and reduce to the two assumptions made above. We analyze the success rate of our encoding.
+
+\begin{lemma}[[First-encaps Success Probability of TODO TBD]
+\label{lem:hqc-first-encaps-success}
+    TODO bounds on success
+\end{lemma}
+
+\begin{lemma}[Ciphertext Uniformity of TODO TBD]
+\label{lem:hqc-ctxt-unif}
+    TODO bounds on uniformity
+\end{lemma}
+
+Together with the TBD KEM, our encoding functions can be used to define a encapsulate-then-encode obfuscated KEM as in \cref{def:encaps-then-encode}.
+
+\begin{theorem}[KEM Security of TODO TBD]
+    Let TODO TBD be an encapsulate-then-encode obfuscated KEM based on the HQC KEM as per \cref{def:encaps-then-encode}. For any adversary $\adv$ against the $\indcca$ security of TODO TBD, there exists an algorithm $\bdv$ such that
+    \[ \advantage{\indcca}{TODO TBD}[(\bdv)] \leq 123. \]
+
+    Further,  For any adversary $\adv$ against the $\sprcca$ security of TODO TBD, there exists an algorithm $\bdv$ such that
+    \[ \advantage{\sprcca}{TODO TBD}[(\bdv)] \leq 123. \]
+\end{theorem}
+\begin{proof}
+    IND-CCA security follows from \cite[Theorem~2.12]{CCS:GunSteVei24}, together with \cref{lem:tbd-first-encaps-success}.
+    
+    SPR-CCA security follows from \cite[Theorem~2.13]{CCS:GunSteVei24}, together with \cref{lem:tbd-first-encaps-success,lem:tbd-ctxt-unif}.
+\end{proof}

@@ -3,7 +3,7 @@
 Throughout this \cref{sec:obfuscating-classic-mceliece}, we use the positive integer variables $m,n,t,k$ where $n < 2^m$ and $k=mt-n$ as defined in \cite{NISTPQC-R4:ClassicMcEliece22}. We work with matrices and vectors over $\mathbb F_2$ when examining the KEM and use bitstrings in the defintion and analysis of OKEMs. As the dimensions of the matrices and vectors are fixed for a given parameter set, we associate the matrices and vectors with their canonical encoding as bitstrings of appropriate length.
 
 \paragraph{Original generation and distribution}
-Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in Round 4 of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}. Although NIST announced in early 2025 that Classic McEliece would not be standardized as part of this process \cite{nist-ir-8545}. Like \cite{EC:Xagawa22}, we only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
+Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in Round 4 of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}. Although NIST announced in early 2025 that Classic McEliece would not be standardized as part of this process \cite{nist-ir-8545}, we believe the scheme to be worthy of examination. Like \cite{EC:Xagawa22}, we only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
  
 In Classic McEliece, public keys are the $k$ rightmost columns of a $mt \times n$ generator matrix in systematic form ($k = n - mt$). Ciphertexts are the $mt$ data bits corresponding to $n$-bit codewords with Hamming weight exactly $t$.
 
@@ -117,4 +117,4 @@ We have seen that Classic McEliece, as specified in \cite{NISTPQC-R4:ClassicMcEl
     The $\indcca$ and $\sprcca$ security notions for KEMs defined in \cref{def:kem-security} match the established notions for KEMs of the same names. These have been shown for Classic McEliece in previous work \cite[Section~K]{EC:Xagawa22}, and \cite[security.pdf: Section 5]{NISTPQC-R4:ClassicMcEliece22}.
 \end{proof}
 
-However, because we need 
+TODO: Discuss https://classic.mceliece.org/mceliece-529-20250417.pdf and how the other paper relates to PR-Key.
