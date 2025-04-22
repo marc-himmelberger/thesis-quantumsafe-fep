@@ -167,10 +167,6 @@ done
 log "Completed all benchmarks :D"
 
 # Kick off data structuring and plotting
-# 1. Performance comparison obfs4(old) vs obfs4(new) vs drivel(x25519ell2) - using Benchmark(.*)Handshake
-# 2. Full-stack comparison obfs4(new) vs drivel(x25519ell2)
-# 3. Full-stack comparison drivel(x25519ell2) vs other combinations
-
 log "Structuring data..."
 python3 results_structure.py
 log "Plotting..."

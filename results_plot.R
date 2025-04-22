@@ -20,11 +20,27 @@ equal_group_size <- function(df) {
 }
 
 # State of implementation and OQS relevance
-active_algos <- c("x25519", "EtE-x25519")
-relevant_algos <- c(
+active_algos <- c(
+    "x25519",
+    "EtE-x25519",
+    "Classic-McEliece-348864",
+    "Classic-McEliece-460896",
+    "Classic-McEliece-6688128",
+    "Classic-McEliece-6960119",
+    "Classic-McEliece-8192128",
+    "EtE-Classic-McEliece-348864",
+    "EtE-Classic-McEliece-460896",
+    "EtE-Classic-McEliece-6688128",
+    "EtE-Classic-McEliece-6960119",
+    "EtE-Classic-McEliece-8192128",
     "ML-KEM-512",
     "ML-KEM-768",
     "ML-KEM-1024",
+    "EtE-ML-KEM-512",
+    "EtE-ML-KEM-768",
+    "EtE-ML-KEM-1024"
+)
+relevant_algos <- c(
     "FrodoKEM-640-AES",
     "FrodoKEM-640-SHAKE",
     "FrodoKEM-976-AES",
@@ -33,17 +49,19 @@ relevant_algos <- c(
     "FrodoKEM-1344-SHAKE",
     "HQC-128",
     "HQC-192",
-    "HQC-256",
-    "Classic-McEliece-348864",
-    "Classic-McEliece-348864f",
-    "Classic-McEliece-460896",
-    "Classic-McEliece-460896f",
-    "Classic-McEliece-6688128",
-    "Classic-McEliece-6688128f",
-    "Classic-McEliece-6960119",
-    "Classic-McEliece-6960119f",
-    "Classic-McEliece-8192128",
-    "Classic-McEliece-8192128f"
+    "HQC-256"
+)
+# TODO: This should match the "run config" in runs.csv (and therefore benchmark.sh)
+relevant_combinations <- c(
+    "x25519|EtE-x25519",
+    "Classic-McEliece-348864|EtE-ML-KEM-512",
+    "Classic-McEliece-460896|EtE-ML-KEM-768",
+    "Classic-McEliece-6688128|EtE-ML-KEM-1024",
+    "Classic-McEliece-6960119|EtE-ML-KEM-1024",
+    "Classic-McEliece-8192128|EtE-ML-KEM-1024",
+    "ML-KEM-512|EtE-ML-KEM-512",
+    "ML-KEM-768|EtE-ML-KEM-768",
+    "ML-KEM-1024|EtE-ML-KEM-1024"
 )
 
 # OQS reference data
@@ -65,7 +83,18 @@ df_oqs <- read.csv("../supercop_liboqs.csv") %>%
 data_bench <- read.csv("structured/benchmarks.csv")
 data_bench <- data_bench %>%
     mutate(
-        perf = 10^-3 * time.iter
+        perf = 10^-3 * time.iter,
+        protocol_pretty = ifelse(grepl("transports/obfs4", benchmark),
+            "Obfs4",
+            ifelse(grepl("transports/drivel", benchmark),
+                "Drivel",
+                "?"
+            )
+        ),
+        subbench_pretty = ifelse(grepl("transports/obfs4", benchmark),
+            "x25519ell2",
+            gsub("\\|", "\n", subbench)
+        )
     )
 
 # Runs data
@@ -125,7 +154,7 @@ data_traffic <- read.csv("structured/traffic.csv") %>%
     ungroup()
 
 # ---------- BENCHMARK DATA ----------
-
+print("---- data_preexist ----")
 data_preexist <- data_bench %>%
     group_by(benchmark) %>%
     filter(any(branch == "main") & any(branch == "obfs4-bench"))
@@ -142,7 +171,7 @@ data_preexist %>%
     xlab("Branch") +
     ylab("Running time [ms/op]") +
     geom_boxplot(notch = TRUE) +
-    facet_wrap(~benchmark, scale = "free")
+    facet_wrap(~benchmark, scales = "free")
 
 data_preexist %>%
     ggplot(aes(y = bytes.alloc, x = branch, fill = branch)) +
@@ -150,37 +179,47 @@ data_preexist %>%
     xlab("Branch") +
     ylab("Bytes allocated [B/op]") +
     geom_boxplot(notch = TRUE) +
-    facet_wrap(~benchmark, scale = "free")
+    facet_wrap(~benchmark, scales = "free")
 
 # Shows handshake performance with branches colored
-# Filter only where benchmarks are "...Handshake"
-# TODO need to respect that there are now _many_ more BenchmarkDrivelHandshake subbenches
+# Filter only where benchmarks are "...Handshake" for Drivel or Obfs4
+# Restrict to relevant_combinations for Drivel
+print("---- data_handshake ----")
 data_handshake <- data_bench %>%
     filter(
         grepl("transports/drivel", benchmark) |
             grepl("transports/obfs4", benchmark)
     ) %>%
-    filter(grepl("Handshake$", benchmark))
+    filter(grepl("Handshake$", benchmark)) %>%
+    filter(
+        subbench %in% relevant_combinations |
+            grepl("transports/obfs4", benchmark)
+    )
 
 n <- data_handshake %>%
-    group_by(benchmark, branch) %>%
+    group_by(benchmark, subbench, branch) %>%
     equal_group_size()
 
 data_handshake %>%
-    ggplot(aes(y = perf, x = benchmark, fill = branch)) +
+    ggplot(aes(y = perf, x = subbench_pretty, fill = branch)) +
     ggtitle(paste0("Simulated Handshake Running Time (n=", n, ")")) +
     xlab("Benchmark name") +
     ylab("Running time [ms/op]") +
-    geom_boxplot(notch = TRUE)
+    geom_boxplot(notch = TRUE) +
+    theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+    facet_grid(~protocol_pretty, scales = "free_x", space = "free")
 data_handshake %>%
-    ggplot(aes(y = bytes.alloc, x = benchmark, fill = branch)) +
+    ggplot(aes(y = bytes.alloc, x = subbench_pretty, fill = branch)) +
     ggtitle(paste0("Handshake Memory Usage (n=", n, ")")) +
     xlab("Benchmark name") +
     ylab("Bytes allocated [B/op]") +
-    geom_boxplot(notch = TRUE)
+    geom_boxplot(notch = TRUE) +
+    theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+    facet_grid(~protocol_pretty, scales = "free_x", space = "free")
 
 # Shows KEM benchmarks in main branch
 # Filter only where benchmarks are "BenchmarkKems" or "BenchmarkOkems"
+print("---- data_kems ----")
 data_kems <- data_bench %>%
     filter(
         grepl("BenchmarkKems$", benchmark) |
@@ -275,6 +314,7 @@ transform_traffic <- function(data, size_column, granularity) {
 }
 
 # Shows traffic over entire test with peers and type colored
+print("---- data_traffic_overview ----")
 c(n, data_traffic_overview) %<-% (
     data_traffic %>%
         transform_traffic(TCP.payload.size, 2 - max_handshakes)
@@ -288,10 +328,12 @@ data_traffic_overview %>%
     ylab("Network traffic [kbps]") +
     scale_x_continuous(n.breaks = 10) +
     geom_col() +
-    facet_wrap(~transport, ncol = 1)
+    theme(legend.position = "bottom") +
+    facet_wrap(~transport, ncol = 1, scales = "free_y")
 
 
 # Shows traffic in handshake only but more detailed
+print("---- data_traffic_handshake ----")
 c(n, data_traffic_handshake) %<-% (
     data_traffic %>%
         filter(grepl("handshake", packet_type)) %>%
@@ -315,7 +357,7 @@ p1 <- data_traffic_handshake %>%
     ylab("Network traffic [kbps]") +
     scale_x_continuous(n.breaks = 10) +
     geom_col() +
-    facet_wrap(~transport, ncol = 1)
+    facet_wrap(~transport, ncol = 1, scales = "free_y")
 p2 <- data_traffic_handshake_totals %>%
     ggplot(aes(y = total, x = 0)) +
     ggtitle("Total bytes") +
@@ -327,7 +369,7 @@ p2 <- data_traffic_handshake_totals %>%
     ) +
     geom_col() +
     geom_text(aes(y = total, label = paste(total, "B"), vjust = ifelse(total > 0, 2, -1)), color = "white") +
-    facet_wrap(~transport, ncol = 1)
+    facet_wrap(~transport, ncol = 1, scales = "free_y")
 
 ggarrange(p1, p2,
     nrow = 1, align = "h",
@@ -336,6 +378,7 @@ ggarrange(p1, p2,
 )
 
 # Shows frequency distribution of TCP payload sizes
+print("---- data_traffic ----")
 data_traffic %>%
     mutate(
         TCP.packet.size = ifelse(packet_type == "data", TCP.payload.size + 32, TCP.payload.size + 40)
@@ -349,17 +392,19 @@ data_traffic %>%
     scale_x_log10() +
     expand_limits(x = 10) +
     geom_histogram(aes(y = after_stat(count / sum(count))), binwidth = 0.1) +
-    facet_wrap(~transport, ncol = 1)
+    facet_wrap(~transport, ncol = 1, scales = "free_y")
 
 # Shows handshake packet contents by size (uses runs.csv, per transport and container - rest labels)
+print("---- data_runs ----")
 data_runs %>%
     ggplot(aes(x = container, y = size, fill = field)) +
     ggtitle("Composition of Handshake Packets") +
     xlab("Packet origin") +
     ylab("Field size [B]") +
-    scale_y_continuous(breaks = function(z) seq(0, range(z)[2], by = 32)) +
+    scale_y_continuous(breaks = function(z) seq(0, range(z)[2], by = 2^(floor(log2(max(z))) - 2))) +
     geom_col() +
+    theme(legend.position = "bottom") +
     geom_text(aes(label = field), position = position_stack(vjust = 0.5)) +
-    facet_wrap(~transport, nrow = 1)
+    facet_wrap(~transport, nrow = 1, scales = "free_y")
 
 warnings()
