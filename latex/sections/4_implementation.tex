@@ -8,3 +8,16 @@ Use Kemeleon alongside the other obfuscated KEMs
 
 * (Experimenting with implementing different traffic patterns, such as arbitrary fragmentation of key
 exchange messages and/or more flexibility in clients to send arbitrary data)
+
+
+=> For Tor people: Consider as part of audience of report, so also accessible to non-crypto-nerds and illustrate: How to deploy, How to use, Integration barriers such as SOCKS issues -> Implementation section
+
+
+Fragmentation:
+* Drivel protects against retroactive identification of traffic possible in obfs4 by involving K_S
+    Using K_S requires some minimum amount of traffic before a response is sent from the server (ctxt + PRF + padding)
+    You could then do arbitrary fragmentation on top of K_S
+* But if we want arbitrary fragmentation, you'd still need at least a PRF value; but could allow more traffic patterns - at the risk of having your traffic be identified...
+-> seems to me like a weird mix of "Drivel is better than obfs4 because you can't identify it later" and then backtracking for fragmentation.
+
+Minimum size would depend on the OKEM, and might be small e.g. for CM.

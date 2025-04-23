@@ -15,6 +15,10 @@ Ciphertexts are strongly disjoint-simulatable (1323), SPR-CCA.
 Hardness assumptions (1323): Syndrome decoding as 2-DQCSD, 3-DQCSD, and codeword finding 3-CQCCF for collision freeness. Decisional => IND-CPA of PKE + OW-CPA of PKE + ciphertext indistinguishability if correct parity is used (Lemma P.2, p. 59)
 Plan: Reject PKs during generation to force parity = 0, should have success rate 1/2, then ciphertexts are already random bitstrings (trim lowest bit in polynomial u, as parity is fixed, this can be reconstructed).
 
+=> if we fix public key parity to 1 (for 128,256) ciphertext parity (of u) is fixed to 0. Then drop one bit of u, and reconstruct later. Cite lemma P.2 for formula, note w_r is even iff we're talking about HQC-192.
+
+Need to add public key rejection for KeyGen rejection
+
 \newpage
 TODO: adapt text from here
 
