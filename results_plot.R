@@ -22,23 +22,23 @@ equal_group_size <- function(df) {
 # State of implementation and OQS relevance
 active_algos <- c(
     "x25519",
-    "EtE-x25519",
+    "FEO-x25519",
     "Classic-McEliece-348864",
     "Classic-McEliece-460896",
     "Classic-McEliece-6688128",
     "Classic-McEliece-6960119",
     "Classic-McEliece-8192128",
-    "EtE-Classic-McEliece-348864",
-    "EtE-Classic-McEliece-460896",
-    "EtE-Classic-McEliece-6688128",
-    "EtE-Classic-McEliece-6960119",
-    "EtE-Classic-McEliece-8192128",
+    "FEO-Classic-McEliece-348864",
+    "FEO-Classic-McEliece-460896",
+    "FEO-Classic-McEliece-6688128",
+    "FEO-Classic-McEliece-6960119",
+    "FEO-Classic-McEliece-8192128",
     "ML-KEM-512",
     "ML-KEM-768",
     "ML-KEM-1024",
-    "EtE-ML-KEM-512",
-    "EtE-ML-KEM-768",
-    "EtE-ML-KEM-1024"
+    "FEO-ML-KEM-512",
+    "FEO-ML-KEM-768",
+    "FEO-ML-KEM-1024"
 )
 relevant_algos <- c(
     "FrodoKEM-640-AES",
@@ -53,15 +53,15 @@ relevant_algos <- c(
 )
 # TODO: This should match the "run config" in runs.csv (and therefore benchmark.sh)
 relevant_combinations <- c(
-    "x25519|EtE-x25519",
-    "Classic-McEliece-348864|EtE-ML-KEM-512",
-    "Classic-McEliece-460896|EtE-ML-KEM-768",
-    "Classic-McEliece-6688128|EtE-ML-KEM-1024",
-    "Classic-McEliece-6960119|EtE-ML-KEM-1024",
-    "Classic-McEliece-8192128|EtE-ML-KEM-1024",
-    "ML-KEM-512|EtE-ML-KEM-512",
-    "ML-KEM-768|EtE-ML-KEM-768",
-    "ML-KEM-1024|EtE-ML-KEM-1024"
+    "x25519|FEO-x25519",
+    "Classic-McEliece-348864|FEO-ML-KEM-512",
+    "Classic-McEliece-460896|FEO-ML-KEM-768",
+    "Classic-McEliece-6688128|FEO-ML-KEM-1024",
+    "Classic-McEliece-6960119|FEO-ML-KEM-1024",
+    "Classic-McEliece-8192128|FEO-ML-KEM-1024",
+    "ML-KEM-512|FEO-ML-KEM-512",
+    "ML-KEM-768|FEO-ML-KEM-768",
+    "ML-KEM-1024|FEO-ML-KEM-1024"
 )
 
 # OQS reference data

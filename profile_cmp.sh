@@ -17,7 +17,7 @@ echo "Old entry: '$old_line' changed to 8192"
 rm -rf $out_folder
 mkdir -p $out_folder
 obfs4_pattern="^BenchmarkObfs4Handshake$"
-drivel_pattern="^BenchmarkDrivelHandshake/x25519\|EtE-x25519$"
+drivel_pattern="^BenchmarkDrivelHandshake/x25519\|FEO-x25519$"
 benchtime="1000x"
 count="10"
 

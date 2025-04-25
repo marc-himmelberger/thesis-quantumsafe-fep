@@ -42,31 +42,31 @@ ensure_bridge_drivel () {
 }
 ensure_drivel_x25519 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"x25519\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-x25519\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-x25519\"|g" lyrebird/transports/drivel/drivel.go
 }
 ensure_drivel_classicmceliece_348864 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-348864\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-Classic-McEliece-348864\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-Classic-McEliece-348864\"|g" lyrebird/transports/drivel/drivel.go
 }
 ensure_drivel_classicmceliece_6688128 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-6688128\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-Classic-McEliece-6688128\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-Classic-McEliece-6688128\"|g" lyrebird/transports/drivel/drivel.go
 }
 ensure_drivel_classicmceliece_6960119 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-6960119\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-Classic-McEliece-6960119\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-Classic-McEliece-6960119\"|g" lyrebird/transports/drivel/drivel.go
 }
 ensure_drivel_mlkem_512 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"ML-KEM-512\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-ML-KEM-512\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-ML-KEM-512\"|g" lyrebird/transports/drivel/drivel.go
 }
 ensure_drivel_mlkem_768 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"ML-KEM-768\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-ML-KEM-768\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-ML-KEM-768\"|g" lyrebird/transports/drivel/drivel.go
 }
 ensure_drivel_mlkem_1024 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"ML-KEM-1024\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"EtE-ML-KEM-1024\"|g" lyrebird/transports/drivel/drivel.go
+    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-ML-KEM-1024\"|g" lyrebird/transports/drivel/drivel.go
 }
 
 # Removes padding from lyrebird, and starts a full run in Docker
