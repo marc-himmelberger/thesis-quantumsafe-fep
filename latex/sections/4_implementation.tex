@@ -1,8 +1,100 @@
 \chapter{Implementing drivel}\label{ch:implementation}
 
-Use Kemeleon alongside the other obfuscated KEMs
+% This chapter describes implementation efforts, challenges and noteworthy information for implementers.
 
 \section{The Drivel Protocol} \label{sec:drivel}
+
+% TODO: Quickly present relevant parts/references to drivel protocol.
+% TODO: Describe adaptations.
+
+\section{Fragmenting handshake messages} \label{sec:fragmentation}
+
+When deploying \drivel{}, it may be desirable to at least achieve a traffic pattern similar to \obfsfour{}, and ideally offer even more flexibility for traffic shaping. In particular, \obfsfour{} sends two messages in its handshake, before fragmenting packets using a customizable distribution based on a deterministic pseudorandom number generator and a seed determined by the bridge server.
+
+Whiel \drivel{} also requires two messages to complete the handshake, \obfsfour{} messages range from 141 to 8 192 bytes in length, and \drivel{} message sizes depend on the selected KEM and OKEM. Ignoring the padding for the moment, \cref{tab:frag-msg-sizes} gives an overview of the minimum message sizes required for different combinations of KEM and OKEM in \drivel{}.
+
+\begin{table}
+    \centering \scriptsize
+    \begin{tabular}{@{} L{0.25\textwidth-\tabcolsep} | L{0.25\textwidth-2\tabcolsep} L{0.25\textwidth-2\tabcolsep} L{0.25\textwidth-\tabcolsep} @{}}
+        & FEO-Classic-McEliece\newline 348864 / 460896 / 6688128
+        & FEO-ML-KEM\newline 512 / 768 / 1024
+        & FEO-HQC\newline 128 / 192 / 256
+        \\ \hline
+    ML-KEM\newline 512 / 768 / 1024
+        & 928 / 1 372 / 1 808
+        & 1 709 / 2 468 / 3 258
+        & 5 265 / 10 194 / 16 021        \\
+    BIKE\newline L1 / L3 / L5
+        & 1 669 / 3 271 / 5 362
+        & 2 450 / 4 367 / 6 812
+        & 6 006 / 12 093 / 19 575        \\
+    HQC\newline 128 / 192 / 256
+        & 2 377 / 4 710 / 7 485
+        & 3 158 / 5 806 / 8 935
+        & 6 714 / 13 532 / 21 698        \\
+    FrodoKEM\newline 640 / 976 / 1344
+        & 9 744 / 15 820 / 21 760
+        & 10 525 / 16 916 / 23 210
+        & 14 081 / 24 642 / 35 973       \\
+    Classic-McEliece\newline 348864 / 460896 / 6688128
+        & \tiny 261 248 / 524 348 / 1 045 232
+        & \tiny 262 029 / 525 444 / 1 046 682
+        & \tiny 265 585 / 533 170 / 1 059 445
+    \end{tabular}
+    \caption[
+        Minimum sizes in bytes for the first \drivel{} message depending on the choice of KEM and OKEM
+    ]{
+        Minimum sizes in bytes for the first \drivel{} message depending on the choice of KEM (rows) and OKEM (columns). Each cell contains minimum sizes for NIST security levels 1, 3, and 5. Parameter sets were selected to minimize message sizes while maintaining the targeted security level. The parameter sets are identified in the row and column headers.
+    }
+    \label{tab:frag-msg-sizes}
+\end{table}
+
+As is obvious from the table, it is not practical to send the entire first \drivel{} message as a single TCP datagram. These packets would quickly be identifiable due to their size for all but a few combinations of KEMs and OKEMs. In particular, using Classic McEliece or ML-Kemeleon as an OKEM while employing ML-KEM or BIKE as a KEM still yields sizes not exceeding 8 192 bytes but this would nonetheless be easy to distinguish from \obfsfour{} traffic.
+
+Before discussing options to fragment the first message, let us recall one of the advantages \drivel{} has over \obfsfour{}. In \obfsfour{}, censors can - if the bridge information is leaked - retroactively identify handshake packets by recomputing the MAC, as it is keyed only with the bridge information. This would allow censors to definitively identify clients that had previously connected to a bridge, as well as any future clients connecting to the bridge. This property has been discussed in \cite[Section~6]{CCS:GunSteVei24} and was also recognized earlier by David Fifield in \cite{obfs4-pk-reveal-distinguisher}.
+
+On the other hand, \drivel{} establishes a shared secret between client and bridge in the first part of the first message. This shared secret is then used in addition to the bridge information to key the MAC. Censors therefore cannot retroactively identify obfuscated key exchanges with certainty, unless the OKEM private key is leaked. We will refer to this property here as \emph{retroactive indistinguishability} ($\rind$).
+
+For $\drivel$ to maintain $\sObfKE$, it is necessary that:
+\begin{itemize}
+    \item[a)] the bridge verifies the client's knowledge of the bridge information before sending a reply, and that
+    \item[b)] the client's proof of knowledge is indistinguishable from random bits, even given the bridge information and independent proofs from other clients.
+\end{itemize}
+
+Violating a) would make the bridge vulnerable to probing attacks by censors that do not know the bridge information. On the other hand, violating b) would trivially break $\rind$. Both of these outcomes would be undesirable and $\sObfKE$ from \cite{CCS:GunSteVei24} captures both avenues of attack, since the predicate \textsf{Probed} automatically wins the game, and public keys can be revealed when asked to distinguish a simulated from a real transcript in \textsc{ChallExec}, respectively.
+
+Due to the required proof of knowledge alone, it is strictly necessary that the bridge server receive a certain minimum amount of data before it may respond in any way.
+To break up the first large \drivel{} message, we could, for example, split it into parts, and let the server respond after each part. This could conceivably make the communication look more like repeated \obfsfour{} handshakes. However, the first such fragment would need to contain at least such a proof of knowledge.
+
+One way to achieve this, would be to send one OKEM ciphertext plus a 16 byte PRF as the first fragment. The PRF can be keyed by a combination of the shared secret and the bridge information (as in \drivel{}) to simultaneously satisfy a) and b).
+\Cref{tab:frag-min-needed} shows the minimum size of a first fragment using this approach for different OKEMs.
+
+\begin{table}
+    \centering
+    \begin{tabular}{@{} L{0.1\textwidth-\tabcolsep} | L{0.35\textwidth-2\tabcolsep} L{0.25\textwidth-2\tabcolsep} L{0.2\textwidth-\tabcolsep} @{}}
+        & FEO-Classic-McEliece\newline 348864 / 460896 / 6688128
+        & FEO-ML-KEM\newline 512 / 768 / 1024
+        & FEO-HQC\newline 128 / 192 / 256
+        \\ \hline
+    Level 1 & 112 & 893 & 4 449 \\
+    Level 3 & 172 & 1 268 & 8 994 \\
+    Level 5 & 224 & 1 674 & 14 437
+    \end{tabular}
+    \caption[
+        Minimum sizes in bytes of a first fragment before a bridge may respond depending on the choice of OKEM.
+    ]{
+        Minimum sizes in bytes of a first fragment before a bridge may respond depending on the choice of OKEM. Rows denote NIST security levels. Parameter sets were selected to minimize message sizes while maintaining the targeted security level. The parameter sets are identified in the row and column headers.
+    }
+    \label{tab:frag-min-needed}
+\end{table}
+
+It follows that using Classic McEliece or ML-Kemeleon as OKEMs allows for the most freedom in choosing message sizes. Using HQC quickly produces large ciphertexts for higher security levels. Consider now that ciphertext and MAC are padded according to e.g. a uniform distribution such that a message is never larger that 8 192 bytes. The statistical distances between the \obfsfour{} message size distribution and such a distribution using the new minimum sizes range between 0\% (Classic Mc-Eliece at level 1, with extra padding) and 9.34\% (ML-Kemeleon at level 1), up to 19.04\% (ML-Kemeleon at level 5).
+
+Once this first fragment has been received by the server, later fragmentation does not suffer from the same constraints, as the shared secret then effectively proves that the client knows the bridge information and that the bridge holds the OKEM private key. Exchanging arbitrarily small fragments becomes feasible by simply authenticating them using the shared secret and a PRF.
+
+As a point of comparison, foregoing $\rind$ security would allow for a first fragment of just 32 bytes (e.g. requiring 16 bytes of randomized data to thwart multi-user attacks and a 16 byte PRF keyed with a combination of the random data and bridge information).
+
+\newpage 
 
 \section{Implementation} \label{sec:implementation}
 

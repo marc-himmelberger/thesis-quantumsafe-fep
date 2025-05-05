@@ -1,6 +1,6 @@
 \section{Classic McEliece as an Obfuscated KEM} \label{sec:obfuscating-classic-mceliece}
 
-Throughout this \cref{sec:obfuscating-classic-mceliece}, we use the positive integer variables $m,n,t,k$ where $n < 2^m$ and $k=mt-n$ as defined in \cite{NISTPQC-R4:ClassicMcEliece22}. We work with matrices and vectors over $\mathbb F_2$ when examining the KEM and use bitstrings in the defintion and analysis of OKEMs. As the dimensions of the matrices and vectors are fixed for a given parameter set, we associate the matrices and vectors with their canonical encoding as bitstrings of appropriate length.
+Throughout this \cref{sec:obfuscating-classic-mceliece}, we use the positive integer variables $m,n,t,k$ where $n < 2^m$ and $k=mt-n$ as defined in \cite{NISTPQC-R4:ClassicMcEliece22}. We work with matrices and vectors over $\mathbb F_2$ when examining the KEM and use bit strings in the defintion and analysis of OKEMs. As the dimensions of the matrices and vectors are fixed for a given parameter set, we associate the matrices and vectors with their canonical encoding as bit strings of appropriate length.
 
 \paragraph{Original generation and distribution}
 Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in Round 4 of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}. Although NIST announced in early 2025 that Classic McEliece would not be standardized as part of this process \cite{nist-ir-8545}, we believe the scheme to be worthy of examination. Like \cite{EC:Xagawa22}, we only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
@@ -45,11 +45,11 @@ For both games $\mathsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of
 \paragraph{Classic McEliece has uniformly random public keys}
 Although we do not require uniformly random encodings of public keys for this thesis, we believe to have found an equivalent but simplified form of the $\prkey$ assumption, that we found worthy of inclusion.
 
-Given the $\prkey$ assumption, public keys are computationally hard to distinguish from outputs of $\textsf{RandGen}()$. We claim that $\textsf{RandGen}()$ can be simplified to a new algorithm $\textsf{RandGen}'()$, also shown in \cref{fig:classic-mceliece-assumptions}, with statistical indistinguishability between these two algorithms. This claim would imply computational indistinguishability between Classic McEliece's public keys and the outputs of $\textsf{RandGen}'()$.
+Given the $\prkey$ assumption, public keys are computationally hard to distinguish from outputs of $\mathsf{RandGen}()$. We claim that $\mathsf{RandGen}()$ can be simplified to a new algorithm $\mathsf{RandGen}'()$, also shown in \cref{fig:classic-mceliece-assumptions}, with statistical indistinguishability between these two algorithms. This claim would imply computational indistinguishability between Classic McEliece's public keys and the outputs of $\mathsf{RandGen}'()$.
 
 \begin{lemma}[Simplifying \textsf{RandGen}] \label{lem:classic-mceliece-randgen-prime}
-    Let $\textsf{RandGen}(), \textsf{RandGen}'()$ be defined as in \cref{fig:classic-mceliece-assumptions}.
-    The distributions $D_0 = \{ \hat T \gets \textsf{RandGen}() \}$ and $D_1 = \{ \hat T \gets \textsf{RandGen}'() \}$ are statistically indistinguishable, i.e. have statistical distance $\Delta(D_0, D_1) = 0$.
+    Let $\mathsf{RandGen}(), \mathsf{RandGen}'()$ be defined as in \cref{fig:classic-mceliece-assumptions}.
+    The distributions $D_0 = \{ \hat T \gets \mathsf{RandGen}() \}$ and $D_1 = \{ \hat T \gets \mathsf{RandGen}'() \}$ are statistically indistinguishable, i.e. have statistical distance $\Delta(D_0, D_1) = 0$.
 \end{lemma}
 
 \begin{proof}
@@ -64,7 +64,7 @@ Given the $\prkey$ assumption, public keys are computationally hard to distingui
     
     After understanding which reductions fail, we now consider the possible influence that the reduction to systematic form might have on the distribution of bits in the simulated public key $\hat T$.
 
-    Consider an intermediate value of $\hat H$ which can be reduced to systematic form (i.e. has full rank in its leftmost columns and will thus pass the check on \cref{ln:randgen-reject}). This value exists precisely once for all terminating executions of $\textsf{RandGen}()$ as the last $\hat H$ sampled before returning a result.
+    Consider an intermediate value of $\hat H$ which can be reduced to systematic form (i.e. has full rank in its leftmost columns and will thus pass the check on \cref{ln:randgen-reject}). This value exists precisely once for all terminating executions of $\mathsf{RandGen}()$ as the last $\hat H$ sampled before returning a result.
 
     In general, the reduced row echelon form can be obtained using Gauss–Jordan elimination. This algorithm carries out a sequence of operations on the matrix consisting of swapping rows, adding rows onto others and scaling rows.
     Over $\mathbb F_2$, the scaling of rows is not needed and swapping of rows can be accomplished via a sequence of 3 row additions. Any Gauss-Jordan reduction to systematic form can thus be expressed as merely a sequence of row additions.
@@ -78,7 +78,7 @@ Given the $\prkey$ assumption, public keys are computationally hard to distingui
     
     As the addition of any one row of uniformly random bits onto any other row of independent uniformly random bits produces a row of uniformly random i.i.d. bits, the resulting matrix after one row addition, say $M_1$, is statistically indistinguishable from $M_0$.
     
-    Repeating this argument for a maximum of $(mt)^2$ times, we can conclude that $\hat T$ is statistically indistinguishable from a uniformly random $mt \times k$ matrix over $\mathbb F_2$ as in $\textsf{RandGen}'()$.
+    Repeating this argument for a maximum of $(mt)^2$ times, we can conclude that $\hat T$ is statistically indistinguishable from a uniformly random $mt \times k$ matrix over $\mathbb F_2$ as in $\mathsf{RandGen}'()$.
 \end{proof}
 
 \paragraph{Classic McEliece is already obfuscated}
@@ -100,7 +100,7 @@ As we require no KEM encoding to achieve ciphertext uniformity, there is no need
     \]
 \end{lemma}
 \begin{proof}
-    This follows directly from \cref{lem:ctxt-unif-for-bijections} because we can define $\encodectxt: \mathcal{C} \to \bin^\obfctxtlen$ to simply map vectors to their canonical representation as bitstrings. This encoding function is deterministic, bijective and never fails, i.e. $\epsilon^\firstencapssuccess_{\mathsf{CM},\encodectxt} = 1$.
+    This follows directly from \cref{lem:ctxt-unif-for-bijections} because we can define $\encodectxt: \mathcal{C} \to \bin^\obfctxtlen$ to simply map vectors to their canonical representation as bit strings. This encoding function is deterministic, bijective and never fails, i.e. $\epsilon^\firstencapssuccess_{\mathsf{CM},\encodectxt} = 1$.
 
     A reduction from $\sprcca$ with $\simulunif$ to the $\prkey$ and $\mdsd$ assumptions is given in \cite[Theorem~K.1]{EC:Xagawa22}.
 \end{proof}

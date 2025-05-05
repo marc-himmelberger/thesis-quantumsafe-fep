@@ -1,11 +1,11 @@
 \chapter{Obfuscating NIST candidates}\label{ch:obfuscation}
 
-In this section, we construct encodings for different post-quantum KEMs suitable for use in the \drivel protocol.
+In this section, we construct encodings for different post-quantum KEMs suitable for use in the \drivel{} protocol.
 
 While such encodings have already been constructed for elliptic curve Diffie–Hellman \cite{EC:vAhHop04,tor-dev-udh,USENIX:WWGH11,CCS:BHKL13,FC:Tibouchi14} as well as for ML-KEM \cite{CCS:GunSteVei24}, other KEMs are also being examined for future use.
 
 We take a selection of Round 4 candidates of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}, as well as previous candidate schemes which we believe to be of interest.
-For each scheme, we describe the generation of public keys and ciphertexts in the original scheme and examine their distributions. We then introduce (if needed) compatible KEM encodings mapping ciphertexts to bitstrings. Finally, we give concrete bounds for the first-encaps success probabilities and ciphertext uniformity of our constructions, which, together with the KEM's security properties, allows the corresponding instantiation of $\drivel$ to achieve $\sObfKE$ security.
+For each scheme, we describe the generation of public keys and ciphertexts in the original scheme and examine their distributions. We then introduce (if needed) compatible KEM encodings mapping ciphertexts to bit strings. Finally, we give concrete bounds for the first-encaps success probabilities and ciphertext uniformity of our constructions, which, together with the KEM's security properties, allows the corresponding instantiation of \drivel{} to achieve $\sObfKE$ security.
 
 \cref{tab:obfuscation-summary} summarizes the results of the later sections.
 

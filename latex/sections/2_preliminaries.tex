@@ -4,17 +4,17 @@
 In pseudocode, we use the notation $x \gets A(y)$ to express an assignment to a variable $x$ using the output of the deterministic computation $A(y)$. When the computation is probabilistic, we write $x \getsr A(y)$.
 Uniformly random sampling of $x$ from a set $S$ is denoted $x \getsr S$.
 
-TODO: Define basic constructs like PRF, etc if needed.
+TODO: Define basic constructs like PRF, etc if needed. QROM!
 
-TODO: From here - use \firstkeygensuccess and \feo. Describe why we don't allow encodings of public keys, while we do carry out rejections, and why this does not change anyhting about the proofs in ObfKE.
+TODO: From here - use \firstkeygensuccess and \feo[KEM, E]. Describe why we don't allow encodings of public keys, while we do carry out rejections, and why this does not change anyhting about the proofs in ObfKE. In firstkeygensuccess and firstencapssuccess, use "E" as a FEO instance, instead of the elementary functions.
 
 \section{Review of Prior Work} \label{sec:review-gsv24}
 
 Günther et al. \cite{CCS:GunSteVei24} first described a framework for proveable security of obfuscated key exchange, extending efforts by Fenske and Johnson \cite{CCS:FenJoh24}, whose work focused on the data transfer phase of fully encrypted protocols.
 
-The work by Günther et al. was iterated upon in \cite{EPRINT:GRSV25} where the notation was simplified, and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel, the obfuscated key exchange protocol we will implement in this thesis.
+The work by Günther et al. was iterated upon in \cite{EPRINT:GRSV25} where the notation was simplified, and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel{}, the obfuscated key exchange protocol we will implement in this thesis.
 
-We adapted the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} to our setting. Concretely, we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted after encryption or out-of-band in \drivel. The definitions are equivalent in all other aspects.
+We adapted the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} to our setting. Concretely, we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted after encryption or out-of-band in \drivel{}. The definitions are equivalent in all other aspects.
 
 \subsection{Key Encapsulation Mechanisms}
 
@@ -67,7 +67,7 @@ This notion is first introduced \cite{EC:Xagawa22} in this form by Xagawa, and i
     We also define two common choices for simulators used in the $\sprcca$ game:
     \begin{itemize}
         \item Let $\simulunif$ be a simulator that outputs uniformly random ciphertexts from the ciphertext space of $\KEM$.
-        \item Let $\simulbin$ be a simulator that outputs uniformly random elements of $\bin^\ell$, where $\ell$ is a suitable integer where the mapping between bitstrings and ciphertexts is clear from context, and $\ell = \obfctxtlen$ in the particular case of OKEMs.
+        \item Let $\simulbin$ be a simulator that outputs uniformly random elements of $\bin^\ell$, where $\ell$ is a suitable integer where the mapping between bit strings and ciphertexts is clear from context, and $\ell = \obfctxtlen$ in the particular case of OKEMs.
     \end{itemize}
 \end{definition}
 
@@ -112,7 +112,7 @@ This notion is first introduced \cite{EC:Xagawa22} in this form by Xagawa, and i
 
         \item $\ul{\decaps}(\sk,\hat c) \to K$ is a deterministic \emph{decapsulation} algorithm that takes as input a secret key~$\sk$ and (obfuscated) ciphertext~$\hat c$, and outputs a shared secret~$K$.
     \end{itemize}
-    Note that the tuple of algorithms $(\kgen, \encaps, \decaps)$ can also be viewed as a KEM as in \cref{def:kem}, but we restrict the ciphertext space to bitstrings.
+    Note that the tuple of algorithms $(\kgen, \encaps, \decaps)$ can also be viewed as a KEM as in \cref{def:kem}, but we restrict the ciphertext space to bit strings.
 
     As in \cref{def:kem}, we also demand KEM correctness for OKEMs.
 \end{definition}
@@ -273,7 +273,7 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
         \advantage{\ctxtunif}{\OKEM}[(\adv)] = \left| p_0 - p_1 \right|
     \]
 
-    Because $\simulunif$ samples a uniformly random encodeable ciphertext $c \in \mathcal{C}'$ (independent of $\pk$), $\encodectxt$ will output a uniformly random bitstring. This makes $G'$ and $G_0$ statistically indistinguishable, i.e.
+    Because $\simulunif$ samples a uniformly random encodeable ciphertext $c \in \mathcal{C}'$ (independent of $\pk$), $\encodectxt$ will output a uniformly random bit string. This makes $G'$ and $G_0$ statistically indistinguishable, i.e.
     \[ p' = p_0. \]
 
     To bound the difference between $p_1$ and $p'$, we reduce to the $\sprcpa$ security of $\KEM$:
@@ -316,15 +316,15 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
 
 \subsection{Obfuscated Key Exchange}
 
-In \cite{CCS:GunSteVei24}, the $\pqobfs$ protocol for secure, authenticated key exchange achieving obfuscation is constructed. This protocol allows for the initial setup of a shared key and achieves various other desirable security properties needed for a FEP:
-$\pqobfs$ builds upon $\obfsfour$ \cite{obfs4}, an established ``pluggable transport'' protocol for the Tor Project, and $\pqobfs$ inherits features such as disguising flow signatures, probing resistance and some guarantees even if the node public key and node ID are known.
-However, $\pqobfs$ gives even stronger guarantees when node public key and node ID are known, and may crucially also employ OKEMs with other constructions besides \textsf{Elligator2}~\cite{CCS:BHKL13}. This allows for the use of quantum-safe KEMs such as those standardized through the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization} which was not possible in $\obfsfour$ without major changes.
+In \cite{CCS:GunSteVei24}, the \pqobfs{} protocol for secure, authenticated key exchange achieving obfuscation is constructed. This protocol allows for the initial setup of a shared key and achieves various other desirable security properties needed for a FEP:
+\pqobfs{} builds upon \obfsfour{} \cite{obfs4}, an established ``pluggable transport'' protocol for the Tor Project, and \pqobfs{} inherits features such as disguising flow signatures, probing resistance and some guarantees even if the node public key and node ID are known.
+However, \pqobfs{} gives even stronger guarantees when node public key and node ID are known, and may crucially also employ OKEMs with other constructions besides \textsf{Elligator2}~\cite{CCS:BHKL13}. This allows for the use of quantum-safe KEMs such as those standardized through the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization} which was not possible in \obfsfour{} without major changes.
 
-Additionally, \cite{CCS:GunSteVei24} provides a formal security model and proofs for both $\obfsfour$ and $\pqobfs$ demonstrating the various guarantees.
+Additionally, \cite{CCS:GunSteVei24} provides a formal security model and proofs for both \obfsfour{} and \pqobfs{} demonstrating the various guarantees.
 
 To define the security of their obfuscated key exchange protocol, \cite{CCS:GunSteVei24} introduces the security notion of strong Obfuscated Key Exchange security ($\sObfKE$), capturing key indistinguishability, explicit server authentication, strong obfuscation and probing resistance. Strong obfuscation describes the protocol's ability to be unidentifiable (compared to a simulated protocol run) by an adversary, so long as the server's private key is not revealed. Probing resistance, in turn, means that servers should not respond to messages from adversaries unless the server's public key was revealed \cite[Section~4.1]{CCS:GunSteVei24}.
 
-In their follow-up work, \cite{EPRINT:GRSV25} constructed the $\drivel$ protocol for the same general purpose. Compared to $\pqobfs$, $\drivel$ only has one conceptual difference, in that it allows the client to use a KEM instead of an OKEM.
+In their follow-up work, \cite{EPRINT:GRSV25} constructed the \drivel{} protocol for the same general purpose. Compared to \pqobfs{}, \drivel{} only has one conceptual difference, in that it allows the client to use a KEM instead of an OKEM.
 This is accomplished by the derivation of symetric encryption keys from the semi-secret server information combined with a shared secret generatede from an OKEM encapsulation against the server's public key (which was distributed out-of-band).
 The symmetric encryption keys are then used to encrypt the client's KEM public key in the first message, and the KEM ciphertext in the server's reply.
 
@@ -332,18 +332,18 @@ This change has several advantages:
 \begin{itemize}
     \item The use of KEM for the client allows for shorter messages and more efficient computation. The overhead of symmetric encryption is small.
     \item This completely removes the need for obfuscated OKEM public keys, the server's public key is distributed out-of-band anyway, and the client public key is now encrypted.
-    \item If appropriate OKEM and KEM are used then $\drivel$ can offer hybrid obfuscation, i.e. $\drivel$ can combine traditional and post-quantum schemes to hedge against security failures in either component.
+    \item If appropriate OKEM and KEM are used then \drivel{} can offer hybrid obfuscation, i.e. \drivel{} can combine traditional and post-quantum schemes to hedge against security failures in either component.
 \end{itemize}
 
-The following theorem is a summary of \cite[Theorem~5]{EPRINT:GRSV25} and gives requirements on the funmctions used to instantiate $\drivel$ in order to achieve $\sObfKE$ security. The instantiation requires a KEM, an OKEM, two functions $F_1, F_2$ used for authenticity and key derivation and a symmetric encryption scheme.
+The following theorem is a summary of \cite[Theorem~5]{EPRINT:GRSV25} and gives requirements on the funmctions used to instantiate \drivel{} in order to achieve $\sObfKE$ security. The instantiation requires a KEM, an OKEM, two functions $F_1, F_2$ used for authenticity and key derivation and a symmetric encryption scheme.
 
 When we construct OKEMs in later sections, we will show that they achieve the required security notions listed below.
 
 \begin{theorem}[Obfuscated Key Exchange Security]
 \label{thm:drivel-security}
-    Let $\drivel$ be defined as in \cite[Fig.~6]{EPRINT:GRSV25}. Let $\OKEM$ be an OKEM. Let $\KEM$ be a KEM.
+    Let \drivel{} be defined as in \cite[Fig.~6]{EPRINT:GRSV25}. Let $\OKEM$ be an OKEM. Let $\KEM$ be a KEM.
     
-    The $\sObfKE$ security of $\drivel$ is shown to reduce to the following properties of $\OKEM$:
+    The $\sObfKE$ security of \drivel{} is shown to reduce to the following properties of $\OKEM$:
     \begin{itemize}
         \item Low chance of public key collisions across all bridges, as measured by $\pkcoll{\OKEM}$
         \item KEM Correctness $\delta_\OKEM$
@@ -365,7 +365,7 @@ Throughout this thesis, we follow the recommendations outlined in \cite[Section~
 
 \begin{corollary}[Encapsulate-then-Encode Obfuscated Key Exchange Security]
 \label{cor:drivel-security-encaps-encode}
-    It follows from \cref{thm:drivel-security,thm:encaps-then-encode-security} that, for an OKEM constructed as $\OKEM = \ete[\KEM', \encodectxt, \decodectxt]$, the OKEM properties required for $\drivel$ further reduce to the following:
+    It follows from \cref{thm:drivel-security,thm:encaps-then-encode-security} that, for an OKEM constructed as $\OKEM = \ete[\KEM', \encodectxt, \decodectxt]$, the OKEM properties required for \drivel{} further reduce to the following:
     \begin{itemize}
         \item Low chance of public key collisions across all bridges, as measured by $\pkcoll{\KEM'}$
         \item KEM Correctness $\delta_\KEM'$
