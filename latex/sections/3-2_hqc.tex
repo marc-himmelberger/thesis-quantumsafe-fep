@@ -47,7 +47,7 @@ With this change, the polynomial $\mathbf u$ in the ciphertexts now has parity $
 
 The padding with random bits requires (after dropping one bit) the addition of 6, 4, and 6 random bits for the parameter sets HQC-128, HQC-192, and HQC-256, respectively. We omit this detail here because the $\feo$ construction works on bit strings of arbitrary size, but it remains relevant for implementation.
 
-\Cref{fig:hqc-encoding} shows pseudocode for the encoding mentioned above, which we will call $E_\mathsf{HQC}$. An OKEM based on HQC can be constructed as $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$ as in \cref{def:encaps-then-encode}.
+\Cref{fig:hqc-encoding} shows pseudocode for the encoding mentioned above, which we will call $E_\mathsf{HQC}$. An OKEM based on HQC can be constructed as $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$ as in \cref{def:filter-encode-okem}.
 
 \begin{figure}
     \input{algorithms/hqc-encoding}
@@ -113,7 +113,7 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
 The OKEM construction also satisfies the KEM security notions.
 
 \begin{theorem}[KEM Security]
-    Let $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$ be a filter-encode obfuscated KEM as per \cref{def:encaps-then-encode}, and let $\sigma := \epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}}$ as per \cref{lem:hqc-first-keygen-success}.
+    Let $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$ be a filter-encode obfuscated KEM as per \cref{def:filter-encode-okem}, and let $\sigma := \epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}}$ as per \cref{lem:hqc-first-keygen-success}.
     
     For any adversary $\adv$ against the $\indcca$ security of $\OKEM$, there exists an algorithm $\bdv$ such that
     \[ \advantage{\indcca}{\OKEM}[(\adv)] \leq 1/\sigma \cdot \advantage{\indcca}{\mathsf{HQC}}[(\bdv)]. \]

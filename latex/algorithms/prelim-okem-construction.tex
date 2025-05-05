@@ -1,16 +1,24 @@
 \begin{pchstack}[boxed, center, space=0.5em]
+
+    \procedure[linenumbering]{$\kgen'()$}{
+        \pcdo \\
+        \t  (\pk, \sk) \getsr \KEM.\kgen() \\
+        \label{ln:feo-reject-keygen}
+        \pcwhile E.\filterpk(\pk) = 0 \\
+        \pcreturn (\pk, \sk)
+    }
    
-    \procedure[linenumbering]{$\encaps'(\pk)$}{
+    \procedure[lnstart=4,linenumbering]{$\encaps'(\pk)$}{
         \pcdo \\
         \t  (c, K) \getsr \KEM.\encaps(\pk) \\
-        \label{ln:encaps-encode}
-        \t  \hat c \getsr \encodectxt(c) \\
+        \label{ln:feo-reject-ctxt}
+        \t  \hat c \getsr E.\encodectxt(c) \\
         \pcwhile \hat c = \bot \\
         \pcreturn (\hat c, K)
     }
     
-    \procedure[lnstart=6,linenumbering]{$\decaps'(\sk, \hat c)$}{
-        c \gets \decodectxt(\hat c) \\
+    \procedure[lnstart=9,linenumbering]{$\decaps'(\sk, \hat c)$}{
+        c \gets E.\decodectxt(\hat c) \\
         \pcreturn \KEM.\decaps(c)
     }
 
