@@ -51,22 +51,22 @@ Whiel \drivel{} also requires two messages to complete the handshake, \obfsfour{
 
 As is obvious from the table, it is not practical to send the entire first \drivel{} message as a single TCP datagram. These packets would quickly be identifiable due to their size for all but a few combinations of KEMs and OKEMs. In particular, using Classic McEliece or ML-Kemeleon as an OKEM while employing ML-KEM or BIKE as a KEM still yields sizes not exceeding 8 192 bytes but this would nonetheless be easy to distinguish from \obfsfour{} traffic.
 
-Before discussing options to fragment the first message, let us recall one of the advantages \drivel{} has over \obfsfour{}. In \obfsfour{}, censors can - if the bridge information is leaked - retroactively identify handshake packets by recomputing the MAC, as it is keyed only with the bridge information. This would allow censors to definitively identify clients that had previously connected to a bridge, as well as any future clients connecting to the bridge. This property has been discussed in \cite[Section~6]{CCS:GunSteVei24} and was also recognized earlier by David Fifield in \cite{obfs4-pk-reveal-distinguisher}.
+Before discussing options to fragment the first message, let us recall one of the advantages \drivel{} has over \obfsfour{}. In \obfsfour{}, censors can retroactively identify handshake packets by recomputing the MAC if the bridge information is leaked, as the MAC it is keyed only with the bridge information. This would allow censors to definitively identify clients that had previously connected to a bridge, as well as any future clients connecting to the bridge. This property has been discussed in \cite[Section~6]{CCS:GunSteVei24} and was also recognized earlier by David Fifield in \cite{obfs4-pk-reveal-distinguisher}.
 
-On the other hand, \drivel{} establishes a shared secret between client and bridge in the first part of the first message. This shared secret is then used in addition to the bridge information to key the MAC. Censors therefore cannot retroactively identify obfuscated key exchanges with certainty, unless the OKEM private key is leaked. We will refer to this property here as \emph{retroactive indistinguishability} ($\rind$).
+On the other hand, \drivel{} establishes a shared secret between the client and the bridge in the first message. This shared secret is then used in addition to the bridge information to key the PRF. Censors therefore cannot retroactively identify obfuscated key exchanges with certainty, unless the OKEM private key is leaked. We will refer to this property here as \emph{strong obfuscation} ($\sObf$).
 
-For $\drivel$ to maintain $\sObfKE$, it is necessary that:
+For $\drivel$ to maintain its $\sObfKE$ security, it is necessary that:
 \begin{itemize}
     \item[a)] the bridge verifies the client's knowledge of the bridge information before sending a reply, and that
-    \item[b)] the client's proof of knowledge is indistinguishable from random bits, even given the bridge information and independent proofs from other clients.
+    \item[b)] the client's message proving this is indistinguishable from random bits, even given the bridge information and independent proofs from other clients.
 \end{itemize}
 
-Violating a) would make the bridge vulnerable to probing attacks by censors that do not know the bridge information. On the other hand, violating b) would trivially break $\rind$. Both of these outcomes would be undesirable and $\sObfKE$ from \cite{CCS:GunSteVei24} captures both avenues of attack, since the predicate \textsf{Probed} automatically wins the game, and public keys can be revealed when asked to distinguish a simulated from a real transcript in \textsc{ChallExec}, respectively.
+Violating a) would make the bridge vulnerable to probing attacks by censors that do not know the bridge information. On the other hand, violating b) would trivially break $\sObf$. Both of these outcomes would be undesirable and $\sObfKE$ from \cite{CCS:GunSteVei24} captures both avenues of attack, since the predicate \textsf{Probed} automatically wins the game, and public keys can be revealed when asked to distinguish a simulated from a real transcript in \textsc{ChallExec}, respectively.
 
-Due to the required proof of knowledge alone, it is strictly necessary that the bridge server receive a certain minimum amount of data before it may respond in any way.
-To break up the first large \drivel{} message, we could, for example, split it into parts, and let the server respond after each part. This could conceivably make the communication look more like repeated \obfsfour{} handshakes. However, the first such fragment would need to contain at least such a proof of knowledge.
+Due to the required proof in the client's first message alone, it is strictly necessary that the bridge server receive a certain minimum amount of data before it may respond in any way.
+To break up the first large \drivel{} message, we could, for example, split it into parts and let the server respond after each part. This could conceivably make the communication look more like repeated \obfsfour{} handshakes. However, the first such fragment would need to contain at least a proof that the client knows the bridge information.
 
-One way to achieve this, would be to send one OKEM ciphertext plus a 16 byte PRF as the first fragment. The PRF can be keyed by a combination of the shared secret and the bridge information (as in \drivel{}) to simultaneously satisfy a) and b).
+One way to achieve this would be to send one OKEM ciphertext plus a 16 byte PRF as the first fragment. The PRF can be keyed by a combination of the shared secret and the bridge information (as in \drivel{}) to simultaneously satisfy a) and b).
 \Cref{tab:frag-min-needed} shows the minimum size of a first fragment using this approach for different OKEMs.
 
 \begin{table}
@@ -92,7 +92,7 @@ It follows that using Classic McEliece or ML-Kemeleon as OKEMs allows for the mo
 
 Once this first fragment has been received by the server, later fragmentation does not suffer from the same constraints, as the shared secret then effectively proves that the client knows the bridge information and that the bridge holds the OKEM private key. Exchanging arbitrarily small fragments becomes feasible by simply authenticating them using the shared secret and a PRF.
 
-As a point of comparison, foregoing $\rind$ security would allow for a first fragment of just 32 bytes (e.g. requiring 16 bytes of randomized data to thwart multi-user attacks and a 16 byte PRF keyed with a combination of the random data and bridge information).
+As a point of comparison, foregoing $\sObf$ security would allow for a first fragment of just 32 bytes (e.g. requiring 16 bytes of randomized data to thwart multi-user attacks and a 16 byte PRF keyed with a combination of the random data and bridge information).
 
 \newpage 
 
