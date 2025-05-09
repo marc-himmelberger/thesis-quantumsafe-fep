@@ -13,10 +13,10 @@
     \t  \text{if any of the above fail, restart} \pcskipln \\
     \t\t    \text{from \cref{ln:mceliece-keygen} with } \delta=\delta' \\
     \Gamma \gets (g, \alpha_0, \dots, \alpha_{n-1}) \\
-    T \gets \textsf{MatGen}(\Gamma) \\
+    T \gets \mathsf{MatGen}(\Gamma) \\
     \pcreturn \pk=T, \sk=(\delta, g, \alpha_0, \dots, \alpha_{q-1}, s)
 }
-\procedure[lnstart=6,linenumbering]{$\textsf{MatGen}(\Gamma=(g, \alpha_0, \dots, \alpha_{n-1}))$ \kern-1em \titlecomment{\text{see \cite[Sec. 4.2]{NISTPQC-R4:ClassicMcEliece22}}}}{
+\procedure[lnstart=6,linenumbering]{$\mathsf{MatGen}(\Gamma=(g, \alpha_0, \dots, \alpha_{n-1}))$ \kern-1em \titlecomment{\text{see \cite[Sec. 4.2]{NISTPQC-R4:ClassicMcEliece22}}}}{
     \tilde H \gets \left\{\alpha_j^i/g(\alpha_j)\right\}_{i,j} \pccomment{$\tilde H \in \mathbb F_q^{t \times n}$}\\
     \hat H \gets \text{expand each polynomial entry of } \tilde H \pcskipln \\
     \text{ into $m$ rows of bits denoting its coefficients} \\
@@ -28,14 +28,14 @@
 
 \begin{pcvstack}[space=0.05em]
 \procedure[lnstart=11,linenumbering]{$\encaps(\pk=T)$ \titlecomment{\text{see \cite[Sec. 4.3]{NISTPQC-R4:ClassicMcEliece22}}}}{
-    e \getsr \textsf{FixedWeight}() \\
+    e \getsr \mathsf{FixedWeight}() \\
     H \gets (I_{mt} \mid T) \\
     C \gets He \in \mathbb F_2^{mt} \\
     K \gets H(1,e,C) \\
     \pcreturn (C, K)
 }
 
-\procedure[lnstart=16,linenumbering]{$\textsf{FixedWeight}()$ \titlecomment{\text{see \cite[Sec. 5.4]{NISTPQC-R4:ClassicMcEliece22}}}}{
+\procedure[lnstart=16,linenumbering]{$\mathsf{FixedWeight}()$ \titlecomment{\text{see \cite[Sec. 5.4]{NISTPQC-R4:ClassicMcEliece22}}}}{
     a_0, \dots, a_{t-1} \gets [0, n-1] \\
     \text{if not all $a_i$ are distinct, restart} \\
     e \gets (e_0, \dots, e_{n-1}) \pcskipln \\

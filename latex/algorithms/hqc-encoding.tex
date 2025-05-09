@@ -5,7 +5,7 @@
 \centerline{\textbf{Public Key Filtering:}}
 
 \begin{pchstack}[space=0.5em]
-\procedure[linenumbering]{$E_\mathsf{HQC}.\textsf{Filter}(\pk=(\mathbf h,\mathbf s))$}{
+\procedure[linenumbering]{$E_\mathsf{HQC}.\mathsf{Filter}(\pk=(\mathbf h,\mathbf s))$}{
     \pcreturn \pctrue \pccomment{HQC-192} \\
     p \gets \mathbf h(1) \pccomment{$p \in \mathbb F_2$} \\
     \pcreturn \llbracket p = 1 \rrbracket \pccomment{HQC-128, HQC-256}
@@ -17,7 +17,7 @@
 \begin{pchstack}[space=0.5em]
 \procedure[lnstart=3,linenumbering]{$E_\mathsf{HQC}.\encodectxt(c)$}{
     (\mathbf u, \mathbf v, \mathit{salt}) \gets c \\
-    \pcreturn \textsf{truncate}(\mathbf u, 1) \mathbin\Vert \mathbf v \mathbin\Vert \mathit{salt}
+    \pcreturn \mathsf{truncate}(\mathbf u, 1) \mathbin\Vert \mathbf v \mathbin\Vert \mathit{salt}
 }
 
 \procedure[lnstart=5,linenumbering]{$E_\mathsf{HQC}.\decodectxt(\hat c)$}{

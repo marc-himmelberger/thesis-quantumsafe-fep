@@ -11,12 +11,12 @@
 \procedure[lnstart=5,linenumbering]{$\encaps(\pk=(\mathbf h, \mathbf s))$ \titlecomment{\text{see \cite[Figure~3]{NISTPQC-R4:HQC22}}}}{
     \mathbf m \getsr \mathbb F_2^k \\
     \mathit{salt} \getsr \mathbb F_2^k \\
-    \theta \gets \mathcal G(\mathbf m \mathbin\Vert \textsf{firstBytes}(\pk,32) \mathbin\Vert \mathit{salt}) \\
+    \theta \gets \mathcal G(\mathbf m \mathbin\Vert \mathsf{firstBytes}(\pk,32) \mathbin\Vert \mathit{salt}) \\
     \mathbf e, \mathbf r_1, \mathbf r_2 \gets \text{ generated from randomness } \theta \pcskipln \\
     \t  \text{such that } w(\mathbf e) = w_e \pcskipln \\
     \t  \text{and } w(\mathbf r_1) = w(\mathbf r_2) = w_r \\
     \mathbf u \gets \mathbf r_1 + \mathbf h \cdot \mathbf r_2 \\
-    \mathbf v \gets \textsf{truncate}(\mathbf m \mathbf G + \mathbf s \cdot \mathbf r_2 + \mathbf e, \ell) \\
+    \mathbf v \gets \mathsf{truncate}(\mathbf m \mathbf G + \mathbf s \cdot \mathbf r_2 + \mathbf e, \ell) \\
     \mathbf c \gets (\mathbf u, \mathbf v) \\
     K \gets \mathcal{K}(\mathbf m, \mathbf c) \\
     \pcreturn ((\mathbf c, \mathit{salt}), K)
