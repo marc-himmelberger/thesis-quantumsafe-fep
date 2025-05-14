@@ -89,6 +89,8 @@
 \usepackage{stmaryrd}
 \usepackage[advantage,adversary,sets,ff,primitives,events,keys,notions]{cryptocode}
 \usepackage{siunitx}
+
+\usepackage{multirow}
 % ######## END CUSTOM package load ########
 
 %% This allows you to use "\cref{sec:your-section}" instead of writing out 
@@ -110,6 +112,7 @@
 
 % ######## CUSTOM style code ########
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
 \newcommand{\getsr}{\xleftarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
 \newcommand{\tor}{\xrightarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
 \newcommand{\ul}[1]{\underline{\smash{#1}}}  % tight underline
@@ -171,6 +174,7 @@
 
 \providecommand{\prkey}{\pcnotionstyle{PR\pcmathhyphen{}Key}}
 \providecommand{\mdsd}{\pcnotionstyle{mDSD}}
+\providecommand{\skdsd}{\pcnotionstyle{skDSD}}
 
 
 \providecommand{\twodqcsd}{\pcnotionstyle{2\pcmathhyphen{}DQCSD}}

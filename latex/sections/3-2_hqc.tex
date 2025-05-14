@@ -70,7 +70,7 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
     The first-keygen success probability of $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$ is:
     \begin{itemize}
         \item $\epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}} = 1$ for the parameter set HQC-192
-        \item $\epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}} = \frac12$ for the parameter sets HQC-128, and HQC-256.
+        \item $\epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}} = 1/2$ for the parameter sets HQC-128, and HQC-256.
     \end{itemize}
 \end{lemma}
 \begin{proof}
@@ -83,18 +83,23 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
     The first-encaps success probability of $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$ is
     \[ \epsilon^\firstencapssuccess_{\mathsf{HQC}, E_\mathsf{HQC}} = 1. \]
 \end{lemma}
+\begin{proof}
+    This follows directly from the definition of $E_\mathsf{HQC}$ in \cref{fig:hqc-encoding}.
+
+    Note that the behavior of the encoding may violate correctness for public keys where $\mathsf{Filter}(\pk) = 0$, but this is not required by \cref{def:filter-encode-obfs}, and, by \cref{def:first-encaps-success}, does not influence the success probability. 
+\end{proof}
 
 \begin{lemma}[Ciphertext Uniformity]
 \label{lem:hqc-ctxt-unif}
-    Let $\mathbf F_0 := \{u \in \mathcal R \mid u(1) = 0 \}$ be the set of 0-parity polynomials with degree $<n$.
-    Let $\mathcal S$ be a KEM encapsulation simulator that outputs $\mathbf u \getsr \mathcal F_0, \mathbf v \getsr \bin^{n_1n_2}, \mathit{salt} \getsr \bin^{128}$.
+    Let $\mathbf F_0 := \{u \in \mathcal R \mid u(1) = 0 \}$ be the set of 0-parity polynomials with degree $<n$. \\
+    Let $\mathcal S$ be a KEM encapsulation simulator that outputs $\mathbf u \getsr \mathcal F_0, \mathbf v \getsr \bin^{n_1n_2}$, and $\mathit{salt} \getsr \bin^{128}$.
     For brevity, let further $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$ and $\sigma := \epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}}$ as per \cref{lem:hqc-first-keygen-success}. 
 
     For any adversary $\adv$ against the ciphertext uniformity of $\OKEM$, there exists an adversary $\bdv$ against the $\sprcca$ security of $\mathsf{HQC}$ with respect to the simulator $\mathcal S$, and adversaries $\cdv_1, \cdv_2$ against the $\twodqcsd$ and $\threedqcsd$ assumptions respectively, such that
     \[
         \advantage{\ctxtunif}{\OKEM}[(\adv)]
-        \leq 1/\sigma \advantage{\sprcca}{\mathsf{HQC},\mathcal S}[(\bdv)]
-        \leq 1/\sigma \left(
+        \leq 1/\sigma \cdot \advantage{\sprcca}{\mathsf{HQC},\mathcal S}[(\bdv)]
+        \leq 1/\sigma \cdot \left(
             \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)]
         \right).
     \]
@@ -110,7 +115,7 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
     In \cite[Lemma~P.2]{EC:Xagawa22}, a reduction is given from $\sprcca$ w.r.t. $\mathcal S$ to the $\twodqcsd$ and $\threedqcsd$ assumptions. The proof can easily be adapted to include the $\mathit{salt}$ which would increase the number of arguments for the random oracle $\mathsf G$, but no additional assumption is needed.
 \end{proof}
 
-The OKEM construction also satisfies the KEM security notions.
+The OKEM construction also satisfies the KEM security notions:
 
 \begin{theorem}[KEM Security]
     Let $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$ be a filter-encode obfuscated KEM as per \cref{def:filter-encode-okem}, and let $\sigma := \epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}}$ as per \cref{lem:hqc-first-keygen-success}.
@@ -124,7 +129,7 @@ The OKEM construction also satisfies the KEM security notions.
         1/\sigma \cdot \advantage{\sprcca}{\mathsf{HQC},\simulunif}[(\bdv_1)]
         + \advantage{\ctxtunif}{\OKEM}[(\bdv_2)] \\
         &\leq
-        1/\sigma \left(
+        1/\sigma \cdot \left(
             \advantage{\sprcca}{\mathsf{HQC},\simulunif}[(\bdv_1)]
             + \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)]
         \right).

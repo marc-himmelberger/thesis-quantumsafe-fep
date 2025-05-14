@@ -101,6 +101,8 @@ As we require no KEM encoding to achieve ciphertext uniformity, there is no need
 \end{lemma}
 \begin{proof}
     This follows directly from \cref{lem:ctxt-unif-for-bijections} because we can define $\encodectxt: \mathcal{C} \to \bin^\obfctxtlen$ to simply map vectors to their canonical representation as bit strings. This encoding function is deterministic, bijective and never fails, i.e. $\epsilon^\firstencapssuccess_{\mathsf{CM},\encodectxt} = 1$.
+    Further, we also do not reject any public keys, therefore
+    $\epsilon^\firstkeygensuccess_{\mathsf{CM},\encodectxt} = 1$.
 
     A reduction from $\sprcca$ with $\simulunif$ to the $\prkey$ and $\mdsd$ assumptions is given in \cite[Theorem~K.1]{EC:Xagawa22}.
 \end{proof}
@@ -119,22 +121,38 @@ We have seen that Classic McEliece, as specified in \cite{NISTPQC-R4:ClassicMcEl
 
 \paragraph{The Syzygy Distinguisher}
 
-It is worth highlighting that the above analysis in this chapter has been carried out primarily on the basis of the same assumptions as \cite{EC:Xagawa22}. However, since its publication, progress has been made in the analysis of one of the two central assumptions in the above analysis. A recent publication by Randriambololona, presented at Eurocrypt 2025 during the final third of this thesis, \cite{cryptoeprint:2024/1193} claims to provide a subexponential-time distinguisher against the $\prkey$ assumption.
+It is worth highlighting that the above analysis in this chapter has been carried out primarily on the basis of the same assumptions as \cite{EC:Xagawa22}. However, since its publication, some theoretical progress has been made in the analysis of one of the two central assumptions in the above analysis. A recent publication by Randriambololona, presented at Eurocrypt 2025 during the final third of this thesis, \cite{cryptoeprint:2024/1193} claims to provide a subexponential-time distinguisher against the $\prkey$ assumption.
 
 Discussions have sparked around this publication, noting that this does not invalidate the $\indcca$ security of the Classic McEliece KEM \cite{mceliece-529-20250417}, as only one-wayness is required from the public-key encryption scheme.
-In contrast, this thesis does depend on public keys being indistinguishable from uniformly random matrices, since the reduction of $\sprcca$ security in \cite{EC:Xagawa22} is only capable of replacing genuine Classic McEliece ciphertexts by random bit strings by first invoking the $\prkey$ assumption to switch to $\mathsf{RandGen}$ before then showing pseudorandomness from the $\mdsd$ assumption.
-By possibly breaking $\prkey$, \cite{cryptoeprint:2024/1193} undermines the validity of the proof in \cite{EC:Xagawa22} by invalidating the transition from real to random public keys, and consequently also invalidates the proof of \cref{lem:classic-mceliece-ctxt-unif}.
+In contrast to the common use cases of newly standardized KEMs, this thesis does in fact indirectly depend on public keys being indistinguishable from uniformly random matrices, since the reduction of $\sprcca$ security in \cite{EC:Xagawa22} is only capable of replacing genuine Classic McEliece ciphertexts by random bit strings by first invoking the $\prkey$ assumption to switch to $\mathsf{RandGen}$ before later proving pseudorandomness from the $\mdsd$ assumption.
 
-Although the Classic McEliece team has noted that the concrete computational cost of the syzygy distinguisher appears to be unpractical with $2^{529}$ operations for the smallest parameter set \cite{mceliece-529-20250417}, the recent work in \cite{cryptoeprint:2024/1193} illustrates that assumptions about the pseudorandomness of Classic McEliece public keys that previously seemed plausible may not hold up to in-depth examination.
+By possibly breaking $\prkey$, \cite{cryptoeprint:2024/1193} undermines the validity of the proof in \cite{EC:Xagawa22} by invalidating the transition from real to random public keys, and consequently also invalidates the above proof of \cref{lem:classic-mceliece-ctxt-unif}.
+
+Although the Classic McEliece team has noted that the concrete computational cost of the syzygy distinguisher appears to be unpractical with $2^{529}$ operations for the smallest parameter set \cite{mceliece-529-20250417}, compared to brute-force attacks requiring only $2^{256}$ operations to examine all possible keys. Nonetheless, the recent work in \cite{cryptoeprint:2024/1193} illustrates that assumptions about the pseudorandomness of Classic McEliece public keys that previously seemed plausible may not hold up to future in-depth examination.
 
 While our arguments above used the $\prkey$ and $\mdsd$ assumptions directly, it is still conceivable that a direct assumption iterating on $\mdsd$ that does not implicitly require pseudorandom public keys could be valid.
-An alternative proof of \cref{lem:classic-mceliece-ctxt-unif} could be constructed along the lines of \cref{lem:ctxt-unif-for-bijections}, using the assumption that the following problem is compuationally hard.
+We propose in \cref{conj:classic-mceliece-ctxt-unif-skdsd} that an alternative proof of \cref{lem:classic-mceliece-ctxt-unif} could be constructed along the lines of \cref{lem:ctxt-unif-for-bijections} and \cite{EC:Xagawa22}, using the assumption that the following problem is compuationally hard.
 
 \begin{definition}[Structured-Key Decisional Syndrome Decoding Problem]
 \label{def:classic-mceliece-alt-assump}
     Let $\mathsf{CM}$ be the KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22}.
+
+    We define the  \emph{Structured-Key Decisional Syndrome Decoding Problem} ($\skdsd$) to be the following challenge.
     
     Given $T, \sk \getsr \mathsf{CM}.\kgen()$ and a ciphertext $u$, decide whether $u$ was chosen as a uniformly random bit string of length $mt$, or by sampling $e \getsr \mathsf{FixedWeight}()$ and letting $u \gets \left[ I_{mt} \mid T \right] \cdot e$.
 \end{definition}
 
-To err on the side of caution, we do not recommend using Classic McEliece as an OKEM component of \drivel{} until a stronger consensus has been reached on whether or not the structred-key decisional syndrome decoding problem is hard, even though the small size of Classic McEliece's ciphertexts would make it an efficient choice to use in \drivel{}.
+\begin{conjecture}[Alternative ciphertext uniformity of Classic McEliece]
+\label{conj:classic-mceliece-ctxt-unif-skdsd}
+    Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} with obfuscated ciphertext length $\obfctxtlen = n-k$.
+
+    For any adversary $\adv$ against the ciphertext uniformity of $\mathsf{CM}$, there exists an adversary $\bdv$ against the $\sprcca$ security of $\mathsf{CM}$ with respect to the simulator $\simulunif$, and an adversary $\cdv$ against the $\skdsd$ assumption, such that
+    \[
+        \advantage{\ctxtunif}{\mathsf{CM}}[(\adv)]
+        \leq \advantage{\sprcca}{\KEM,\simulunif}[(\bdv)]
+        \leq \advantage{\skdsd}{}[(\cdv)].
+    \]
+\end{conjecture}
+
+In summary, the attack described in \cite{cryptoeprint:2024/1193} appears to have high concrete costs, but uncertainty is growing surrounding the $\prkey$ assumption. Additionally, the small size of Classic McEliece's ciphertexts would make it an efficient choice to use in \drivel{}.
+Therefore, we will include Classic McEliece as an OKEM component of \drivel{} and examine it further in \cref{ch:implementation}, but we purposely place it at the bottom of the list of parameter sets examined.

@@ -166,6 +166,7 @@ To construct an OKEM, a regular KEM can be augmented with encoding functions sim
         ~\middle|
             \begin{array}{c}
                 (\pk, \sk) \getsr \kgen(),\\
+                \filterpk(\pk) = 1, \\
                 (c, K) \getsr \encaps(\pk),\\
                 \hat c \getsr \encodectxt(c),\\
                 \hat c \neq \bot
@@ -256,24 +257,11 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
 \label{lem:ctxt-unif-for-bijections}
     Let $\OKEM$ be a filter-encode obfuscated KEM based on a regular KEM $\KEM$ and a corresponding obfuscator $E$ with a \emph{deterministic} encoding function $\encodectxt$.
 
-    Let $\mathbf{P}' \subseteq \mathbf{P}$ denote the subset of the public key space of $\KEM$ where $\filterpk$ outputs $1$.
-    Let $ \mathbf{C}_E$ denote the subset of the ciphertext space of $\KEM$ in which ciphertexts have a non-zero probability to be the result of encapsulation using a public key from $\mathbf{P}'$.
-    Let $\mathbf{C}' \subseteq \mathbf{C}_E$ then denote the subset of $\mathbf{C}_E$ where $\encodectxt$ does not output $\bot$.
+    Let $\mathbf{P}' \subseteq \mathbf{P}$ denote the subset of the public key space of $\KEM$ where $\filterpk$ outputs $1$, i.e. the set of allowed public keys.
+    Let $\mathbf{C}' \subseteq \mathbf{C}$ then denote the subset of the ciphertext space of $\KEM$ where $\encodectxt$ does not output $\bot$, i.e. the set of encodeable ciphertexts.
     Let $\bin^\ell$ be the output space of $\encodectxt$.
 
-    If $\encodectxt$ is a bijective function from $\mathbf{C}'$ to $\bin^\ell$, then the following holds:
-
-    The first-keygen success probability of can be written as
-    \[
-        \epsilon^\firstkeygensuccess_{\KEM,E} = \frac{|\mathbf{P}'|}{|\mathbf{P}|}.
-    \]
-
-    The first-encaps success probability of can be written as
-    \[
-        \epsilon^\firstencapssuccess_{\KEM,E} = \frac{|\mathbf{C}'|}{|\mathbf{C}_E|}.
-    \]
-
-    Finally, for any adversary against the ciphertext uniformity of $\OKEM$, there exists an adversary $\bdv$ against the $\sprcpa$ security of $\KEM$ with respect to the simulator $\simulunif$ such that
+    If $\encodectxt$ is a bijective function from $\mathbf{C}'$ to $\bin^\ell$, then for any adversary against the ciphertext uniformity of $\OKEM$, there exists an adversary $\bdv$ against the $\sprcpa$ security of $\KEM$ with respect to the simulator $\simulunif$ such that
     \[
         \advantage{\ctxtunif}{\OKEM}[(\adv)]
         \leq 1/\epsilon^\firstkeygensuccess_{\KEM,E}
@@ -282,8 +270,6 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
     \]
 \end{lemma}
 \begin{proof}
-    The rewriting of $\epsilon^\firstkeygensuccess_{\KEM,E}$ and $\epsilon^\firstencapssuccess_{\KEM,E}$ follows trivially from the fact that $\filterpk$ and $\encodectxt$ are deterministic.
-
     To prove the reduction, we define three games, each representing a slightly modified version of the $\ctxtunif$ game:
     \begin{itemize}
         \item Let $G_0$ be the $b=0$ version of $\ctxtunif$, i.e. an adversary such as $\adv$ would receive $\pk, \hat c$ where 
@@ -300,7 +286,7 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
         \advantage{\ctxtunif}{\OKEM}[(\adv)] = \left| p_0 - p_1 \right|
     \]
 
-    Because $\simulunif$ samples a uniformly random encodeable ciphertext $c \in \mathcal{C}'$ (independent of $\pk$), $\encodectxt$ will output a uniformly random bit string. This makes $G'$ and $G_0$ statistically indistinguishable, i.e.
+    Due to the rejection-sampling in $G'$, the sampling of $c$ in $G'$ is statistically indistinguishable from directly sampling $c \in \mathbf{C}'$. As $\encodectxt$ is bijective, it will output a uniformly random bit string upon input of a uniformly random element from its domain. This makes $G'$ and $G_0$ statistically indistinguishable, i.e.
     \[ p' = p_0. \]
 
     To bound the difference between $p_1$ and $p'$, we reduce to the $\sprcpa$ security of $\KEM$:
