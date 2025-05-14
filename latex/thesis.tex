@@ -91,6 +91,8 @@
 \usepackage{siunitx}
 
 \usepackage{multirow}
+\usepackage{adjustbox}
+\usepackage{xspace}
 % ######## END CUSTOM package load ########
 
 %% This allows you to use "\cref{sec:your-section}" instead of writing out 
@@ -116,8 +118,8 @@
 \newcommand{\getsr}{\xleftarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
 \newcommand{\tor}{\xrightarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
 \newcommand{\ul}[1]{\underline{\smash{#1}}}  % tight underline
-\newcommand{\KEM}{\mathsf{KEM}}
-\newcommand{\OKEM}{\mathsf{OKEM}}
+\newcommand{\KEM}{\ensuremath{\mathsf{KEM}}}
+\newcommand{\OKEM}{\ensuremath{\mathsf{OKEM}}}
 \newcommand{\pkcoll}[1]{\pcnotionstyle{pkcoll}_{#1}}
 \newcommand{\obfpklen}{\mathsf{ol}}
 \newcommand{\obfctxtlen}{\mathsf{cl}}
@@ -181,6 +183,82 @@
 \providecommand{\threedqcsd}{\pcnotionstyle{3\pcmathhyphen{}DQCSD}}
 
 \providecommand{\sObf}{\pcnotionstyle{sObf}}
+
+% ######## Start macros.tex
+
+\definecolor{RoyalBlue}{RGB}{65,105,225}
+
+% ClientAction and ServerAction
+% Print a command executed by the client/server
+% main argument: the text, optional argument: tikz modifier
+\newcommand{\ClientAction}[2][]{
+	\node[right,#1] at (\ClientX, \Y) {#2};
+}
+\newcommand{\ServerAction}[2][]{
+	\node[left,#1] at (\ServerX, \Y) {#2};
+}
+\newcommand{\ServerActionLeft}[2][]{
+	\ServerAction[text width=\ServerLeftTextwidth,align=left,#1]{#2}
+}
+\newcommand{\SharedAction}[2][]{
+	\node[#1] at ($1/2*(\ClientX, \Y)+1/2*(\ServerX, \Y)$) {#2};
+}
+
+% ClientToServer and ServerToClient
+% Draws a message flow from client-to-server or server-to-client, with text above and below
+% 1st argument (optional): line type, default ->
+% 2nd argument: text above
+% 3rd argument: text below
+% Example: \ClientToServer{$Y$}{}
+% Example: \ClientToServer[<->,double]{$Y$}{over an encrypted channel}
+\newcommand{\ClientToServer}[3][->]{
+	\NextLine[0.5]
+	\draw[#1] (\ArrowLeft,\Y) -- node[above] {#2} node[below] {#3} (\ArrowRight,\Y) ;
+	% \NextLine[0.5]
+}
+\newcommand{\ServerToClient}[3][->]{
+	\NextLine[0.5]
+	\draw[#1] (\ArrowRight,\Y) -- node[above] {#2} node[below] {#3} (\ArrowLeft,\Y) ;
+	% \NextLine[0.5]
+}
+
+% Spacing factor for NextLines
+\def\NextLineSpacing{0.45}
+
+% NextLine
+% 1st argument (optional): amount of spacing to increment by, default 1.0
+% Example: \NextLine
+% Example: \NextLine[1.5]
+\newcommand{\NextLine}[1][1.0]{
+	\pgfmathparse{\Y-\NextLineSpacing*#1}
+	\edef\Y{\pgfmathresult}
+}
+
+
+\newcommand{\highlightbox}[2][RoyalBlue!20]{\adjustbox{cframe=#1, bgcolor=#1}{\strut #2}}
+
+\providecommand{\nodeid}{\ensuremath{\mathsf{NodeID}}}
+\providecommand{\nodeidlen}{\ensuremath{\mathsf{nl}}}
+\providecommand{\pstate}{\ensuremath{\mathsf{st}}}
+\providecommand{\macregister}{\ensuremath{\mathcal{S}_\mathsf{MAC}}}
+\providecommand{\cpaddist}{\ensuremath{\mathcal{D}_\mathsf{pad}_C}}
+\providecommand{\cpaddist}{\ensuremath{\mathcal{D}_\mathsf{pad}_S}}
+
+\newcommand{\funPRF}{\ensuremath{\pcalgostyle{F}_1}\xspace}
+\newcommand{\funPRFoutlen}{\ensuremath{\mathsf{fl}_1}}
+\newcommand{\funComb}{\ensuremath{\pcalgostyle{F}_2}\xspace}
+\newcommand{\funComboutlen}{\ensuremath{\mathsf{fl}_2}}
+
+\newcommand{\symmenc}{\pcalgostyle{SE}}
+\newcommand{\funEnc}{\pcalgostyle{\symmenc.Enc}}
+\newcommand{\funDec}{\pcalgostyle{\symmenc.Dec}}
+
+\newcommand{\keylen}{\ensuremath{\mathsf{kl}}}
+\newcommand{\textlit}[1]{\ensuremath{\text{``\texttt{#1}''}}}
+
+\providecommand{\conc}{\|}
+\crefname{conjecture}{Conjecture}{Conjectures}
+
 % ######## END CUSTOM style code ########
 
 

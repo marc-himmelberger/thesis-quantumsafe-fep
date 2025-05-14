@@ -2,11 +2,6 @@
 
 % This chapter describes implementation efforts, challenges and noteworthy information for implementers.
 
-\section{The Drivel Protocol} \label{sec:drivel}
-
-% TODO: Quickly present relevant parts/references to drivel protocol.
-% TODO: Describe adaptations. Especially fragmentation, symmetric encryption, and instantiations for F1, F2.
-
 \section{Fragmenting Handshake Messages} \label{sec:fragmentation}
 
 \paragraph{Fragmentation is Needed}
@@ -92,10 +87,12 @@ It is hard to imagine a significant potential in message size reduction outside 
 \paragraph{A Minimal Fragmentation}
 One way to achieve the outlined security properties in a space-efficient manner would be to send one OKEM ciphertext plus a 16 byte PRF as the first fragment. The PRF would be keyed by a combination of the shared secret and the bridge information (as in \drivel{}).
 
-Recall that the first \drivel{} message is constructed as $epk_e \mathbin\Vert c_S \mathbin\Vert P_C \mathbin\Vert M_C \mathbin\Vert MAC_C$, where $epk_e$ is the encrypted KEM public key, $c_S$ is the OKEM ciphertext of interest, $M_C$ helps delimit the message, and $MAC_C$ authenticates all preceding data. In this fragmentation approach, we propose a minimal change to this message, such that encrypted public keys are sent later, and an additional PRF value is sent directly following the OKEM ciphertext. Reusing the same variables, parenthesizing the first fragment for clarity, and introducing $A_C \gets F_1(ES, c_S \mathbin\Vert \text{``:authc''})$ as an authenticator, this would lead to the following first message:
+TODO: Move this to the next section, and be more generic here.
+
+Recall that the first \drivel{} message is constructed as $epk_e \conc c_S \conc P_C \conc M_C \conc MAC_C$, where $epk_e$ is the encrypted KEM public key, $c_S$ is the OKEM ciphertext of interest, $M_C$ helps delimit the message, and $MAC_C$ authenticates all preceding data. In this fragmentation approach, we propose a minimal change to this message, such that encrypted public keys are sent later, and an additional PRF value is sent directly following the OKEM ciphertext. Reusing the same variables, parenthesizing the first fragment for clarity, and introducing $A_C \gets F_1(ES, c_S \conc \text{``:authc''})$ as an authenticator, this would lead to the following first message:
 
 \[
-    \left( c_S \mathbin\Vert A_C \right) \mathbin\Vert epk_e \mathbin\Vert P_C \mathbin\Vert M_C \mathbin\Vert MAC_C .
+    \left( c_S \conc A_C \right) \conc epk_e \conc P_C \conc M_C \conc MAC_C .
 \]
 
 Using this modified first message, the bridge may now start sending data earlier than in unmodified \drivel{}. Although it cannot send its second message before receiving $epk_e$, it can send dummy data that the client will ignore.
@@ -183,6 +180,26 @@ The following unobfuscated KEMs were considered for each NIST security level:
 \end{table}
 
 Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to its higher public key size compared to e.g. ML-KEM. Depending on the assumptions one is comfortable with, ``-a'' parameter sets may be suitable as only one KEM has to remain $\indcca$ secure, while ``-c'' parameter sets feature a simpler encoding. ``-d'' parameter sets employ Classic McEliece as an OKEM directly and require confidence in its pseudorandomness, but offer significantly smaller message sizes. This is discussed in more detail in \cref{sec:obfuscating-classic-mceliece}.
+
+\section{The Modified Drivel Protocol} \label{sec:drivel}
+
+% TODO: Quickly present relevant parts/references to drivel protocol.
+% TODO: Describe adaptations. Especially fragmentation, symmetric encryption, and instantiations for F1, F2.
+
+\begin{figure}
+    \input{algorithms/drivel}
+    \caption[
+        The modified drivel TODO.
+    ]{
+        The Drivel obfuscated key exchange protocol TODO.
+        OKEM is an OKEM satisfying IND-CCA, SPR-CCA, and ciphertext uniformity.
+        KEM is an IND-1CCA-secure KEM.
+        SE is an OT-IND-secure symmetric encryption scheme.
+        F1 is a PRF and F2 is a dual PRF.
+        Core differences to the pq-obfs protocol from [GSV24] are highlighted in blue boxes.
+    }
+    \label{fig:modified-drivel}
+\end{figure}
 
 \section{Implementation} \label{sec:implementation}
 
