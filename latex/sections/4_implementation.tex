@@ -1,11 +1,105 @@
 \chapter{Implementing drivel}\label{ch:implementation}
 
-% This chapter describes implementation efforts, challenges and noteworthy information for implementers.
+This chapter describes implementation efforts, challenges and noteworthy information for implementers.
+\Cref{sec:tech-stack} gives an overview of the technology stack, languages, and libraries used in the implementation, with a particular focus on the changes made to the preexisting lyrebird project \cite{lyrebird} to support \drivel{}. This section also describes the environment in which the protocol was developed and tested.
+\Cref{sec:parameters} outlines the process for choosing concrete cryptographic parameters, focusing on the trade-offs between security, and traffic volume.
+\Cref{sec:protocol-design} presents a high-level description of the modified \drivel{} protocol, followed by a detailed explanation of how handshake messages could be fragmented to enhance traffic shaping capabilities.
+\Cref{sec:impl-architecture} describes how the protocol design was mapped to actual software components, including noteworthy architectural changes and cryptographic interfaces.
+\Cref{sec:deployment} provides practical guidance for deploying and using the system, with attention to real-world integration barriers such as SOCKS proxy compatibility and network edge cases. TODO keep?
+Finally, \cref{sec:challenges-learnings} discusses key challenges encountered during development and how they were addressed.
 
-\section{Fragmenting Handshake Messages} \label{sec:fragmentation}
+% TODO
+% * (Experimenting with implementing different traffic patterns, such as arbitrary fragmentation of key
+% exchange messages and/or more flexibility in clients to send arbitrary data)
+
+% => For Tor people: Consider as part of audience of report, so also accessible to non-crypto-nerds and illustrate: How to deploy, How to use, Integration barriers such as SOCKS issues -> Implementation section
+
+\section{Technology Stack and Environment} \label{sec:tech-stack}
+
+% TODO
+% \Cref{sec:tech-stack} gives an overview of the technology stack, languages, and libraries used in the implementation, with a particular focus on the changes made to the preexisting lyrebird project \cite{lyrebird} to support \drivel{}. This section also describes the environment in which the protocol was developed and tested.
+
+\section{Choosing Parameter Sets} \label{sec:parameters}
+
+While \drivel{} can be instantiated with any choice of KEM or OKEM, most combinations lead to inconsistent security levels or excessive message sizes. To reduce the number of combinations to a sensible amount, \cref{tab:drivel-params} defines a total of 12 sets of KEM/OKEM combinations, four matching each of the NIST security levels 1, 3, and 5.
+
+These parameter sets prioritize the combinations leading to the smallest required total handshake traffic, excluding padding.
+
+The following OKEMs were considered for each NIST security level:
+\begin{itemize}
+    \item ML-Kemeleon, as in \cite{irtf-cfrg-kemeleon-00}, based on ML-KEM-512 (level 1), ML-KEM-768 (level 3), and ML-KEM-1024 (level 5)
+    \item Classic McEliece, as in \cref{sec:obfuscating-classic-mceliece}, concretely Classic-McEliece-348864 (level 1), Classic-McEliece-460896 (level 3), and Classic-McEliece-6688128 (smallest ciphertext size for level 5)
+    \item $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$, as in \cref{sec:obfuscating-hqc}, concretely based on HQC-128 (level 1), HQC-192 (level 3), and HQC-256 (level 5)
+\end{itemize}
+
+The following unobfuscated KEMs were considered for each NIST security level:
+\begin{itemize}
+    \item BIKE \cite{NISTPQC-R4:BIKE22}, concretely BIKE-L1 (level 1), BIKE-L3 (level 3), and BIKE-L5 (level 5)
+    \item FrodoKEM \cite{NISTPQC-R3:FrodoKEM20}, concretely FrodoKEM-640 (level 1), FrodoKEM-976 (level 3), and FrodoKEM-1344 (level 5)
+    \item Unobfuscated variants for each OKEM above 
+\end{itemize}
+
+\begin{table}
+    \centering  \footnotesize
+    \begin{tabular}{@{} L{0.1\textwidth-\tabcolsep} | L{0.16\textwidth-2\tabcolsep} L{0.17\textwidth-2\tabcolsep} L{0.32\textwidth-2\tabcolsep} R{0.11\textwidth-2\tabcolsep} R{0.14\textwidth-\tabcolsep} @{}}
+    NIST Security\newline Level & Parameter Set\newline Name & KEM\newline Component & OKEM\newline Component & Total Traffic & First Fragment \\ \hline
+    \multirow{4}{*}{Level 1} & drivel-L1a & ML-KEM-512 & FEO-ML-KEM-512 & 2 541 & 893 \\
+     & drivel-L1b & BIKE-L1 & FEO-ML-KEM-512 & 4 087 & 893 \\
+     & drivel-L1c & ML-KEM-512 & FEO-HQC-128 & 6 097 & 4 449 \\
+     & drivel-L1d & ML-KEM-512 & FEO-Classic-McEliece-348864 & 1760 & 112 \\ \hline
+    \multirow{4}{*}{Level 3} & drivel-L3a & ML-KEM-768 & FEO-ML-KEM-768 & 3 620 & 1 268 \\
+     & drivel-L3b & BIKE-L3 & FEO-ML-KEM-768 & 7 546 & 1 268 \\
+     & drivel-L3c & ML-KEM-768 & FEO-HQC-192 & 11 346 & 8 994 \\
+     & drivel-L3d & ML-KEM-768 & FEO-Classic-McEliece-460896 & 2 524 & 172 \\ \hline
+    \multirow{4}{*}{Level 5} & drivel-L5a & ML-KEM-1024 & FEO-ML-KEM-1024 & 4 890 & 1 674 \\
+     & drivel-L5b & BIKE-L5 & FEO-ML-KEM-1024 & 12 030 & 1 674 \\
+     & drivel-L5c & ML-KEM-1024 & FEO-HQC-256 & 17 653 & 14 437 \\
+     & drivel-L5d & ML-KEM-1024 & FEO-Classic-McEliece-6688128 & 3 440 & 224
+    \end{tabular}
+    \caption[
+        Definitions of parameter sets for \drivel{}, used in later experiments.
+    ]{
+        Definitions of parameter sets for \drivel{}, used in later experiments.
+        Total traffic shows the combined number of bytes required across all handshake messages, excluding padding. First fragment denotes the size in bytes of just OKEM ciphertext and a 16 byte PRF value and thus illustrates the minimum amount of valid data required before the bridge may reply.
+    }
+    \label{tab:drivel-params}
+\end{table}
+
+Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to its higher public key size compared to e.g. ML-KEM. Depending on the assumptions one is comfortable with, ``-a'' parameter sets may be suitable as only one KEM has to remain $\indcca$ secure, while ``-c'' parameter sets feature a simpler encoding. ``-d'' parameter sets employ Classic McEliece as an OKEM directly and require confidence in its pseudorandomness, but offer significantly smaller message sizes. This is discussed in more detail in \cref{sec:obfuscating-classic-mceliece}.
+
+\section{Protocol Design} \label{sec:protocol-design}
+
+% TODO
+% \Cref{sec:protocol-design} presents a high-level description of the modified \drivel{} protocol, followed by a detailed explanation of how handshake messages could be fragmented to enhance traffic shaping capabilities.
+
+\subsection{The Modified Drivel Protocol} \label{ssec:drivel}
+
+% TODO: Quickly present relevant parts/references to drivel protocol.
+% TODO: Describe adaptations. Especially fragmentation, symmetric encryption, and instantiations for F1, F2.
+
+\begin{figure}
+    \input{algorithms/drivel}
+    \caption[
+        The modified drivel TODO.
+    ]{
+        The Drivel obfuscated key exchange protocol TODO.
+        OKEM is an OKEM satisfying IND-CCA, SPR-CCA, and ciphertext uniformity.
+        KEM is an IND-1CCA-secure KEM.
+        SE is an OT-IND-secure symmetric encryption scheme.
+        F1 is a PRF and F2 is a dual PRF.
+        Core differences to the pq-obfs protocol from [GSV24] are highlighted in blue boxes.
+    }
+    \label{fig:modified-drivel}
+\end{figure}
+
+\subsection{Fragmenting Handshake Messages} \label{ssec:fragmentation}
+
+This section analyzes possibilities to allow for more flexibility in shaping \drivel{} traffic. Avoiding fingerprinting based on certain sizes, directionalities and timing of messages between client and bridge is crucial to evade censors.
+
+\textbf{No changes discussed or proposed in this \cref{ssec:fragmentation} are implemented, or practically evaluated as part of this thesis, but this discussion may be valuable to readers to understand possible future directions of the protocol.}
 
 \paragraph{Fragmentation is Needed}
-When deploying \drivel{}, it may be desirable to offer even more flexibility for traffic shaping than \obfsfour{}. In particular, \obfsfour{} sends two messages in its handshake, before fragmenting packets using a customizable distribution based on a deterministic pseudorandom number generator and a seed determined by the bridge server.
+When deploying \drivel{}, it may be desirable to offer even more flexibility for traffic shaping than \obfsfour{}. In particular, \obfsfour{} sends two messages in its handshake, before fragmenting packets using a customizable message size distribution based on a deterministic pseudorandom number generator and a seed determined by the bridge server.
 
 While \drivel{} also requires two messages to complete the handshake, \obfsfour{} messages range from 141 to 8 192 bytes in length, and \drivel{} message sizes depend on the selected KEM and OKEM. Ignoring the padding for the moment, \cref{tab:frag-msg-sizes} gives an overview of the minimum message sizes required for different combinations of KEM and OKEM in \drivel{}.
 
@@ -133,78 +227,82 @@ This approach is very similar in spirit to the first message in \obfsfour{}, and
 
 Sending even less data in a first fragment seems implausible, as the randomized data is used to prevent replay, and the PRF value proves knowledge of the bridge information. Using less than 16 bytes for either component would lower the security level, enabling brute-force active probing attacks.
 
-\section{Choosing Parameter Sets} \label{sec:parameters}
+\paragraph{Existing Fragmentation Mechanisms in obfs4}
+The lyrebird repository's \obfsfour{} implementation features a packet-based system capable of transferring different types of messages during the data transfer phase. This system could be reused to implement more flexible fragmentation after the initial fragment $c_S \conc A_C$ is transmitted, but its construction duplicates part of the \drivel{} protocol.
 
-While \drivel{} can be instantiated with any choice of KEM or OKEM, most combinations lead to inconsistent security levels or excessive message sizes. To reduce the number of combinations to a sensible amount, \cref{tab:drivel-params} defines a total of 12 sets of KEM/OKEM combinations, four matching each of the NIST security levels 1, 3, and 5.
-
-These parameter sets prioritize the combinations leading to the smallest required total handshake traffic, excluding padding.
-
-The following OKEMs were considered for each NIST security level:
+At the time of writing, this packet-based system can be outlined as follows. Given a securely established shared secret $\mathsf{KEY\_SEED}$, client and bridge both derive two sets of the following values from it:
 \begin{itemize}
-    \item ML-Kemeleon, as in \cite{irtf-cfrg-kemeleon-00}, based on ML-KEM-512 (level 1), ML-KEM-768 (level 3), and ML-KEM-1024 (level 5)
-    \item Classic McEliece, as in \cref{sec:obfuscating-classic-mceliece}, concretely Classic-McEliece-348864 (level 1), Classic-McEliece-460896 (level 3), and Classic-McEliece-6688128 (smallest ciphertext size for level 5)
-    \item $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$, as in \cref{sec:obfuscating-hqc}, concretely based on HQC-128 (level 1), HQC-192 (level 3), and HQC-256 (level 5)
+    \item A 32-byte authenticated encryption (AE) key $K_\mathsf{AE}$,
+    \item a 16-byte nonce prefix $\mathsf{pre}$,
+    \item a 16-byte hash key $K_\mathsf{H}$, and
+    \item an 8-byte hash IV $\mathsf{IV}$.
 \end{itemize}
 
-The following unobfuscated KEMs were considered for each NIST security level:
-\begin{itemize}
-    \item BIKE \cite{NISTPQC-R4:BIKE22}, concretely BIKE-L1 (level 1), BIKE-L3 (level 3), and BIKE-L5 (level 5)
-    \item FrodoKEM \cite{NISTPQC-R3:FrodoKEM20}, concretely FrodoKEM-640 (level 1), FrodoKEM-976 (level 3), and FrodoKEM-1344 (level 5)
-    \item Unobfuscated variants for each OKEM above 
-\end{itemize}
-
-\begin{table}
-    \centering  \footnotesize
-    \begin{tabular}{@{} L{0.1\textwidth-\tabcolsep} | L{0.16\textwidth-2\tabcolsep} L{0.17\textwidth-2\tabcolsep} L{0.32\textwidth-2\tabcolsep} R{0.11\textwidth-2\tabcolsep} R{0.14\textwidth-\tabcolsep} @{}}
-    NIST Security\newline Level & Parameter Set\newline Name & KEM\newline Component & OKEM\newline Component & Total Traffic & First Fragment \\ \hline
-    \multirow{4}{*}{Level 1} & drivel-L1a & ML-KEM-512 & FEO-ML-KEM-512 & 2 541 & 893 \\
-     & drivel-L1b & BIKE-L1 & FEO-ML-KEM-512 & 4 087 & 893 \\
-     & drivel-L1c & ML-KEM-512 & FEO-HQC-128 & 6 097 & 4 449 \\
-     & drivel-L1d & ML-KEM-512 & FEO-Classic-McEliece-348864 & 1760 & 112 \\ \hline
-    \multirow{4}{*}{Level 3} & drivel-L3a & ML-KEM-768 & FEO-ML-KEM-768 & 3 620 & 1 268 \\
-     & drivel-L3b & BIKE-L3 & FEO-ML-KEM-768 & 7 546 & 1 268 \\
-     & drivel-L3c & ML-KEM-768 & FEO-HQC-192 & 11 346 & 8 994 \\
-     & drivel-L3d & ML-KEM-768 & FEO-Classic-McEliece-460896 & 2 524 & 172 \\ \hline
-    \multirow{4}{*}{Level 5} & drivel-L5a & ML-KEM-1024 & FEO-ML-KEM-1024 & 4 890 & 1 674 \\
-     & drivel-L5b & BIKE-L5 & FEO-ML-KEM-1024 & 12 030 & 1 674 \\
-     & drivel-L5c & ML-KEM-1024 & FEO-HQC-256 & 17 653 & 14 437 \\
-     & drivel-L5d & ML-KEM-1024 & FEO-Classic-McEliece-6688128 & 3 440 & 224
-    \end{tabular}
-    \caption[
-        Definitions of parameter sets for \drivel{}, used in later experiments.
-    ]{
-        Definitions of parameter sets for \drivel{}, used in later experiments.
-        Total traffic shows the combined number of bytes required across all handshake messages, excluding padding. First fragment denotes the size in bytes of just OKEM ciphertext and a 16 byte PRF value and thus illustrates the minimum amount of valid data required before the bridge may reply.
-    }
-    \label{tab:drivel-params}
-\end{table}
-
-Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to its higher public key size compared to e.g. ML-KEM. Depending on the assumptions one is comfortable with, ``-a'' parameter sets may be suitable as only one KEM has to remain $\indcca$ secure, while ``-c'' parameter sets feature a simpler encoding. ``-d'' parameter sets employ Classic McEliece as an OKEM directly and require confidence in its pseudorandomness, but offer significantly smaller message sizes. This is discussed in more detail in \cref{sec:obfuscating-classic-mceliece}.
-
-\section{The Modified Drivel Protocol} \label{sec:drivel}
-
-% TODO: Quickly present relevant parts/references to drivel protocol.
-% TODO: Describe adaptations. Especially fragmentation, symmetric encryption, and instantiations for F1, F2.
+Each set of $K_\mathsf{AE}, \mathsf{pre}, K_\mathsf{H}, \mathsf{IV}$ corresponds to either the direction client-to-bridge, or bridge-to-client. Both directions work in the same way presented below and visualized in \cref{fig:framing}.
 
 \begin{figure}
-    \input{algorithms/drivel}
+    \centering
+    \includegraphics[width=\linewidth]{images/packet-framing.png}
     \caption[
-        The modified drivel TODO.
+        A visualization of \obfsfour{} framing at the sender.
     ]{
-        The Drivel obfuscated key exchange protocol TODO.
-        OKEM is an OKEM satisfying IND-CCA, SPR-CCA, and ciphertext uniformity.
-        KEM is an IND-1CCA-secure KEM.
-        SE is an OT-IND-secure symmetric encryption scheme.
-        F1 is a PRF and F2 is a dual PRF.
-        Core differences to the pq-obfs protocol from [GSV24] are highlighted in blue boxes.
+        A visualization of \obfsfour{} framing at the sender, where dashed shaded boxes correspond to subroutines, dashed unshaded boxes denote inputs, $\mathsf{AE}$ denotes the NaCl secretbox authenticated encryption scheme, and $H$ denotes the SipHash-2-4 pseudorandom function. 
     }
-    \label{fig:modified-drivel}
+    \label{fig:enter-label}
 \end{figure}
 
-\section{Implementation} \label{sec:implementation}
+To create a packet, a packet type and the payload are required. The packet is then constructed and consists of the following:
+\begin{itemize}
+    \item A 1-byte packet type (corresponding to ``Payload'' or ``PrngSeed''),
+    \item a 2-byte payload length in big endian format,
+    \item the payload data itself, and
+    \item configurable amounts of zero-padding (not included in the length calculation).
+\end{itemize}
 
-* (Experimenting with implementing different traffic patterns, such as arbitrary fragmentation of key
-exchange messages and/or more flexibility in clients to send arbitrary data)
+This packet is then passed on to a framing layer. While the packet layer ensures that a reliably received data stream can be decoded into separate variable-length messages with associated types, the framing layer's job is to encrypt, authenticate, and obfuscate the data.
 
+For each direction, a counter value $\mathsf{counter}$ is initially set to 1, and a hash state $S$ is initialized to $\mathsf{IV}$.
 
-=> For Tor people: Consider as part of audience of report, so also accessible to non-crypto-nerds and illustrate: How to deploy, How to use, Integration barriers such as SOCKS issues -> Implementation section
+For each frame (consisting of one or more packets) passed to the framing layer, several things occur:
+\begin{enumerate}
+    \item A nonce is computed as $ \mathsf{pre} \conc \mathsf{counter}$, and $\mathsf{counter}$ is incremented.
+    \item One step of SipHash-2-4 in OFB mode is computed, yielding a fresh 8-byte hash state $S \gets H(K_\mathsf{H}, S)$.
+\end{enumerate}
+
+The entire packet is then encrypted using NaCl secretbox (Poly1305/XSalsa20) authenticated encryption with key $K_\mathsf{AE}$, producing a ciphertext; note that the ciphertext is longer than the packet payload, as padding and the secretbox overhead are now included.
+
+The length of the ciphertext is then XORed with the first two bytes of the newly computed state $S$. The final datagram consists of:
+\begin{itemize}
+    \item A 2-byte obfuscated length field, and
+    \item the AE ciphertext.
+\end{itemize}
+
+Upon receiving a packet, the receiver updates its $\mathsf{counter}$ and $S$ values, deobfuscated the length field, and decrypts the AE ciphertext. Finally, the data is passed up to the packet layer.
+
+\paragraph{Design Conflicts and Conclusion}
+
+To construct a system capable of flexible traffic shaping, it is necessary to split large messages into smaller ones, sent in sequence, as well as to pad small messages to a larger size, or even send only padding when no message is available.
+
+The existing packet-based system in \obfsfour{} achieves exactly this, while providing authentication and side-stepping attacks from \cite{SP:AlbPatWat09}. Each packet incurs an overhead of 3 bytes plus configurable padding, and each frame (containing one or more packets, depending on the bridge configuration) adds 18 bytes.
+The only precondition is a securely shared $\mathsf{KEY\_SEED}$.
+
+It is possible to employ this system (possibly changing the employed schemes to match 
+the security levels) directly in \drivel{}, using e.g. the early secret $ES$ after transmitting $c_S \conc A_C$ without encoding, and later switching to $\mathsf{KEY\_SEED}$ after the handshake is completed.
+
+However, since the framing layer already aims to provide obfuscation, integrity, and confidentiality, the need for $P_C, M_C, \mathsf{MAC}_C, P_S, M_S, \mathsf{MAC}_S$ would disappear. Note that the message transcript is implicitly validated by including the $\mathsf{context}$ value when calculating $\mathsf{KEY\_SEED}$. Furthermore, it would not be necessary to encrypt $\pk_e$ at all.
+
+We believe it to be worthwhile to modify \drivel{} accordingly, allowing almost arbitrary traffic shaping after an initial transmission of only $c_S \conc A_C$.
+Conversely, this rather extensive change would require adapting the extensive $\sObfKE$ security proof for \drivel{} presented in \cite{EPRINT:GRSV25}.
+\textbf{This thesis therefore employs only the unmodified variant of $\drivel{}$ presented in \cite[Figure~6]{EPRINT:GRSV25}.}
+
+\section{Core Architecture} \label{sec:impl-architecture}
+% TODO
+% \Cref{sec:impl-architecture} describes how the protocol design was mapped to actual software components, including noteworthy architectural changes and cryptographic interfaces.
+
+\section{Deployment and Integration Guide} \label{sec:deployment}
+% TODO
+% \Cref{sec:deployment} provides practical guidance for deploying and using the system, with attention to real-world integration barriers such as SOCKS proxy compatibility and network edge cases. TODO keep?
+
+\section{Challenges and Lessons Learned} \label{sec:challenges-learnings}
+% TODO
+% Finally, \cref{sec:challenges-learnings} discusses key challenges encountered during development and how they were addressed.
