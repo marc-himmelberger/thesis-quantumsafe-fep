@@ -5,7 +5,7 @@
 \centerline{\textbf{Public Key Filtering:}}
 
 \begin{pchstack}[space=0.5em]
-\procedure[linenumbering]{$E_\mathsf{HQC}.\mathsf{Filter}(\pk=(\mathbf h,\mathbf s))$}{
+\procedure[linenumbering]{$E_\mathsf{HQC}.\filterpk(\pk=(\mathbf h,\mathbf s))$}{
     \pcreturn \pctrue \pccomment{HQC-192} \\
     p \gets \mathbf h(1) \pccomment{$p \in \mathbb F_2$} \\
     \pcreturn \llbracket p = 1 \rrbracket \pccomment{HQC-128, HQC-256}

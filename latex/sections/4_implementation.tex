@@ -1,12 +1,12 @@
 \chapter{Implementing drivel}\label{ch:implementation}
 
-This chapter describes implementation efforts, challenges and noteworthy information for implementers.
+This chapter describes implementation efforts, challenges, and noteworthy information for implementers.
 \Cref{sec:tech-stack} gives an overview of the technology stack, languages, and libraries used in the implementation, with a particular focus on the changes made to the preexisting lyrebird project \cite{lyrebird} to support \drivel{}. This section also describes the environment in which the protocol was developed and tested.
-\Cref{sec:parameters} outlines the process for choosing concrete cryptographic parameters, focusing on the trade-offs between security, and traffic volume.
+\Cref{sec:parameters} outlines the process for choosing concrete cryptographic parameters, focusing on the trade-offs between security and traffic volume.
 \Cref{sec:protocol-design} presents a high-level description of the modified \drivel{} protocol, followed by a detailed explanation of how handshake messages could be fragmented to enhance traffic shaping capabilities.
-\Cref{sec:impl-architecture} describes how the protocol design was mapped to actual software components, including noteworthy architectural changes and cryptographic interfaces.
+\Cref{sec:impl-architecture} describes how the protocol design was mapped to the actual software components, including noteworthy architectural changes and cryptographic interfaces.
 \Cref{sec:deployment} provides practical guidance for deploying and using the system, with attention to real-world integration barriers such as SOCKS proxy compatibility and network edge cases. TODO keep?
-Finally, \cref{sec:challenges-learnings} discusses key challenges encountered during development and how they were addressed.
+Finally, \cref{sec:challenges-learnings} discusses the key challenges encountered during development and how they were addressed.
 
 % TODO
 % * (Experimenting with implementing different traffic patterns, such as arbitrary fragmentation of key
@@ -16,12 +16,69 @@ Finally, \cref{sec:challenges-learnings} discusses key challenges encountered du
 
 \section{Technology Stack and Environment} \label{sec:tech-stack}
 
-% TODO
-% \Cref{sec:tech-stack} gives an overview of the technology stack, languages, and libraries used in the implementation, with a particular focus on the changes made to the preexisting lyrebird project \cite{lyrebird} to support \drivel{}. This section also describes the environment in which the protocol was developed and tested.
+The implementation created as part of this thesis is available via GitLab. It consists of two parts: A fork of the lyrebird project \cite{lyrebird} where the \drivel{} pluggable transport is implemented\footnote{See \url{https://gitlab.ethz.ch/himarc/lyrebird-pq-obfs}}, and a larger repository which includes a testing and benchmarking framework, analysis code and TeX sources of this document\footnote{See \url{https://gitlab.ethz.ch/himarc/thesis-quantumsafe-fep}}.
+
+\paragraph{Structure of the lyrebird Fork and Dependencies}
+
+The \drivel{} implementation, like the other six pluggable transports in the lyrebird repository, is written in Go. The lyrebird respoitory contains several Go modules:
+\begin{itemize}
+    \item \texttt{cmd} implements general pluggable transport logic and represents the program entry point.
+    
+    \item \texttt{common} contains various useful implementations such as cryptographically secure random number generation (CSRNG), deterministic random bit generation (DRBG), logging, probability distributions, filter objects to prevent replay attacks, SOCKS5 implementation, etc. These implementations may be reused outside of the lyrebird repository. 
+    
+    \item \texttt{internal} contains implementations that are only reusable within lyrebird. The upstream repository only contained an x25519 and \textsf{Elligator2}~\cite{CCS:BHKL13} implementation in this module.
+    
+    \item \texttt{transports} finally has submodules for each pluggable transport that each implement a common interface used by the \texttt{cmd} module. 
+\end{itemize}
+
+During the course of this thesis, the \texttt{internal} module was extensively refactored and extended. Furthermore, a new submodule \texttt{transports/drivel} was added to the \texttt{transports} module, based on a copy of the \texttt{transports/obfs4} module. We refer readers to \cref{sec:impl-architecture} for details about these changes.
+
+External Go dependencies required for \drivel{} and not specific to other pluggable transports are limited to the following modules and versions:
+\begin{itemize}
+    \item \gopkgref{filippo.io/edwards25519}{v1.1.0} for easier handling of elliptic-curve cryptography,
+    
+    \item \gopkgref{gitlab.com/yawning/edwards25519-extra}{v0.0.0-20231005122941-2149dcafc266} for its implementation of \textsf{Elligator2}~\cite{CCS:BHKL13},
+    
+    \item \gopkgref{github.com/dchest/siphash}{v1.2.3} for the pseudorandom function employed in the DRBG,
+    
+    \item \gopkgref{github.com/open-quantum-safe/liboqs-go}{v0.0.0-20250119172907-28b5301df438} as a Go wrapper around the C library \texttt{liboqs} which provides many KEM implementations,
+    
+    \item \gopkgref{gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib}{v1.6.0} for handling arguments passed to the pluggable transport, and
+    
+    \item \gopkgref{golang.org/x/crypto}{v0.32.0} for its implementation of some elliptic-curve operations, HKDF and NaCl secretbox.
+\end{itemize}
+
+Other than \texttt{liboqs-go}, all of these dependencies were present in the upstream repository and required for \obfsfour{}.
+
+In addition to the Go modules above, \drivel{} also depends on the \href{https://github.com/open-quantum-safe/liboqs}{liboqs} C library, compiled statically from source during the build process. This archive is then included in a local build of \texttt{liboqs-go}, removing the need for lyrebird users to install \texttt{liboqs} separately.
+
+However, the inclusion of C code also means that a fully static compilation of the forked lyrebird repository was not possible anymore in Go's default build process. The upstream repository accomplished this via the use of the flag \texttt{CGO\_ENABLED}. Instead, the final executable now requires the following dynamically linked libraries to be present on the system:
+\begin{itemize}
+    \item \texttt{linux-vdso.so.1}
+    \item \texttt{libresolv.so.2}
+    \item \texttt{libpthread.so.0}
+    \item \texttt{libc.so.6}
+    \item \texttt{/lib64/ld-linux-x86-64.so.2}
+\end{itemize}
+
+To run end-to-end tests, the official bridge setup guide \cite{tor-bridge-setup} refers, among other options, to a Docker container \cite{tor-bridge-docker}.
+We were able to adapt the container's configuration to use our forked repository and our modified build process instead of the upstream version. The required dynamic libraries were already present on the system, demonstrating that deployment should not be hindered by our modifications to the dependencies and executable.
+
+\paragraph{Testing and Benchmarking}
+
+To perform unit and integration tests of the different software components, Go's built-in support for testing and benchmarking files was used. We have transferred all existing test cases for \obfsfour{} and extended them to include all new software components, and cover all enabled KEM/OKEM combinations.
+
+In particular, cryptographic operations within \drivel{} are tested using positive and negative test cases on different levels. Unit tests verify the submodule's correctness, and integration tests simulate entire handshakes, including (de)serialization of messages to and from byte strings.
+
+The tests include a small variant that performs fewer tests of randomized functions, making a trade-off between execution time and completeness. All tests pass for the entire forked repository, also in their more extensive variant. 
+
+Benchmarks are also performed on multiple levels, including single KEM and OKEM operations (key generation, encapsulation, and decapsulation), as well as the execution of a complete simulated handshake. The latter benchmark allows a direct comparison to the corresponding \obfsfour{} benchmark. Furthermore, profiling can easily be performed to identify bottlenecks in the benchmark's performance and to quantify contributions to its memory consumption.
+
+The results were collected and analyzed in Python and R. Further discussion of the results follows in \cref{ch:results}.
 
 \section{Choosing Parameter Sets} \label{sec:parameters}
 
-While \drivel{} can be instantiated with any choice of KEM or OKEM, most combinations lead to inconsistent security levels or excessive message sizes. To reduce the number of combinations to a sensible amount, \cref{tab:drivel-params} defines a total of 12 sets of KEM/OKEM combinations, four matching each of the NIST security levels 1, 3, and 5.
+Although \drivel{} can be instantiated with any choice of KEM or OKEM, most combinations lead to inconsistent security levels or excessive message sizes. To reduce the number of combinations to a sensible amount, \cref{tab:drivel-params} defines a total of 12 sets of KEM/OKEM combinations, four matching each of the NIST security levels 1, 3, and 5.
 
 These parameter sets prioritize the combinations leading to the smallest required total handshake traffic, excluding padding.
 
@@ -248,7 +305,7 @@ Each set of $K_\mathsf{AE}, \mathsf{pre}, K_\mathsf{H}, \mathsf{IV}$ corresponds
     ]{
         A visualization of \obfsfour{} framing at the sender, where dashed shaded boxes correspond to subroutines, dashed unshaded boxes denote inputs, $\mathsf{AE}$ denotes the NaCl secretbox authenticated encryption scheme, and $H$ denotes the SipHash-2-4 pseudorandom function. 
     }
-    \label{fig:enter-label}
+    \label{fig:framing}
 \end{figure}
 
 To create a packet, a packet type and the payload are required. The packet is then constructed and consists of the following:
@@ -298,6 +355,44 @@ Conversely, this rather extensive change would require adapting the extensive $\
 \section{Core Architecture} \label{sec:impl-architecture}
 % TODO
 % \Cref{sec:impl-architecture} describes how the protocol design was mapped to actual software components, including noteworthy architectural changes and cryptographic interfaces.
+
+\paragraph{Building a KEM and OKEM from the \texttt{internal/x25519ell2} Module}
+
+In the implementation of \obfsfour{}, only a single method of key exchange is available: Customized Diffie-Hellman key exchange on the elliptic curve x25519, possibly using the \textsf{Elligator2} encoding on the curve points transmitted over the wire.
+
+Post-quantum key exchange algorithms are almost universally specified using the syntax of KEMs. In order to also compare \drivel{} performance in the traditional setting with its performance using post-quantum KEMs, we have extended the \texttt{internal/x25519ell2} module to implement a KEM and a filter-encode obfuscator performing \textsf{Elligator2}. \Cref{fig:impl-x25519-kem} shows pseudocode illustrating the usage of the module by \obfsfour{} (via its use of the \texttt{common/ntor} module), alongside the construction of our x25519 KEM.
+
+Readers should note that, although the construction is similar in spirit to the DHKEM construction \cite[Section~4.1]{rfc9180}, this KEM has minor differences in the derivation of its shared secret. The focus was instead placed on staying as close as possible to the construction used in \obfsfour{}, in order to offer a fair comparison.
+
+\begin{figure}
+    \input{algorithms/x25519-kem}
+    \caption[
+        Pseudocode illustrating the x25519 KEM and filter-encode obfuscator added to the \texttt{internal/x25519ell2} module.
+    ]{
+        Pseudocode illustrating the x25519 KEM $\KEM$ and a filter-encode obfuscator $E$, both added to the \texttt{internal/x25519ell2} module.
+        The left-hand side of the figure shows the usage of the x25519 module by \obfsfour{}, while the right-hand side defines a KEM and obfuscator for use in \drivel{}.
+        The aborts identify insecure secrets caused by low-order public keys.
+        We use $\mathsf{firstBytes}(x, \ell), \mathsf{lastBytes}(x, \ell)$ to denote selecting the first or last $\ell$ bytes of $x$, respectively.
+        $\mathsf{curve25519}$ denotes the submodule of \texttt{golang.org/x/crypto} by the same name, all other functions are from the lyrebird repository's \texttt{internal/x25519ell2} and \texttt{common/ntor} modules.
+    }
+    \label{fig:impl-x25519-kem}
+\end{figure}
+
+\paragraph{Adding Crypto-Agility to the \texttt{internal} Module}
+
+Observing the current need for post-quantum key exchange, combined with the increasing deployment of newly standardized algorithms, it seems prudent to implement at least compile-time flexibility in the utilized key exchange schemes. Being able to exchange cryptographic algorithms is often called ``being crypto-agile''.
+
+To this end, the \drivel{} implementation contains string constants identifying the desired KEM and OKEM. The data structures for the schemes are then loaded at runtime based on these strings.
+The schemes are identified by the following naming convention:
+\begin{itemize}
+    \item The string "x25519" refers to the unobfuscated, newly implemented KEM from \cref{fig:impl-x25519-kem},
+    \item all other strings denote \texttt{liboqs} KEMs, and
+    \item any KEM with a corresponding filter-encode obfuscator can be used to request an OKEM under the KEM name prefixed with ``FEO-'', e.g. ``FEO-x25519'' would denote $\feo[\KEM, E]$ using the components from \cref{fig:impl-x25519-kem}.
+\end{itemize}
+
+TODO: cryptofactory, kem/okem interfaces
+
+\paragraph{Notable Differences between \texttt{transports/drivel} and \texttt{transports/obfs4}}
 
 \section{Deployment and Integration Guide} \label{sec:deployment}
 % TODO

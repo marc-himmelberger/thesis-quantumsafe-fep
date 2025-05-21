@@ -1,0 +1,97 @@
+\begin{pchstack}[boxed, center, space=0.5em]
+
+    \begin{pcvstack}[space=0.05em]
+    % obfs4 usage via common/ntor
+    \procedure[linenumbering]{Initialization}{
+        \pclinecomment{$\pk_\mathsf{id}$ is part of the bridge information:} \\
+        (\pk_\mathsf{id},\sk_\mathsf{id}) \getsr \mathsf{NewKeypair}(\mathsf{ell2}=0) \\
+        \pclinecomment{upon the start of a new handshake:} \\
+        (\pk_c,\sk_c) \getsr \mathsf{NewKeypair}(\mathsf{ell2}=1) \\
+        (\pk_s,\sk_s) \getsr \mathsf{NewKeypair}(\mathsf{ell2}=1)
+    }
+
+    \procedure[linenumbering]{$\mathsf{NewKeypair}(\mathsf{ell2} \in \bin)$}{
+        \pcdo \\
+        \t  r \getsr \bin^{256} \\
+        \t  d \gets \operatorname{\mathsf{SHA2-512}}(r) \\
+        \t  \sk \gets \mathsf{firstBytes}(d,32) \\
+        \t  \pcif \mathsf{ell2} = 1 \pcthen \\
+        \t  \t  t \gets \mathsf{lastBytes}(d,1) \\
+        \t  \t  \pclinecomment{inlined ScalarBaseMult(\sk, t)} \\
+        \t  \t  u \gets \mathsf{scalarBaseMultDirty}(\sk) \\
+        \t  \t  \pk \gets \mathsf{Bytes}(u) \\
+        \t  \t  \hat \pk \gets \mathsf{uToRepresentative}(u, t) \\
+        \t  \t  \pcif \pk \neq \bot \pcthen \\
+        \t  \t  \t  \pcreturn (\pk, \hat \pk, \sk) \\
+        \t  \t  \pcendif \\
+        \t  \pcelse \\
+        \t  \t  \pk \gets \mathsf{curve25519}.\mathsf{ScalarBaseMult}(\sk) \\
+        \t  \t  \pcreturn (\pk, \bot, \sk) \\
+        \t  \pcendif \\
+        \pcwhile \pctrue
+    }
+   
+    \procedure[lnstart=4,linenumbering]{$\mathsf{ServerHandshake}(\hat \pk_c, (\pk_s, \sk_s), (\pk_\mathsf{id},\sk_\mathsf{id}))$}{
+        \pk_c \gets \mathsf{RepresentativeToPublicKey}(\hat \pk_c) \\
+        K_1 \gets \mathsf{curve25519}.\mathsf{ScalarMult}(\sk_s, \pk_c) \\
+        K_2 \gets \mathsf{curve25519}.\mathsf{ScalarMult}(\sk_\mathsf{id}, \pk_c) \\
+        \pcif K_1 = 0 \lor K_2 = 0 \pcthen \pcabort \pcendif
+    }
+    
+    \procedure[lnstart=4,linenumbering]{$\mathsf{ClientHandshake}((\pk_c, \sk_c), \hat \pk_s, \pk_\mathsf{id})$}{
+        \pk_s \gets \mathsf{RepresentativeToPublicKey}(\hat \pk_s) \\
+        K_1 \gets \mathsf{curve25519}.\mathsf{ScalarMult}(\sk_c, \pk_s) \\
+        K_2 \gets \mathsf{curve25519}.\mathsf{ScalarMult}(\sk_c, \pk_\mathsf{id}) \\
+        \pcif K_1 = 0 \lor K_2 = 0 \pcthen \pcabort \pcendif
+    }
+    \end{pcvstack}
+
+    \begin{pcvstack}[space=0.05em]
+    % KEM components
+    \procedure[linenumbering]{$\KEM.\kgen()$}{
+        r \getsr \bin^{256} \\
+        d \gets \operatorname{\mathsf{SHA2-512}}(r) \\
+        \sk \gets \mathsf{firstBytes}(d,32) \\
+        u \gets \mathsf{scalarBaseMultDirty}(\sk) \\
+        \pk \gets \mathsf{Bytes}(u) \\
+        \pcreturn (\pk, \sk)
+    }
+   
+    \procedure[lnstart=4,linenumbering]{$\KEM.\encaps(\pk)$}{
+        \pk_e, \sk_e \getsr \kgen() \\
+        K \gets \mathsf{curve25519}.\mathsf{ScalarMult}(\sk_e, \pk) \\
+        \pcif K = 0 \pcthen \\
+        \t  \pcabort \\
+        \pcendif \\
+        \pcreturn (c=\pk_e, K)
+    }
+    
+    \procedure[lnstart=9,linenumbering]{$\KEM.\decaps(\sk, c)$}{
+        u \gets \mathsf{SetBytes}(c) \\
+        K \gets \mathsf{curve25519}.\mathsf{ScalarMult}(\sk, \mathsf{Bytes}(u)) \\
+        \pcif K = 0 \pcthen \\
+        \t  \pcabort \\
+        \pcendif \\
+        \pcreturn K
+    }
+
+    % FEO components
+    \procedure[linenumbering]{$E.\filterpk(\pk)$}{
+        \pclinecomment{no restriction on $\pk$ to encapsulate against} \\
+        \pcreturn \pctrue
+    }
+    
+    \procedure[lnstart=3,linenumbering]{$E.\encodectxt(c)$}{
+        t \getsr \bin^{8} \\
+        u \gets \mathsf{SetBytes}(c) \\
+        \hat \pk \gets \mathsf{uToRepresentative}(u, t) \\
+        \pclinecomment{$\hat \pk$ is $\bot$ for 50\% of all values of $c$} \\
+        \pcreturn \hat \pk
+    }
+    
+    \procedure[lnstart=5,linenumbering]{$E.\decodectxt(\hat c)$}{
+        \pcreturn \mathsf{RepresentativeToPublicKey}(\hat c)
+    }
+    \end{pcvstack}
+
+\end{pchstack}
