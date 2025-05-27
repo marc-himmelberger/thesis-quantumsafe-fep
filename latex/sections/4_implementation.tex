@@ -242,15 +242,18 @@ The following two subsections offer different approaches to implement fragmentat
 
 One way to achieve the security properties described in \cref{ssec:fragmentation} in a space-efficient manner would be to send one OKEM ciphertext plus a 16 byte PRF as the first fragment. The PRF would be keyed by a combination of the shared secret and the bridge information (as in \drivel{}).
 
-Recall from \cite[Figure~6]{EPRINT:GRSV25} that the first \drivel{} message is constructed as $epk_e \conc c_S \conc P_C \conc M_C \conc MAC_C$, where $epk_e$ is the encrypted KEM public key, $c_S$ is the OKEM ciphertext of interest, $M_C$ helps delimit the message, and $MAC_C$ authenticates all preceding data.
+Recall from \cite[Figure~6]{EPRINT:GRSV25} that the first \drivel{} message is constructed as $\mathsf{epk}_e \conc c_S \conc P_C \conc M_C \conc \mathsf{MAC}_C$, where $\mathsf{epk}_e$ is the encrypted KEM public key, $c_S$ is the OKEM ciphertext of interest, $M_C$ helps delimit the message, and $\mathsf{MAC}_C$ authenticates all preceding data.
 
 In this fragmentation approach, we propose a minimal change to this message, such that encrypted public keys are sent later, and an additional PRF value is sent directly following the OKEM ciphertext. Reusing the same variables, parenthesizing the first fragment for clarity, and introducing $A_C \gets F_1(ES, c_S \conc \text{``:authc''})$ as an authenticator, this would lead to the following first protocol message:
 
 \[
-    \left( c_S \conc A_C \right) \conc epk_e \conc P_C \conc M_C \conc MAC_C .
+    \left( c_S \conc A_C \right) \conc \mathsf{epk}_e \conc P_C \conc M_C \conc \mathsf{MAC}_C .
 \]
 
-Using this modified first message, the bridge may now start sending data earlier than in unmodified \drivel{}. Although it cannot send its second message before receiving $epk_e$, it can send dummy data that the client will ignore.
+$\mathsf{msg}_C = \mathsf{epk}_e \conc c_S \conc P_C \conc M_C \conc \mathsf{MAC}_C$
+
+
+Using this modified first message, the bridge may now start sending data earlier than in unmodified \drivel{}. Although it cannot send its second message before receiving $\mathsf{epk}_e$, it can send dummy data that the client will ignore.
 
 The adapted protocol specification is visualized in \cref{fig:modified-drivel-minimal}, an adaptation of \cite[Figure~6]{EPRINT:GRSV25}. Dashed lines denote the option to send dummy data for the purpose of traffic shaping.
 
@@ -269,7 +272,7 @@ The adapted protocol specification is visualized in \cref{fig:modified-drivel-mi
     \label{fig:modified-drivel-minimal}
 \end{figure}
 
-Implementers should note that the newly introduced $A_C$ must also be saved to protect against replay attacks. The same filter as for $MAC_C$ can be reused, as the probability of a collision between these values is negligible.
+Implementers should note that the newly introduced $A_C$ must also be saved to protect against replay attacks. The same filter as for $\mathsf{MAC}_C$ can be reused, as the probability of a collision between these values is negligible.
 
 \Cref{tab:frag-min-needed} shows the minimum size of a first fragment using this approach for different OKEMs.
 

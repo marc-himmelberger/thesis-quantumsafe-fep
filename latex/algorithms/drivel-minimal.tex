@@ -35,7 +35,7 @@
 	\ServerAction[gray,font=\small]{knows $(\sk_S, \nodeid)$\hspace{1.5cm}\null}
 	\NextLine[1.1]
 	
-	\ClientAction{$(\pk_e, \sk_e) \getsr \highlightbox{\KEM}.\kgen()$} 
+	\ClientAction{$(\pk_e, \sk_e) \getsr \KEM.\kgen()$} 
 	\NextLine
 	\ClientAction{$P_C \getsr \mathcal{D}_{\mathsf{pad}_C}$}
 	\NextLine
@@ -43,49 +43,81 @@
 	\NextLine
 	\ClientAction{$ES \gets \funComb(\nodeid, K_S)$}
 	\NextLine
-	\ClientAction{\highlightbox{$EK_1 \gets \funPRF(ES, \textlit{:enckey1}, \keylen_1)$}}
+	\ClientAction{$EK_1 \gets \funPRF(ES, \textlit{:enckey1}, \keylen_1)$}
 	\NextLine
-	\ClientAction{\highlightbox{$EK_2 \gets \funPRF(ES, \textlit{:enckey2}, \keylen_2)$}}
+	\ClientAction{$EK_2 \gets \funPRF(ES, \textlit{:enckey2}, \keylen_2)$}
 	\NextLine
-	\ClientAction{\highlightbox{$epk_e \gets \funEnc(EK_1, \pk_e)$}}
+	\ClientAction{$\mathsf{epk}_e \gets \funEnc(EK_1, \pk_e)$}
 	\NextLine
-	\ClientAction{$M_C \gets \funPRF(ES, epk_e \conc c_S \conc \textlit{:mc})$}
+	\ClientAction{\highlightbox{$A_C \gets \funPRF(ES, c_S \conc \textlit{:authc})$}}
+    \NextLine
+	\ClientAction{\highlightbox{$A_S \gets \funPRF(ES, \textlit{:auths})$}}
 	\NextLine
-	\ClientAction{$\mathsf{MAC}_C \gets \funPRF(ES, epk_e \conc c_S \conc P_C \conc M_C \conc \textlit{:mac\_c})$}
-	
+	\ClientAction{$M_C \gets \funPRF(ES, \mathsf{epk}_e \conc \textlit{:mc})$}
+	\NextLine
+	\ClientAction{$\mathsf{MAC}_C \gets \funPRF(ES, c_S \conc A_C \conc \mathsf{epk}_e \conc P_C \conc M_C \conc \textlit{:mac\_c})$}
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	\NextLine[1.5]
-	\ClientToServer{$\mathsf{msg}_C = epk_e \conc c_S \conc P_C \conc M_C \conc \mathsf{MAC}_C$}{}
+	\NextLine[2]
+	\ClientToServer{\highlightbox{$\mathsf{msg}_C' = c_S \conc A_C$}}{}
 	\NextLine[1]
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	
-	\ServerActionLeft{$epk_e \gets \mathsf{msg}_C[1..\obfpklen]$ ; $c_S \gets \mathsf{msg}_C[\obfpklen+1..\obfpklen+\obfctxtlen]$}
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Server verifies A_C and can start with dummy data
+    \ServerActionLeft{$c_S \gets \mathsf{msg}_C'[1..\obfctxtlen]$ ; \highlightbox{$A_C \gets \mathsf{msg}_C'[\obfctxtlen+1..\obfctxtlen+\funPRFoutlen]$}}
 	\NextLine
 	\ServerActionLeft{$K_S \gets \OKEM.\decaps(\sk_S, c_S)$}
 	\NextLine
 	\ServerActionLeft{$ES \gets \funComb(\nodeid, K_S)$}
 	\NextLine
-	\ServerActionLeft{\highlightbox{$EK_1 \gets \funPRF(ES, \textlit{:enckey1}, \keylen_1)$}}
+	\ServerActionLeft{\highlightbox{if $\funPRF(ES, c_S \conc \textlit{:authc}) \neq A_C$: $\texttt{break}$}}
 	\NextLine
-	\ServerActionLeft{\highlightbox{$EK_2 \gets \funPRF(ES, \textlit{:enckey2}, \keylen_2)$}}
+	\ServerActionLeft{\highlightbox{if $A_C \in \pstate.\macregister$: $\texttt{break}$}}
 	\NextLine
-	\ServerActionLeft{$M_C \gets \funPRF(ES, epk_e \conc c_S \conc \textlit{:mc})$}
-	\NextLine[1.2]
-	\ServerActionLeft{parse $(epk_e \conc c_S \conc P_C \conc M_C \conc \mathsf{MAC}_C) \gets \mathsf{msg}_C$ using $M_C$; else $\texttt{break}$}
+	\ServerActionLeft{\highlightbox{$\pstate.\macregister \gets \pstate.\macregister \cup \{A_C\}$}}
 	\NextLine
-	\ServerActionLeft{if $\funPRF(ES, epk_e \conc c_S \conc P_C \conc M_C \conc \textlit{:mac\_c}) \neq \mathsf{MAC}_C$: $\texttt{break}$}
-	\NextLine[1.2]
+	\ServerActionLeft{\highlightbox{$A_S \gets \funPRF(ES, \textlit{:auths})$}}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \NextLine[1]
+	\ServerToClient[dashed,->]{}{}
+	\NextLine[1]
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Client waits for A_S
+    \ClientAction{\highlightbox{discard data until $A_S$}}
+    \NextLine
+    \ClientAction{TODO: Highlight differences (generating, checking A, message changes, discarding)! Check with git.}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \NextLine[1]
+	\ClientToServer{\highlightbox{$\mathsf{msg}_C'' = \mathsf{epk}_e \conc P_C \conc M_C \conc \mathsf{MAC}_C$}}{}
+	\NextLine[1]
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+    % Server parses rest of message and replies
+    \ServerActionLeft{$\mathsf{epk}_e \gets \mathsf{msg}_C''[1..\obfpklen]$}
+	\NextLine
+	\ServerActionLeft{$M_C \gets \funPRF(ES, \mathsf{epk}_e \conc \textlit{:mc})$}
+	\NextLine
+	\ServerActionLeft{parse $(\mathsf{epk}_e \conc P_C \conc M_C \conc \mathsf{MAC}_C) \gets \mathsf{msg}_C''$ using $M_C$; else $\texttt{break}$}
+	\NextLine
+	\ServerActionLeft{if $\funPRF(ES, c_S \conc A_C \conc \mathsf{epk}_e \conc P_C \conc M_C \conc \textlit{:mac\_c}) \neq \mathsf{MAC}_C$: $\texttt{break}$}
+	\NextLine
 	\ServerActionLeft{if $\mathsf{MAC}_C \in \pstate.\macregister$: $\texttt{break}$}
 	\NextLine
 	\ServerActionLeft{$\pstate.\macregister \gets \pstate.\macregister \cup \{\mathsf{MAC}_C\}$}
+    \NextLine
+	\ServerActionLeft{$EK_1 \gets \funPRF(ES, \textlit{:enckey1}, \keylen_1)$}
 	\NextLine
-	\ServerActionLeft{\highlightbox{$\pk_e \gets \funDec(EK_1, epk_e)$}}
+	\ServerActionLeft{$EK_2 \gets \funPRF(ES, \textlit{:enckey2}, \keylen_2)$}
 	\NextLine
-	\ServerActionLeft{$(c_e, K_e) \getsr \highlightbox{\KEM}.\encaps(\pk_e)$}
+	\ServerActionLeft{$\pk_e \gets \funDec(EK_1, \mathsf{epk}_e)$}
 	\NextLine
-	\ServerActionLeft{\highlightbox{$ect_e \gets \funEnc(EK_2, c_e)$}}
+	\ServerActionLeft{$(c_e, K_e) \getsr \KEM.\encaps(\pk_e)$}
 	\NextLine
-	\ServerActionLeft{$\mathsf{protoID} \gets \highlightbox{\textlit{Drivel}}$}
+	\ServerActionLeft{$\mathsf{ect}_e \gets \funEnc(EK_2, c_e)$}
+	\NextLine
+	\ServerActionLeft{$\mathsf{protoID} \gets \textlit{Drivel}$}
 	\NextLine
 	\ServerActionLeft{$ES' \gets \funPRF(ES, \textlit{:derive\_key})$ ; $FS \gets \funComb(ES', K_e)$}
 	\NextLine
@@ -97,29 +129,29 @@
 	\NextLine
 	\ServerActionLeft{$P_S \getsr \mathcal{D}_{\mathsf{pad}_S}$}
 	\NextLine
-	\ServerActionLeft{$M_S \gets \funPRF(ES, ect_e \conc \textlit{:ms})$}
+	\ServerActionLeft{$M_S \gets \funPRF(ES, \mathsf{ect}_e \conc \textlit{:ms})$}
 	\NextLine
-	\ServerActionLeft{$\mathsf{MAC}_S \gets \funPRF(ES, ect_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \textlit{:mac\_s})$}
+	\ServerActionLeft{$\mathsf{MAC}_S \gets \funPRF(ES, A_S \conc \mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \textlit{:mac\_s})$}
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\NextLine[1.5]
-	\ServerToClient{$\mathsf{msg}_S = ect_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \mathsf{MAC}_S$}{}
+	\ServerToClient{\highlightbox{$\mathsf{msg}_S = A_S \conc \mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \mathsf{MAC}_S$}}{}
 	\NextLine[1]
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
-	\ClientAction{$ect_e \gets \mathsf{msg}_S[1..\obfctxtlen]$}
+	\ClientAction{$\mathsf{ect}_e \gets \mathsf{msg}_S[1..\obfctxtlen]$}
 	\NextLine
-	\ClientAction{$M_S \gets \funPRF(ES, ect_e \conc \textlit{:ms})$}
+	\ClientAction{$M_S \gets \funPRF(ES, \mathsf{ect}_e \conc \textlit{:ms})$}
 	\NextLine
-	\ClientAction{parse $(ect_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \mathsf{MAC}_S) \gets \mathsf{msg}_S$ using $M_S$; else $\texttt{break}$}
+	\ClientAction{parse $(\mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \mathsf{MAC}_S) \gets \mathsf{msg}_S$ using $M_S$; else $\texttt{break}$}
 	\NextLine
-	\ClientAction{if $\funPRF(ES, ect_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \textlit{:mac\_s}) \neq \mathsf{MAC}_S$: $\texttt{break}$}
+	\ClientAction{if $\funPRF(ES, A_S \conc \mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \textlit{:mac\_s}) \neq \mathsf{MAC}_S$: $\texttt{break}$}
 	\NextLine
-	\ClientAction{\highlightbox{$c_e \gets \funDec(EK_2, ect_e)$}}
+	\ClientAction{$c_e \gets \funDec(EK_2, \mathsf{ect}_e)$}
 	\NextLine
-	\ClientAction{$K_e \gets \highlightbox{\KEM}.\decaps(\sk_e, c_e)$}
+	\ClientAction{$K_e \gets \KEM.\decaps(\sk_e, c_e)$}
 	\NextLine
-	\ClientAction{$\mathsf{protoID} \gets \highlightbox{\textlit{Drivel}}$}
+	\ClientAction{$\mathsf{protoID} \gets \textlit{Drivel}$}
 	\NextLine
 	\ClientAction{$ES' \gets \funPRF(ES, \textlit{:derive\_key})$ ; $FS \gets \funComb(ES', K_e)$}
 	\NextLine
