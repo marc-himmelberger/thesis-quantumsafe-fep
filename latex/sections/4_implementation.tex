@@ -129,31 +129,16 @@ Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to
 % TODO
 % \Cref{sec:protocol-design} presents a high-level description of the modified \drivel{} protocol, followed by a detailed explanation of how handshake messages could be fragmented to enhance traffic shaping capabilities.
 
-\subsection{The Modified Drivel Protocol} \label{ssec:drivel}
+\subsection{Instantiating the Drivel Protocol} \label{ssec:drivel-instance}
 
 % TODO: Quickly present relevant parts/references to drivel protocol.
-% TODO: Describe adaptations. Especially fragmentation, symmetric encryption, and instantiations for F1, F2.
+% TODO: Describe adaptations. Especially symmetric encryption, and instantiations for F1, F2.
 
-\begin{figure}
-    \input{algorithms/drivel}
-    \caption[
-        The modified drivel TODO.
-    ]{
-        The Drivel obfuscated key exchange protocol TODO.
-        OKEM is an OKEM satisfying IND-CCA, SPR-CCA, and ciphertext uniformity.
-        KEM is an IND-1CCA-secure KEM.
-        SE is an OT-IND-secure symmetric encryption scheme.
-        F1 is a PRF and F2 is a dual PRF.
-        Core differences to the pq-obfs protocol from [GSV24] are highlighted in blue boxes.
-    }
-    \label{fig:modified-drivel}
-\end{figure}
-
-\subsection{Fragmenting Handshake Messages} \label{ssec:fragmentation}
+\subsection{Discussion on Fragmenting Handshake Messages} \label{ssec:fragmentation}
 
 This section analyzes possibilities to allow for more flexibility in shaping \drivel{} traffic. Avoiding fingerprinting based on certain sizes, directionalities and timing of messages between client and bridge is crucial to evade censors.
 
-\textbf{No changes discussed or proposed in this \cref{ssec:fragmentation} are implemented, or practically evaluated as part of this thesis, but this discussion may be valuable to readers to understand possible future directions of the protocol.}
+\textbf{No changes discussed or proposed in this \cref{ssec:fragmentation} were implemented, or practically evaluated as part of this thesis, but this discussion may be valuable to readers to understand possible future directions of the protocol.}
 
 \paragraph{Fragmentation is Needed}
 When deploying \drivel{}, it may be desirable to offer even more flexibility for traffic shaping than \obfsfour{}. In particular, \obfsfour{} sends two messages in its handshake, before fragmenting packets using a customizable message size distribution based on a deterministic pseudorandom number generator and a seed determined by the bridge server.
@@ -233,21 +218,58 @@ We will now examine what properties this exchange should satisfy:
 
 Note also that in the case of plain \drivel{}, these properties are achieved when using the entire first message as a ``first fragment'': The first two requirements are covered by the OKEM, and the last property is achieved by authenticating every message with a PRF value.
 
-It is hard to imagine a significant potential in message size reduction outside of removing other components of the first \drivel{} message, as we conjecture the following: Any protocol satisfying these three requirements could act as an OKEM (or an inefficient MAC). The existence of a more efficient protocol would thus imply the existence of a more efficient OKEM, which, due to the large scope of the NIST Standardization, seems implausible. This gives us confidence that the construction below is close to optimal.
+It is hard to imagine a significant potential in message size reduction outside of removing other components of the first \drivel{} message, as we conjecture the following: Any protocol satisfying these three requirements could act as an OKEM (or an inefficient MAC). The existence of a more efficient protocol would thus imply the existence of a more efficient OKEM, which, due to the large scope of the NIST Standardization, seems implausible. This gives us confidence that the constructions in \cref{ssec:drivel-mod} below are both close to optimal in terms of first fragment size.
 
-\paragraph{A Minimal Fragmentation}
-One way to achieve the outlined security properties in a space-efficient manner would be to send one OKEM ciphertext plus a 16 byte PRF as the first fragment. The PRF would be keyed by a combination of the shared secret and the bridge information (as in \drivel{}).
+\paragraph{Arbitrary Fragmentation}
+We have focused on maintaining $\sObf$ security during fragmentation up until now, as this was also a design goal for \drivel{}.
+If, however, compromises could be made in regards to $\sObf$ security, the fragmentation would not suffer the constraints outlined above.
 
-TODO: Move this to the next section, and be more generic here.
+Relaxing our requirements, and allowing a censor to retroactively identify bridges given their bridge information, the following fragmentation strategy becomes reasonable: The client sends a first fragment of $x+16$ bytes, consisting of $x$ bytes of randomized data and a 16 byte PRF keyed with the bridge information. Padding may be added between the two blocks. The choice of $x$ does not impact the security, but reduces the chance of bridges rejecting honest connection attempts due to repeated PRF values. In particular, the chance of collisions in those $x$ bytes must be kept small within a given epoch hour. As an example, assuming 52 active users per bridge \cite{tor-metrics}, each making 60 handshakes per epoch hour, then choosing $x=6$ random bytes already yields a collision probability around $3 \cdot 10^{-8}$ by the birthday bound.
 
-Recall that the first \drivel{} message is constructed as $epk_e \conc c_S \conc P_C \conc M_C \conc MAC_C$, where $epk_e$ is the encrypted KEM public key, $c_S$ is the OKEM ciphertext of interest, $M_C$ helps delimit the message, and $MAC_C$ authenticates all preceding data. In this fragmentation approach, we propose a minimal change to this message, such that encrypted public keys are sent later, and an additional PRF value is sent directly following the OKEM ciphertext. Reusing the same variables, parenthesizing the first fragment for clarity, and introducing $A_C \gets F_1(ES, c_S \conc \text{``:authc''})$ as an authenticator, this would lead to the following first message:
+This approach is very similar in spirit to the first message in \obfsfour{}, and allows for much more flexibility in traffic shaping through padding. The key difference from \obfsfour{} is the removal of one of the PRF values and the replacement of the obfuscated client public key by randomized data.
+
+Sending even less data in a first fragment seems implausible, as the randomized data is used to prevent replay, and the PRF value proves knowledge of the bridge information. Using less than $x$ or 16 bytes, respectively, for either component would lower the security level, or increase the collision probability between users, forcing handshake retries.
+
+\subsection{Proposed Modifications to the Drivel Protocol} \label{ssec:drivel-mod}
+
+\textbf{No changes discussed or proposed in this \cref{ssec:drivel-mod} were implemented, or practically evaluated as part of this thesis, but this discussion may be valuable to readers to understand possible future directions of the protocol.}
+
+\textbf{This thesis employs only the unmodified variant of $\drivel{}$ presented in \cite[Figure~6]{EPRINT:GRSV25}.}
+
+The following two subsections offer different approaches to implement fragmentation of handshake messages into \drivel{}. \Cref{sssec:variant-minimal} tries to make only small changes to \drivel{}, as proposed in \cite[Figure~6]{EPRINT:GRSV25}, while \cref{sssec:variant-framing} tries to reuse existing mechanisms in \obfsfour{} and extend them from the data transfer to the handshake phase.
+
+\subsubsection{Variant 1: A Minimal Fragmentation} \label{sssec:variant-minimal}
+
+One way to achieve the security properties described in \cref{ssec:fragmentation} in a space-efficient manner would be to send one OKEM ciphertext plus a 16 byte PRF as the first fragment. The PRF would be keyed by a combination of the shared secret and the bridge information (as in \drivel{}).
+
+Recall from \cite[Figure~6]{EPRINT:GRSV25} that the first \drivel{} message is constructed as $epk_e \conc c_S \conc P_C \conc M_C \conc MAC_C$, where $epk_e$ is the encrypted KEM public key, $c_S$ is the OKEM ciphertext of interest, $M_C$ helps delimit the message, and $MAC_C$ authenticates all preceding data.
+
+In this fragmentation approach, we propose a minimal change to this message, such that encrypted public keys are sent later, and an additional PRF value is sent directly following the OKEM ciphertext. Reusing the same variables, parenthesizing the first fragment for clarity, and introducing $A_C \gets F_1(ES, c_S \conc \text{``:authc''})$ as an authenticator, this would lead to the following first protocol message:
 
 \[
     \left( c_S \conc A_C \right) \conc epk_e \conc P_C \conc M_C \conc MAC_C .
 \]
 
 Using this modified first message, the bridge may now start sending data earlier than in unmodified \drivel{}. Although it cannot send its second message before receiving $epk_e$, it can send dummy data that the client will ignore.
-Implementers should note that the newly introduced $A_C$ must also be saved to protect against replay attacks. The same filter as for $MAC_C$ can be reused, as the probability of a collision between those values is negligible.
+
+The adapted protocol specification is visualized in \cref{fig:modified-drivel-minimal}, an adaptation of \cite[Figure~6]{EPRINT:GRSV25}. Dashed lines denote the option to send dummy data for the purpose of traffic shaping.
+
+\begin{figure}
+    \input{algorithms/drivel-minimal}
+    \caption[
+        The modified \drivel{} protocol, with minimal changes to support fragmentation.
+    ]{
+        The modified \drivel{} protocol, with minimal changes to support fragmentation.
+        $\OKEM$ is an OKEM satisfying $\indcca, \sprcca$ security, and ciphertext uniformity.
+        $KEM$ is an $\indonecca$-secure KEM.
+        $SE$ is an $\indonecca$ one-time ciphertext indistinguishable symmetric encryption scheme.
+        $F_1$ is a PRF and $F_2$ is a dual PRF.
+        Core differences to the \drivel{} protocol from \cite[Figure~6]{EPRINT:GRSV25} are highlighted in blue boxes.
+    }
+    \label{fig:modified-drivel-minimal}
+\end{figure}
+
+Implementers should note that the newly introduced $A_C$ must also be saved to protect against replay attacks. The same filter as for $MAC_C$ can be reused, as the probability of a collision between these values is negligible.
 
 \Cref{tab:frag-min-needed} shows the minimum size of a first fragment using this approach for different OKEMs.
 
@@ -274,15 +296,7 @@ It follows that using Classic McEliece or ML-Kemeleon as OKEMs allows for the mo
 
 Once this first fragment has been received by the server, later fragmentation does not suffer from the same size constraints, as the use of the shared secret then effectively proves that the client knows the bridge information and that the bridge holds the OKEM private key. Exchanging almost arbitrarily small fragments becomes feasible by simply authenticating them using the shared secret and a PRF.
 
-\paragraph{Arbitrary Fragmentation}
-We have focused on maintaining $\sObf$ security during fragmentation up until now, as this was also a design goal for \drivel{}.
-If, however, compromises could be made in regards to $\sObf$ security, the fragmentation would not suffer the constraints outlined above.
-
-Relaxing our requirements, and allowing a censor to retroactively identify bridges given their bridge information, the following fragmentation strategy becomes reasonable: The client sends a first fragment of $x+16$ bytes, consisting of $x$ bytes of randomized data and a 16 byte PRF keyed with the bridge information. Padding may be added between the two blocks. The choice of $x$ does not impact the security, but reduces the chance of bridges rejecting honest connection attempts due to repeated PRF values. In particular, the chance of collisions in those $x$ bytes must be kept small within a given epoch hour. As an example, assuming 52 active users per bridge \cite{tor-metrics}, each making 60 handshakes per epoch hour, then choosing $x=6$ random bytes already yields a collision probability around $3 \cdot 10^{-8}$ by the birthday bound.
-
-This approach is very similar in spirit to the first message in \obfsfour{}, and allows for much more flexibility in traffic shaping through padding. The key difference from \obfsfour{} is the removal of one of the PRF values and the replacement of the obfuscated client public key by randomized data.
-
-Sending even less data in a first fragment seems implausible, as the randomized data is used to prevent replay, and the PRF value proves knowledge of the bridge information. Using less than 16 bytes for either component would lower the security level, enabling brute-force active probing attacks.
+\subsubsection{Variant 2: Reusing \obfsfour{} Framing} \label{sssec:variant-framing}
 
 \paragraph{Existing Fragmentation Mechanisms in obfs4}
 The lyrebird repository's \obfsfour{} implementation features a packet-based system capable of transferring different types of messages during the data transfer phase. This system could be reused to implement more flexible fragmentation after the initial fragment $c_S \conc A_C$ is transmitted, but its construction duplicates part of the \drivel{} protocol.
@@ -336,6 +350,21 @@ The length of the ciphertext is then XORed with the first two bytes of the newly
 
 Upon receiving a packet, the receiver updates its $\mathsf{counter}$ and $S$ values, deobfuscated the length field, and decrypts the AE ciphertext. Finally, the data is passed up to the packet layer.
 
+\paragraph{An Informal Security Analysis}
+
+We will now discuss the achieved security guarantees by the above approach, to quickly survey possible improvements in future implementations.
+
+The framing layer outlined above cannot, by design of the underlying Tor pluggable transport implementation, hide the length of transmitted frames from active attackers.
+After the initial handshake, the connection is ``wrapped'' in the packet and framing layers, and for as long as the connections stay alive, data is passed back and forth between the local Tor client (in plaintext) and the bridge connection (encoded in packets).
+If, at any point, a connection closes or raises an error (e.g. because a tag in the framing layer's AE ciphertext failed to verify), the connection is immediately closed, and a TCP FIN packet is sent by the OS as part of closing the TCP file descriptor.
+This allows active attackers to choose any TCP burst after the initial handshake, leave the length field in the first two bytes unmodified, arbitrarily change the third byte (part of the 16 byte NaCl secretbox tag, ensuring a decryption failure later), and then slowly send one byte at a time. As the pluggable transport, after reading a valid length value, will wait for all data to arrive, and then verify the AE ciphertext, the total length of the AE ciphertext can be deduced by observing when the connection is closed.
+
+This contrasts harshly with the handling of errors and invalid MAC values in the handshake procedure: There, a random delay between 1 and 60 seconds from the start of the connection is chosen as a deadline, and if a client causes an error in the handshake or does not send enough data in the first 30 seconds, the connection is closed only at this randomized deadline.
+
+If active attackers attempt to fingerprint the connection by modifying the length value to provoke a closure of the connection (e.g. flipping the most significant bit, ensuring an invalid length), the length value is instead chosen as a random valid length between 16 to 1446 bytes. As the connection then remains blocked until the corresponding amount of AE ciphertext is received before the connection is closed, this attack cannot provoke a closure after a fixed, identifiable amount of data.
+
+The main purpose of the length field obfuscation is therefore not to hide it from active attackers, or protect against manipulation (this is done by the authenticated encryption), but instead to make the protocol harder to identify. To this end, it is not clear to us, why $S$ is not instead chosen as e.g. $S \gets H(K_H, \mathsf{counter})$ to obtain a similarly secure random value to use in the XOR operation. This would remove the need for $\mathsf{IV}, S$ altogether and streamline the construction. Additionally, the \drivel{} PRF $F_1$ could be reused, reducing the number of primitives required in the protocol.
+
 \paragraph{Design Conflicts and Conclusion}
 
 To construct a system capable of flexible traffic shaping, it is necessary to split large messages into smaller ones, sent in sequence, as well as to pad small messages to a larger size, or even send only padding when no message is available.
@@ -350,7 +379,23 @@ However, since the framing layer already aims to provide obfuscation, integrity,
 
 We believe it to be worthwhile to modify \drivel{} accordingly, allowing almost arbitrary traffic shaping after an initial transmission of only $c_S \conc A_C$.
 Conversely, this rather extensive change would require adapting the extensive $\sObfKE$ security proof for \drivel{} presented in \cite{EPRINT:GRSV25}.
-\textbf{This thesis therefore employs only the unmodified variant of $\drivel{}$ presented in \cite[Figure~6]{EPRINT:GRSV25}.}
+
+This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation of \cite[Figure~6]{EPRINT:GRSV25}. TODO something denotes using the key in the framing layer (or make framing explicit?).
+
+\begin{figure}
+    \input{algorithms/drivel-minimal} TODO change
+    \caption[
+        The modified drivel TODO.
+    ]{
+        The Drivel obfuscated key exchange protocol TODO.
+        OKEM is an OKEM satisfying IND-CCA, SPR-CCA, and ciphertext uniformity.
+        KEM is an IND-1CCA-secure KEM.
+        SE is an OT-IND-secure symmetric encryption scheme.
+        F1 is a PRF and F2 is a dual PRF.
+        Core differences to the pq-obfs protocol from [GSV24] are highlighted in blue boxes.
+    }
+    \label{fig:modified-drivel-framing}
+\end{figure}
 
 \section{Core Architecture} \label{sec:impl-architecture}
 % TODO
@@ -358,11 +403,18 @@ Conversely, this rather extensive change would require adapting the extensive $\
 
 \paragraph{Building a KEM and OKEM from the \texttt{internal/x25519ell2} Module}
 
-In the implementation of \obfsfour{}, only a single method of key exchange is available: Customized Diffie-Hellman key exchange on the elliptic curve x25519, possibly using the \textsf{Elligator2} encoding on the curve points transmitted over the wire.
+In the implementation of \obfsfour{}, only one method of key exchange is available: Customized Diffie-Hellman key exchange on the elliptic curve x25519, possibly using the \textsf{Elligator2} encoding on the curve points transmitted over the wire.
 
-Post-quantum key exchange algorithms are almost universally specified using the syntax of KEMs. In order to also compare \drivel{} performance in the traditional setting with its performance using post-quantum KEMs, we have extended the \texttt{internal/x25519ell2} module to implement a KEM and a filter-encode obfuscator performing \textsf{Elligator2}. \Cref{fig:impl-x25519-kem} shows pseudocode illustrating the usage of the module by \obfsfour{} (via its use of the \texttt{common/ntor} module), alongside the construction of our x25519 KEM.
+Post-quantum key-exchange algorithms are almost universally specified using the syntax of KEMs. In order to also compare \drivel{} performance in the traditional setting with its performance using post-quantum KEMs, we have extended the \texttt{internal/x25519ell2} module to implement a KEM and a filter-encode obfuscator performing \textsf{Elligator2}. \Cref{fig:impl-x25519-kem} shows pseudocode illustrating the usage of the module by \obfsfour{} (through its use of the \texttt{common/ntor} module), alongside the construction of our x25519 KEM.
 
-Readers should note that, although the construction is similar in spirit to the DHKEM construction \cite[Section~4.1]{rfc9180}, this KEM has minor differences in the derivation of its shared secret. The focus was instead placed on staying as close as possible to the construction used in \obfsfour{}, in order to offer a fair comparison.
+As our goal is simply to show how the KEM construction was extracted from the existing code, we omit the full definition of \obfsfour{} here. Suffice to say, the protocol involves one static keypair $\pk_\mathsf{id}, \sk_\mathsf{id}$ (the public key is part of the bridge information) and two ephemeral keypairs generated during the handshake procedure. The static keypair has no encodings applied to the public key (as it is transmitted out-of-band), while the ephemeral keypairs also have obfuscated public keys. When all required values are available, methods $\mathsf{ServerHandshake}, \mathsf{ClientHandshake}$ are executed to compute shared secrets which in turn are used to authenticate and finalize the handshake.
+
+Readers should note that, although the construction is similar in spirit to the DHKEM construction \cite[Section~4.1]{rfc9180}, this KEM has minor differences in the derivation of its shared secret. Instead, the focus was on staying as close as possible to the construction used in \obfsfour{}, in order to offer a fair comparison between the two pluggable transport constructions when targeting traditional security.
+
+Unlike in the \obfsfour{} protocol, the newly constructed KEM has what initially appear to be slightly different semantics to generate the obfuscated ciphertext $\hat \pk$:
+In \obfsfour{} and its method $\mathsf{NewKeypair}$, the value $u$ determined by $\sk$ is passed directly to $\mathsf{uToRepresentative}$ whereas in the KEM, additional serialization ($\mathsf{Bytes}$) and deserialization ($\mathsf{SetBytes}$) takes place before $\mathsf{uToRepresentative}$ is invoked.
+We have experimentally verified that this does not change $u$ and that the same $\hat \pk$ values are generated with both approaches, given the same randomness $t$.
+Finally, the randomness $t$ is not taken from the hash function output used to set $\sk$, but rather generated securely on-the-fly. It is merely used for padding with two random bits, and to pick the sign of the curve point's y-coordinate at random as suggested in \cite{elligatorExplicitFormulas}.
 
 \begin{figure}
     \input{algorithms/x25519-kem}
