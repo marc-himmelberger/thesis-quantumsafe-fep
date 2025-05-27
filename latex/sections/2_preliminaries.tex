@@ -116,6 +116,8 @@ This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22}, and 
 
 For OKEMs, the notions of $\indcca$ security, OKEM correctness, and public-key collision probability are defined exactly as for KEMs (see \cref{fig:kem-security,def:kem-corr,def:pk-collisions}). For the $\sprcca$ security of OKEMs, we restrict the more general definition of KEMs to always use the simulator $\simulbin$.
 
+We occasionally denote the length in bits of KEM and OKEM public keys and ciphertext as $\pklen, \ctxtlen, \obfpklen, \obfctxtlen$ respectively.
+
 In addition to the above properties, an obfuscated KEM should satisfy stronger randomness requirements than KEMs. In particular, its ciphertexts should not be distinguishable from random bit strings. This is in contrast to regular KEMs that may have recognizable structure in $c$ even if they are $\sprcca$-secure.
 
 \begin{definition}[Ciphertext uniformity]

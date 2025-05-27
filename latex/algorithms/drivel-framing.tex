@@ -1,0 +1,118 @@
+% \begin{minipage}[t]{\textwidth}
+	\hfill
+	\pseudocode[codesize=\footnotesize,jot=-1mm]{%
+		\textbf{Server key generation/setup} \\
+		\nodeid \getsr \bin^{\nodeidlen} \\
+		(\pk_S, \sk_S) \getsr \OKEM.\kgen() \\
+		\pstate.\macregister \gets \emptyset \\
+		\text{return } ((\pk_S, \nodeid), (\sk_S, \nodeid), \pstate)
+	}
+	\hspace*{0.8cm}
+% \end{minipage}
+
+% \vspace{0.5em}
+
+% \hspace*{-0.2in}
+\centering
+\scalebox{0.9}{%
+\begin{tikzpicture}
+	% Set the X coordinates of the client, server, and arrows
+	\edef\ClientX{0}
+
+	\edef\ArrowLeft{3}
+	\edef\ArrowRight{13}
+	\edef\ServerX{16.5}
+	\edef\ServerLeftTextwidth{10.5cm} % width of server-side text, when left-aligned
+
+	% Set the starting Y coordinate
+	\edef\Y{0}
+
+	% Draw header boxes
+	\node [rectangle,draw,inner sep=5pt,right] at (\ClientX,\Y) {\textbf{Client}};
+	\node [rectangle,draw,inner sep=5pt,left] at (\ServerX,\Y) {\textbf{Server}};
+	
+	\NextLine[0.4]
+	\ClientAction[gray,font=\small]{\hspace{1.5cm}knows $(\pk_S, \nodeid)$}
+	\ServerAction[gray,font=\small]{knows $(\sk_S, \nodeid)$\hspace{1.5cm}\null}
+	\NextLine[1.1]
+	
+	\ClientAction{$(\pk_e, \sk_e) \getsr \KEM.\kgen()$} 
+	\NextLine
+	\ClientAction{$(c_S, K_S) \getsr \OKEM.\encaps(\pk_S)$}
+	\NextLine
+	\ClientAction{$ES \gets \funComb(\nodeid, K_S)$}
+	\NextLine
+	\ClientAction{\highlightbox{$A_C \gets \funPRF(ES, c_S \conc \textlit{:authc})$}}
+	\NextLine
+	\ClientAction{\highlightbox{$\mathsf{KEY\_SEED}_1 \gets \funPRF(FS, \mathsf{context} \| \textlit{:key\_extract})$}}
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\NextLine[2]
+	\ClientToServer{\highlightbox{$\mathsf{msg}_C' = c_S \conc A_C$}}{}
+	\NextLine
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Server verifies A_C and can start with dummy data
+	\ServerActionLeft{$K_S \gets \OKEM.\decaps(\sk_S, c_S)$}
+	\NextLine
+	\ServerActionLeft{$ES \gets \funComb(\nodeid, K_S)$}
+	\NextLine
+	\ServerActionLeft{\highlightbox{if $\funPRF(ES, c_S \conc \textlit{:authc}) \neq A_C$: $\texttt{break}$}}
+	\NextLine
+	\ServerActionLeft{\highlightbox{if $A_C \in \pstate.\macregister$: $\texttt{break}$}}
+	\NextLine
+	\ServerActionLeft{\highlightbox{$\pstate.\macregister \gets \pstate.\macregister \cup \{A_C\}$}}
+	\NextLine
+	\ServerActionLeft{\highlightbox{$\mathsf{KEY\_SEED}_1 \gets \funPRF(FS, \mathsf{context} \| \textlit{:key\_extract})$}}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Rekeying 1
+    \NextLine
+	\ServerToClient[dashed]{}{}
+	\NextLine
+    \ClientAction{\highlightbox{$FL.\mathsf{Rekey}(\mathsf{KEY\_SEED}_1)$}}
+    \ServerAction{\highlightbox{$FL.\mathsf{Rekey}(\mathsf{KEY\_SEED}_1)$}}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \NextLine[2]
+	\ClientToServer{\highlightbox{$\mathsf{msg}_C'' = \pk_e$}}{}
+	\NextLine
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Server parses rest of message and replies
+    \ServerActionLeft{$(c_e, K_e) \getsr \KEM.\encaps(\pk_e)$}
+	\NextLine
+	\ServerActionLeft{$\mathsf{protoID} \gets \textlit{Drivel}$}
+	\NextLine
+	\ServerActionLeft{$ES' \gets \funPRF(ES, \textlit{:derive\_key})$ ; $FS \gets \funComb(ES', K_e)$}
+	\NextLine
+	\ServerActionLeft{$\mathsf{context} \gets \pk_S \conc c_S \conc \pk_e \conc c_e \conc \mathsf{protoID}$}
+	\NextLine
+	\ServerActionLeft{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, \mathsf{context} \conc \textlit{:key\_extract})$}
+	\NextLine
+	\ServerActionLeft{$\mathsf{auth} \gets \funPRF(FS, \mathsf{context} \conc \textlit{:server\_mac})$}
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\NextLine[1.5]
+	\ServerToClient{\highlightbox{$\mathsf{msg}_S = c_e \conc \mathsf{auth}$}}{}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    \NextLine
+	\ClientAction{$K_e \gets \KEM.\decaps(\sk_e, c_e)$}
+	\NextLine
+	\ClientAction{$\mathsf{protoID} \gets \textlit{Drivel}$}
+	\NextLine
+	\ClientAction{$ES' \gets \funPRF(ES, \textlit{:derive\_key})$ ; $FS \gets \funComb(ES', K_e)$}
+	\NextLine
+	\ClientAction{$\mathsf{context} \gets \pk_S \conc c_S \conc \pk_e \conc c_e \conc \mathsf{protoID}$}
+	\NextLine
+	\ClientAction{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, \mathsf{context} \| \textlit{:key\_extract})$}
+	\NextLine
+	\ClientAction{if $\funPRF(FS, \mathsf{context} \conc \textlit{:server\_mac}) \neq \mathsf{auth}$: $\texttt{break}$}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Rekeying 2
+    \NextLine
+	\ServerToClient[dashed]{}{}
+	\NextLine
+    \ClientAction{\highlightbox{$FL.\mathsf{Rekey}(\mathsf{KEY\_SEED}_2)$}}
+    \ServerAction{\highlightbox{$FL.\mathsf{Rekey}(\mathsf{KEY\_SEED}_2)$}}
+\end{tikzpicture}
+}

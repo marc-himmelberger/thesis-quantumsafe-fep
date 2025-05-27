@@ -265,7 +265,7 @@ The adapted protocol specification is visualized in \cref{fig:modified-drivel-mi
         The modified \drivel{} protocol, with minimal changes to support fragmentation.
         $\OKEM$ is an OKEM satisfying $\indcca, \sprcca$ security, and ciphertext uniformity.
         $KEM$ is an $\indonecca$-secure KEM.
-        $SE$ is an $\indonecca$ one-time ciphertext indistinguishable symmetric encryption scheme.
+        $SE$ is a length-preserving, one-time ciphertext indistinguishable, symmetric encryption scheme.
         $F_1$ is a PRF and $F_2$ is a dual PRF.
         Core differences to the \drivel{} protocol from \cite[Figure~6]{EPRINT:GRSV25} are highlighted in blue boxes.
     }
@@ -383,19 +383,20 @@ However, since the framing layer already aims to provide obfuscation, integrity,
 We believe it to be worthwhile to modify \drivel{} accordingly, allowing almost arbitrary traffic shaping after an initial transmission of only $c_S \conc A_C$.
 Conversely, this rather extensive change would require adapting the extensive $\sObfKE$ security proof for \drivel{} presented in \cite{EPRINT:GRSV25}.
 
-This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation of \cite[Figure~6]{EPRINT:GRSV25}. TODO something denotes using the key in the framing layer (or make framing explicit?).
+This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation of \cite[Figure~6]{EPRINT:GRSV25}. Let $FL$ denote the framing layer presented above. Then $FL.\mathsf{Rekey}(k)$ indicates that the framing layer is reinitialized using $k$ as the $\mathsf{KEY\_SEED}$ value following the outlined process.
 
 \begin{figure}
-    \input{algorithms/drivel-minimal} TODO change
+    \input{algorithms/drivel-framing}
     \caption[
-        The modified drivel TODO.
+        The modified \drivel{} protocol, simplified to take advantage of a framing layer.
     ]{
-        The Drivel obfuscated key exchange protocol TODO.
-        OKEM is an OKEM satisfying IND-CCA, SPR-CCA, and ciphertext uniformity.
-        KEM is an IND-1CCA-secure KEM.
-        SE is an OT-IND-secure symmetric encryption scheme.
-        F1 is a PRF and F2 is a dual PRF.
-        Core differences to the pq-obfs protocol from [GSV24] are highlighted in blue boxes.
+        The modified \drivel{} protocol, simplified to take advantage of a framing layer.
+        $\OKEM$ is an OKEM satisfying $\indcca, \sprcca$ security, and ciphertext uniformity.
+        $KEM$ is an $\indonecca$-secure KEM.
+        $FL$ is a framing layer similar to the one described in \cref{sssec:variant-framing}.
+        $F_1$ is a PRF and $F_2$ is a dual PRF.
+        Core differences to the \drivel{} protocol from \cite[Figure~6]{EPRINT:GRSV25} are highlighted in blue boxes.
+        Messages are easily parsed due the the packet layer providing boundaries and the fixed-length components.
     }
     \label{fig:modified-drivel-framing}
 \end{figure}
@@ -408,7 +409,7 @@ This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation
 
 In the implementation of \obfsfour{}, only one method of key exchange is available: Customized Diffie-Hellman key exchange on the elliptic curve x25519, possibly using the \textsf{Elligator2} encoding on the curve points transmitted over the wire.
 
-Post-quantum key-exchange algorithms are almost universally specified using the syntax of KEMs. In order to also compare \drivel{} performance in the traditional setting with its performance using post-quantum KEMs, we have extended the \texttt{internal/x25519ell2} module to implement a KEM and a filter-encode obfuscator performing \textsf{Elligator2}. \Cref{fig:impl-x25519-kem} shows pseudocode illustrating the usage of the module by \obfsfour{} (through its use of the \texttt{common/ntor} module), alongside the construction of our x25519 KEM.
+Post-quantum key-exchange algorithms are almost universally specified using the syntax of KEMs. In order to compare \drivel{} performance in the traditional setting with its performance using post-quantum KEMs, we have extended the \texttt{internal/x25519ell2} module to implement a KEM and a filter-encode obfuscator performing \textsf{Elligator2}. \Cref{fig:impl-x25519-kem} shows pseudocode illustrating the usage of the module by \obfsfour{} (through its use of the \texttt{common/ntor} module), alongside the construction of our x25519 KEM.
 
 As our goal is simply to show how the KEM construction was extracted from the existing code, we omit the full definition of \obfsfour{} here. Suffice to say, the protocol involves one static keypair $\pk_\mathsf{id}, \sk_\mathsf{id}$ (the public key is part of the bridge information) and two ephemeral keypairs generated during the handshake procedure. The static keypair has no encodings applied to the public key (as it is transmitted out-of-band), while the ephemeral keypairs also have obfuscated public keys. When all required values are available, methods $\mathsf{ServerHandshake}, \mathsf{ClientHandshake}$ are executed to compute shared secrets which in turn are used to authenticate and finalize the handshake.
 

@@ -7,13 +7,14 @@
 		\pstate.\macregister \gets \emptyset \\
 		\text{return } ((\pk_S, \nodeid), (\sk_S, \nodeid), \pstate)
 	}
-	\hspace*{0.25cm}
+	\hspace*{0.8cm}
 % \end{minipage}
 
-\vspace{0.5em}
+% \vspace{0.5em}
 
 % \hspace*{-0.2in}
-\scalebox{0.9}{%
+\centering
+\scalebox{0.77}{%
 \begin{tikzpicture}
 	% Set the X coordinates of the client, server, and arrows
 	\edef\ClientX{0}
@@ -21,7 +22,7 @@
 	\edef\ArrowLeft{3}
 	\edef\ArrowRight{13}
 	\edef\ServerX{16.5}
-	\edef\ServerLeftTextwidth{10.75cm} % width of server-side text, when left-aligned
+	\edef\ServerLeftTextwidth{10.5cm} % width of server-side text, when left-aligned
 
 	% Set the starting Y coordinate
 	\edef\Y{0}
@@ -55,12 +56,11 @@
 	\NextLine
 	\ClientAction{$M_C \gets \funPRF(ES, \mathsf{epk}_e \conc \textlit{:mc})$}
 	\NextLine
-	\ClientAction{$\mathsf{MAC}_C \gets \funPRF(ES, c_S \conc A_C \conc \mathsf{epk}_e \conc P_C \conc M_C \conc \textlit{:mac\_c})$}
+	\ClientAction{$\mathsf{MAC}_C \gets \funPRF(ES,$\highlightbox{$c_S \conc A_C \conc \mathsf{epk}_e$}$\conc P_C \conc M_C \conc \textlit{:mac\_c})$}
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\NextLine[2]
 	\ClientToServer{\highlightbox{$\mathsf{msg}_C' = c_S \conc A_C$}}{}
-	\NextLine[1]
-
+	\NextLine
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Server verifies A_C and can start with dummy data
@@ -70,6 +70,10 @@
 	\NextLine
 	\ServerActionLeft{$ES \gets \funComb(\nodeid, K_S)$}
 	\NextLine
+	\ServerActionLeft{$EK_1 \gets \funPRF(ES, \textlit{:enckey1}, \keylen_1)$}
+	\NextLine
+	\ServerActionLeft{$EK_2 \gets \funPRF(ES, \textlit{:enckey2}, \keylen_2)$}
+	\NextLine
 	\ServerActionLeft{\highlightbox{if $\funPRF(ES, c_S \conc \textlit{:authc}) \neq A_C$: $\texttt{break}$}}
 	\NextLine
 	\ServerActionLeft{\highlightbox{if $A_C \in \pstate.\macregister$: $\texttt{break}$}}
@@ -78,39 +82,31 @@
 	\NextLine
 	\ServerActionLeft{\highlightbox{$A_S \gets \funPRF(ES, \textlit{:auths})$}}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    \NextLine[1]
+    \NextLine[0.5]
 	\ServerToClient[dashed,->]{}{}
-	\NextLine[1]
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Client waits for A_S
-    \ClientAction{\highlightbox{discard data until $A_S$}}
-    \NextLine
-    \ClientAction{TODO: Highlight differences (generating, checking A, message changes, discarding)! Check with git.}
+    \ClientAction{\highlightbox{discard until $A_S$}}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    \NextLine[1]
-	\ClientToServer{\highlightbox{$\mathsf{msg}_C'' = \mathsf{epk}_e \conc P_C \conc M_C \conc \mathsf{MAC}_C$}}{}
-	\NextLine[1]
+    \NextLine[1.2]
+	\ClientToServer{$\mathsf{msg}_C'' = $\highlightbox{$\mathsf{epk}_e \conc P_C$}$ \conc M_C \conc \mathsf{MAC}_C$}{}
+	\NextLine
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
     % Server parses rest of message and replies
-    \ServerActionLeft{$\mathsf{epk}_e \gets \mathsf{msg}_C''[1..\obfpklen]$}
+    \ServerActionLeft{$\mathsf{epk}_e \gets \mathsf{msg}_C''[1..\pklen]$}
 	\NextLine
 	\ServerActionLeft{$M_C \gets \funPRF(ES, \mathsf{epk}_e \conc \textlit{:mc})$}
 	\NextLine
 	\ServerActionLeft{parse $(\mathsf{epk}_e \conc P_C \conc M_C \conc \mathsf{MAC}_C) \gets \mathsf{msg}_C''$ using $M_C$; else $\texttt{break}$}
 	\NextLine
-	\ServerActionLeft{if $\funPRF(ES, c_S \conc A_C \conc \mathsf{epk}_e \conc P_C \conc M_C \conc \textlit{:mac\_c}) \neq \mathsf{MAC}_C$: $\texttt{break}$}
+	\ServerActionLeft{if $\funPRF(ES,$\highlightbox{$c_S \conc A_C \conc \mathsf{epk}_e$}$\conc P_C \conc M_C \conc \textlit{:mac\_c}) \neq \mathsf{MAC}_C$: $\texttt{break}$}
 	\NextLine
 	\ServerActionLeft{if $\mathsf{MAC}_C \in \pstate.\macregister$: $\texttt{break}$}
 	\NextLine
 	\ServerActionLeft{$\pstate.\macregister \gets \pstate.\macregister \cup \{\mathsf{MAC}_C\}$}
     \NextLine
-	\ServerActionLeft{$EK_1 \gets \funPRF(ES, \textlit{:enckey1}, \keylen_1)$}
-	\NextLine
-	\ServerActionLeft{$EK_2 \gets \funPRF(ES, \textlit{:enckey2}, \keylen_2)$}
-	\NextLine
 	\ServerActionLeft{$\pk_e \gets \funDec(EK_1, \mathsf{epk}_e)$}
 	\NextLine
 	\ServerActionLeft{$(c_e, K_e) \getsr \KEM.\encaps(\pk_e)$}
@@ -131,21 +127,21 @@
 	\NextLine
 	\ServerActionLeft{$M_S \gets \funPRF(ES, \mathsf{ect}_e \conc \textlit{:ms})$}
 	\NextLine
-	\ServerActionLeft{$\mathsf{MAC}_S \gets \funPRF(ES, A_S \conc \mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \textlit{:mac\_s})$}
+	\ServerActionLeft{$\mathsf{MAC}_S \gets \funPRF(ES,$\highlightbox{$A_S$}$\conc \mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \textlit{:mac\_s})$}
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\NextLine[1.5]
-	\ServerToClient{\highlightbox{$\mathsf{msg}_S = A_S \conc \mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \mathsf{MAC}_S$}}{}
-	\NextLine[1]
+	\ServerToClient{$\mathsf{msg}_S =$\highlightbox{$A_S$}$\conc \mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \mathsf{MAC}_S$}{}
+	\NextLine
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
-	\ClientAction{$\mathsf{ect}_e \gets \mathsf{msg}_S[1..\obfctxtlen]$}
+	\ClientAction{$\mathsf{ect}_e \gets \mathsf{msg}_S[1..\ctxtlen]$}
 	\NextLine
 	\ClientAction{$M_S \gets \funPRF(ES, \mathsf{ect}_e \conc \textlit{:ms})$}
 	\NextLine
 	\ClientAction{parse $(\mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \mathsf{MAC}_S) \gets \mathsf{msg}_S$ using $M_S$; else $\texttt{break}$}
 	\NextLine
-	\ClientAction{if $\funPRF(ES, A_S \conc \mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \textlit{:mac\_s}) \neq \mathsf{MAC}_S$: $\texttt{break}$}
+	\ClientAction{if $\funPRF(ES,$\highlightbox{$A_S$}$\conc \mathsf{ect}_e \conc \mathsf{auth} \conc P_S \conc M_S \conc \textlit{:mac\_s}) \neq \mathsf{MAC}_S$: $\texttt{break}$}
 	\NextLine
 	\ClientAction{$c_e \gets \funDec(EK_2, \mathsf{ect}_e)$}
 	\NextLine
