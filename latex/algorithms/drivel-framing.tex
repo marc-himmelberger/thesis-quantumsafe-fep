@@ -42,9 +42,13 @@
 	\NextLine
 	\ClientAction{$ES \gets \funComb(\nodeid, K_S)$}
 	\NextLine
-	\ClientAction{\highlightbox{$A_C \gets \funPRF(ES, c_S \conc \textlit{:authc})$}}
+	\ClientAction{$\mathsf{protoID} \gets \textlit{Drivel}$}
 	\NextLine
-	\ClientAction{\highlightbox{$\mathsf{KEY\_SEED}_1 \gets \funPRF(FS, \mathsf{context} \| \textlit{:key\_extract})$}}
+	\ClientAction{\highlightbox{$\mathsf{context}_1 \gets \mathsf{protoID} \conc \pk_S \conc c_S$}}
+	\NextLine
+	\ClientAction{\highlightbox{$A_C \gets \funPRF(ES, \mathbf{H}(\mathsf{context}_1) \conc \textlit{:authc})$}}
+	\NextLine
+	\ClientAction{\highlightbox{$\mathsf{KEY\_SEED}_1 \gets \funPRF(ES, \mathbf{H}(\mathsf{context}_1) \| \textlit{:key\_extract\_1})$}}
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\NextLine[2]
 	\ClientToServer{\highlightbox{$\mathsf{msg}_C' = c_S \conc A_C$}}{}
@@ -56,21 +60,31 @@
 	\NextLine
 	\ServerActionLeft{$ES \gets \funComb(\nodeid, K_S)$}
 	\NextLine
-	\ServerActionLeft{\highlightbox{if $\funPRF(ES, c_S \conc \textlit{:authc}) \neq A_C$: $\texttt{break}$}}
+	\ServerActionLeft{$\mathsf{protoID} \gets \textlit{Drivel}$}
 	\NextLine
-	\ServerActionLeft{\highlightbox{if $A_C \in \pstate.\macregister$: $\texttt{break}$}}
+	\ServerActionLeft{\highlightbox{$\mathsf{context}_1 \gets \mathsf{protoID} \conc \pk_S \conc c_S$}}
 	\NextLine
-	\ServerActionLeft{\highlightbox{$\pstate.\macregister \gets \pstate.\macregister \cup \{A_C\}$}}
+	\ServerActionLeft{\highlightbox{if $\funPRF(ES, \mathbf{H}(\mathsf{context}_1) \conc \textlit{:authc}) \neq A_C$: $\texttt{break}$}}
 	\NextLine
-	\ServerActionLeft{\highlightbox{$\mathsf{KEY\_SEED}_1 \gets \funPRF(FS, \mathsf{context} \| \textlit{:key\_extract})$}}
+	\ServerActionLeft{if \highlightbox{$A_C$}$ \in \pstate.\macregister$: $\texttt{break}$}
+	\NextLine
+	\ServerActionLeft{$\pstate.\macregister \gets \pstate.\macregister \cup $\highlightbox{$\{A_C\}$}}
+	\NextLine
+	\ServerActionLeft{\highlightbox{$\mathsf{KEY\_SEED}_1 \gets \funPRF(ES, \mathbf{H}(\mathsf{context}_1) \| \textlit{:key\_extract\_1})$}}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Rekeying 1
     \NextLine
-	\ServerToClient[dashed]{}{}
+	\PhaseBreak{}{}
 	\NextLine
     \ClientAction{\highlightbox{$FL.\mathsf{Rekey}(\mathsf{KEY\_SEED}_1)$}}
     \ServerAction{\highlightbox{$FL.\mathsf{Rekey}(\mathsf{KEY\_SEED}_1)$}}
+    \NextLine[0.5]
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Start sending arbitrary data
+	\ServerToClient[dashed,->]{}{}
+	\ServerAction{\highlightbox{send arbitrary data}}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \NextLine[2]
 	\ClientToServer{\highlightbox{$\mathsf{msg}_C'' = \pk_e$}}{}
@@ -80,15 +94,13 @@
     % Server parses rest of message and replies
     \ServerActionLeft{$(c_e, K_e) \getsr \KEM.\encaps(\pk_e)$}
 	\NextLine
-	\ServerActionLeft{$\mathsf{protoID} \gets \textlit{Drivel}$}
-	\NextLine
 	\ServerActionLeft{$ES' \gets \funPRF(ES, \textlit{:derive\_key})$ ; $FS \gets \funComb(ES', K_e)$}
 	\NextLine
-	\ServerActionLeft{$\mathsf{context} \gets \pk_S \conc c_S \conc \pk_e \conc c_e \conc \mathsf{protoID}$}
+	\ServerActionLeft{\highlightbox{$\mathsf{context}_2 \gets \mathsf{context}_1 \conc \pk_e \conc c_e$}}
 	\NextLine
-	\ServerActionLeft{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, \mathsf{context} \conc \textlit{:key\_extract})$}
+	\ServerActionLeft{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, \mathbf{H}(\mathsf{context}_2) \conc \textlit{:key\_extract\_2})$}
 	\NextLine
-	\ServerActionLeft{$\mathsf{auth} \gets \funPRF(FS, \mathsf{context} \conc \textlit{:server\_mac})$}
+	\ServerActionLeft{$\mathsf{auth} \gets \funPRF(FS, \mathbf{H}(\mathsf{context}_2) \conc \textlit{:server\_mac})$}
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\NextLine[1.5]
 	\ServerToClient{\highlightbox{$\mathsf{msg}_S = c_e \conc \mathsf{auth}$}}{}
@@ -101,16 +113,16 @@
 	\NextLine
 	\ClientAction{$ES' \gets \funPRF(ES, \textlit{:derive\_key})$ ; $FS \gets \funComb(ES', K_e)$}
 	\NextLine
-	\ClientAction{$\mathsf{context} \gets \pk_S \conc c_S \conc \pk_e \conc c_e \conc \mathsf{protoID}$}
+	\ClientAction{\highlightbox{$\mathsf{context}_2 \gets \mathsf{context}_1 \conc \pk_e \conc c_e$}}
 	\NextLine
-	\ClientAction{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, \mathsf{context} \| \textlit{:key\_extract})$}
+	\ClientAction{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, \mathbf{H}(\mathsf{context}_2) \| \textlit{:key\_extract\_2})$}
 	\NextLine
-	\ClientAction{if $\funPRF(FS, \mathsf{context} \conc \textlit{:server\_mac}) \neq \mathsf{auth}$: $\texttt{break}$}
+	\ClientAction{if $\funPRF(FS, \mathbf{H}(\mathsf{context}_2) \conc \textlit{:server\_mac}) \neq \mathsf{auth}$: $\texttt{break}$}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Rekeying 2
     \NextLine
-	\ServerToClient[dashed]{}{}
+	\PhaseBreak{}{}
 	\NextLine
     \ClientAction{\highlightbox{$FL.\mathsf{Rekey}(\mathsf{KEY\_SEED}_2)$}}
     \ServerAction{\highlightbox{$FL.\mathsf{Rekey}(\mathsf{KEY\_SEED}_2)$}}

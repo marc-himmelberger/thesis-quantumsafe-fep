@@ -268,11 +268,16 @@ The adapted protocol specification is visualized in \cref{fig:modified-drivel-mi
         $SE$ is a length-preserving, one-time ciphertext indistinguishable, symmetric encryption scheme.
         $F_1$ is a PRF and $F_2$ is a dual PRF.
         Core differences to the \drivel{} protocol from \cite[Figure~6]{EPRINT:GRSV25} are highlighted in blue boxes.
+        A dashed arrow represents the option to send an arbitrary amount of uniformly random bits for the purpose of traffic shaping.
     }
     \label{fig:modified-drivel-minimal}
 \end{figure}
 
-Implementers should note that the newly introduced $A_C$ must also be saved to protect against replay attacks. The same filter as for $\mathsf{MAC}_C$ can be reused, as the probability of a collision between these values is negligible.
+Implementers should note that the newly introduced $A_C$ must also be saved to protect against replay attacks. This replaces the existing replay protection in \obfsfour{} which uses $\mathsf{MAC}_C$. The same mechanism can be reused.
+
+There is no need to check for repeats between $\mathsf{MAC}_C$ values in this variant. The goal of these checks is to prevent the server from answering on replayed messages, in order to resist active probing.
+The only scenario in which an additional $\mathsf{MAC}_C$ check would be effective is for different $A_C$ values but identical $\mathsf{MAC}_C$ in two subsequent exchanges with the same server. However, since $A_S$ is fully determined by $c_S, \pk_S$ and $\mathsf{NodeID}$, the two exchanges could not use the same value of $c_S$.
+Finally, active probing resistance only considers adversaries that do not know $\mathsf{NodeID}$ (otherwise probing is trivial), and therefore could not produce a valid $A_C$ for fresh values of $c_S$ without breaking the PRF security of $F_1$ (assuming that $F_2$ is a random oracle).
 
 \Cref{tab:frag-min-needed} shows the minimum size of a first fragment using this approach for different OKEMs.
 
@@ -375,15 +380,14 @@ To construct a system capable of flexible traffic shaping, it is necessary to sp
 The existing packet-based system in \obfsfour{} achieves exactly this, while providing authentication and side-stepping attacks from \cite{SP:AlbPatWat09}. Each packet incurs an overhead of 3 bytes plus configurable padding, and each frame (containing one or more packets, depending on the bridge configuration) adds 18 bytes.
 The only precondition is a securely shared $\mathsf{KEY\_SEED}$.
 
-It is possible to employ this system (possibly changing the employed schemes to match 
-the security levels) directly in \drivel{}, using e.g. the early secret $ES$ after transmitting $c_S \conc A_C$ without encoding, and later switching to $\mathsf{KEY\_SEED}$ after the handshake is completed.
+It is possible to employ this system (possibly changing the employed schemes to match the security levels) directly in \drivel{}, using e.g. the early secret $ES$ after transmitting $c_S \conc A_C$ without encoding, and later switching to $\mathsf{KEY\_SEED}$ after the handshake is completed.
 
 However, since the framing layer already aims to provide obfuscation, integrity, and confidentiality, the need for $P_C, M_C, \mathsf{MAC}_C, P_S, M_S, \mathsf{MAC}_S$ would disappear. Note that the message transcript is implicitly validated by including the $\mathsf{context}$ value when calculating $\mathsf{KEY\_SEED}$. Furthermore, it would not be necessary to encrypt $\pk_e$ at all.
 
 We believe it to be worthwhile to modify \drivel{} accordingly, allowing almost arbitrary traffic shaping after an initial transmission of only $c_S \conc A_C$.
 Conversely, this rather extensive change would require adapting the extensive $\sObfKE$ security proof for \drivel{} presented in \cite{EPRINT:GRSV25}.
 
-This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation of \cite[Figure~6]{EPRINT:GRSV25}. Let $FL$ denote the framing layer presented above. Then $FL.\mathsf{Rekey}(k)$ indicates that the framing layer is reinitialized using $k$ as the $\mathsf{KEY\_SEED}$ value following the outlined process.
+This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation of \cite[Figure~6]{EPRINT:GRSV25}. Let $FL$ denote the framing layer presented above. Then $FL.\mathsf{Rekey}(k)$ indicates that the framing layer is reinitialized using $k$ as the $\mathsf{KEY\_SEED}$ value following the process outlined above.
 
 \begin{figure}
     \input{algorithms/drivel-framing}
@@ -395,11 +399,29 @@ This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation
         $KEM$ is an $\indonecca$-secure KEM.
         $FL$ is a framing layer similar to the one described in \cref{sssec:variant-framing}.
         $F_1$ is a PRF and $F_2$ is a dual PRF.
+        $\mathbf{H}$ is a collision-resistant hash function.
         Core differences to the \drivel{} protocol from \cite[Figure~6]{EPRINT:GRSV25} are highlighted in blue boxes.
         Messages are easily parsed due the the packet layer providing boundaries and the fixed-length components.
+        A dashed arrow represents the option to send an arbitrary amount of uniformly random bits for the purpose of traffic shaping, e.g. by sending packets consisting only of padding.
+        Dotted lines delimit the framing layer phases between $FL.\mathsf{Rekey}$ operations.
     }
     \label{fig:modified-drivel-framing}
 \end{figure}
+
+\paragraph{Note to Implementers and Future Work}
+
+Should readers choose to implement or improve upon this proposed variant of \drivel{}, we encourage them to also consider the following items:
+
+\begin{itemize}
+    \item Calculating $\mathbf{H}(\mathsf{context}_2)$ can be done efficiently by reusing the hash state after digesting $\mathsf{context}_2$, avoiding the need to hash $\mathsf{context}_1$ twice. The hash outputs can be reused for two invocations of $F_1$ each time.
+    
+    \item This variant does not have a security proof like \drivel{}, and producing one would require formalizing the guarantees provided by the framing layer.
+
+    \item As this thesis focuses on the key exchange phase, we did not propose improvements to the framing layer. However, previous work in this space exists \cite{Fenske2024} and should be considered to improve the framing layer from \obfsfour{}.
+
+    \item Attention should be paid in particular to preventing modifications to the length fields (e.g. by authenticating them using fixed-length fields), and to handling errors consistently as discussed in the security analysis above and in \cite[Section~3.3]{Fenske2024}.
+
+\end{itemize}
 
 \section{Core Architecture} \label{sec:impl-architecture}
 % TODO

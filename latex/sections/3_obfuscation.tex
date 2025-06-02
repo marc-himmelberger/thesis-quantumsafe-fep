@@ -1,32 +1,61 @@
 \chapter{Obfuscating NIST candidates}\label{ch:obfuscation}
 
-In this section, we construct encodings for different post-quantum KEMs suitable for use in the \drivel{} protocol.
+In this section, we expand the selection of available OKEMs for use in the \drivel{} protocol by analyzing post-quantum KEMs and constructing appropriate filter-encode obfuscators where needed.
 
-While such encodings have already been constructed for elliptic curve Diffie–Hellman \cite{EC:vAhHop04,tor-dev-udh,USENIX:WWGH11,CCS:BHKL13,FC:Tibouchi14} as well as for ML-KEM \cite{CCS:GunSteVei24}, other KEMs are also being examined for future use.
+Similar encodings have previously been constructed for the qunatum-vulnerable elliptic curve Diffie–Hellman \cite{EC:vAhHop04,tor-dev-udh,USENIX:WWGH11,CCS:BHKL13,FC:Tibouchi14}, and recently also for the post-quantum ML-KEM \cite{fips203,CCS:GunSteVei24}.
 
-We take a selection of Round 4 candidates of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}, as well as previous candidate schemes which we believe to be of interest.
-For each scheme, we describe the generation of public keys and ciphertexts in the original scheme and examine their distributions. We then introduce (if needed) compatible KEM encodings mapping ciphertexts to bit strings. Finally, we give concrete bounds for the first-encaps success probabilities and ciphertext uniformity of our constructions, which, together with the KEM's security properties, allows the corresponding instantiation of \drivel{} to achieve $\sObfKE$ security.
+Some other KEMs being examined for future use, incidentally, are ``natural'' OKEMs and require no further encodings. An example of this is FrodoKEM \cite{NISTPQC-R3:FrodoKEM20}, as discussed in \cite[Section~2.1]{EPRINT:GRSV25}, which we will also include when evaluating our implementation of \drivel{} later on.
 
-\cref{tab:obfuscation-summary} summarizes the results of the later sections.
+We take a selection of two Round 4 candidates of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}, Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} and HQC \cite{NISTPQC-R4:HQC22}, which (as far as we know) have not been shown to satisfy our definition of OKEMs before.
+
+For each scheme, we describe the generation of public keys and ciphertexts in the original scheme and examine their distributions. We then introduce filter-encode obfuscators enabling a mapping from ciphertexts to uniformly random bit strings, if needed.
+Finally, we give concrete bounds for the first-keygen success probabilities, first-encaps success probabilities and ciphertext uniformity of our constructions, which, together with the KEM's security properties, allows the corresponding instantiation of \drivel{} to achieve $\sObfKE$ security per \cref{cor:drivel-security-filter-encode}.
+
+\Cref{tab:obfuscation-summary} summarizes previous work and the results of the later sections in this chapter for the context of \drivel{} (e.g. ignoring public key obfuscation).
 
 \begin{table}
     \centering
-    \footnotesize\raggedright
-    \begin{tabular}{@{} L{0.2\textwidth-\tabcolsep} | L{0.32\textwidth-2\tabcolsep} L{0.2\textwidth-2\tabcolsep} L{0.28\textwidth-\tabcolsep} @{}}
-        \textbf{KEM /\newline Encoding} & \textbf{Ciphertext uniformity} & \textbf{First-encaps Success Probability}\newline (\cref{def:first-encaps-success}) & \textbf{Output Size}\newline (in bytes)\\ \hline
-               
-        Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} \newline/ None
-        & $\leq 2 \cdot \left( \advantage{\prkey}{}[] + \advantage{\mdsd}{}[] \right)$\newline (cf. \cref{lem:classic-mceliece-ctxt-unif})
-        & 1
-        & 96 (\textsf{mceliece348864}, +0)\newline
-          156 (\textsf{mceliece460896}, +0)\newline
-          208 (\textsf{mceliece6688128}, +0)\newline
-          194 (\textsf{mceliece6960119}, +0)\newline
-          208 (\textsf{mceliece8192128}, +0)\newline \\
+    \scriptsize\raggedright
+    \scalebox{0.84}{
+    \begin{tabular}{@{} L{0.18\textwidth-\tabcolsep} | L{0.41\textwidth-2\tabcolsep} L{0.19\textwidth-2\tabcolsep} L{0.16\textwidth-2\tabcolsep} L{0.23\textwidth-\tabcolsep} @{}}
+        \textbf{KEM /\newline Encoding}
+        & \textbf{Ciphertext uniformity}
+        & \textbf{First-keygen Success Probability}\newline (\cref{def:first-keygen-success})
+        & \textbf{First-encaps Success Probability}\newline (\cref{def:first-encaps-success})
+        & \textbf{Output Size}\newline (in bytes)\\ \hline
+
+        Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} \newline/ None \newline (cf. \cref{sec:obfuscating-classic-mceliece})
+        & $\leq 2 \cdot \left( \advantage{\prkey}{}[] + \advantage{\mdsd}{}[] \right)$\newline
+        (cf. \cref{lem:classic-mceliece-ctxt-unif})
+        & $1$
+        & $1$
+        & $96$ (\textsf{mceliece348864}, +0)\newline
+          $156$ (\textsf{mceliece460896}, +0)\newline
+          $208$ (\textsf{mceliece6688128}, +0)\newline
+          $194$ (\textsf{mceliece6960119}, +0)\newline
+          $208$ (\textsf{mceliece8192128}, +0)\newline \\
+
+        HQC \cite{NISTPQC-R4:HQC22} / $E_\mathsf{HQC}$ \newline
+        (cf. \cref{sec:obfuscating-hqc})
+        & $\leq 1/2 \cdot \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
+        $\leq \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
+        $\leq 1/2 \cdot \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
+        (\textsf{HQC-128}, \textsf{HQC-192}, \textsf{HQC-256}, resp.,\newline
+        cf. \cref{lem:hqc-ctxt-unif})
+        & $1/2$ (\textsf{HQC-128})\newline
+          $1$ (\textsf{HQC-192})\newline
+          $1/2$ (\textsf{HQC-256})\newline
+          (cf. \cref{lem:hqc-first-keygen-success})
+        & $1$\newline
+          (cf. \cref{lem:hqc-first-encaps-success})
+        & $4433$ (\textsf{HQC-128}, +0)\newline
+          $8978$ (\textsf{HQC-192}, +0)\newline
+          $14421$ (\textsf{HQC-256}, +0)\newline \\
     \end{tabular}
+    }
     \caption[
         Summary of KEMs, their corresponding encodings and the results of our analysis.
     ]{
-        Summary of KEMs, their corresponding encodings and the results of our analysis. The origins of analysis results are specified, and for output sizes, differences in bytes from original public key/ciphertext sizes are given. This table can be viewed as an extension of \cite[Table~2]{CCS:GunSteVei24}.}
+        Summary of KEMs, their corresponding encodings and the results of our analysis. The analysis results are referenced, and, for output sizes, the differences in bytes from the KEM ciphertext size is given. Where values in a cell differ depending on the chosen KEM parameter set, all values are shown and the parameter set is referenced. This table can be viewed as an extension of \cite[Table~2]{CCS:GunSteVei24}.}
     \label{tab:obfuscation-summary}
 \end{table}

@@ -76,10 +76,10 @@
 	\NextLine
 	\ServerActionLeft{\highlightbox{if $\funPRF(ES, c_S \conc \textlit{:authc}) \neq A_C$: $\texttt{break}$}}
 	\NextLine
-	\ServerActionLeft{\highlightbox{if $A_C \in \pstate.\macregister$: $\texttt{break}$}}
+	\ServerActionLeft{if \highlightbox{$A_C$}$ \in \pstate.\macregister$: $\texttt{break}$}
 	\NextLine
-	\ServerActionLeft{\highlightbox{$\pstate.\macregister \gets \pstate.\macregister \cup \{A_C\}$}}
-	\NextLine
+	\ServerActionLeft{$\pstate.\macregister \gets \pstate.\macregister \cup $\highlightbox{$\{A_C\}$}}
+    \NextLine
 	\ServerActionLeft{\highlightbox{$A_S \gets \funPRF(ES, \textlit{:auths})$}}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \NextLine[0.5]
@@ -87,6 +87,7 @@
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Client waits for A_S
+	\ServerAction{\highlightbox{send arbitrary data}}
     \ClientAction{\highlightbox{discard until $A_S$}}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \NextLine[1.2]
@@ -103,10 +104,6 @@
 	\NextLine
 	\ServerActionLeft{if $\funPRF(ES,$\highlightbox{$c_S \conc A_C \conc \mathsf{epk}_e$}$\conc P_C \conc M_C \conc \textlit{:mac\_c}) \neq \mathsf{MAC}_C$: $\texttt{break}$}
 	\NextLine
-	\ServerActionLeft{if $\mathsf{MAC}_C \in \pstate.\macregister$: $\texttt{break}$}
-	\NextLine
-	\ServerActionLeft{$\pstate.\macregister \gets \pstate.\macregister \cup \{\mathsf{MAC}_C\}$}
-    \NextLine
 	\ServerActionLeft{$\pk_e \gets \funDec(EK_1, \mathsf{epk}_e)$}
 	\NextLine
 	\ServerActionLeft{$(c_e, K_e) \getsr \KEM.\encaps(\pk_e)$}

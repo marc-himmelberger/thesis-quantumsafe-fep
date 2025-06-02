@@ -225,6 +225,15 @@
 	\draw[#1] (\ArrowRight,\Y) -- node[above] {#2} node[below] {#3} (\ArrowLeft,\Y) ;
 	% \NextLine[0.5]
 }
+% Draws a horizontal line across the entire page to denote the start and end of protocol phases
+% 1st argument (optional): line type, default "dotted"
+% 2nd argument: text above
+% 3rd argument: text below
+\newcommand{\PhaseBreak}[3][dotted]{
+	\NextLine[0.5]
+	\draw[#1] (\ClientX,\Y) -- node[above] {#2} node[below] {#3} (\ServerX,\Y) ;
+	% \NextLine[0.5]
+}
 
 % Spacing factor for NextLines
 \def\NextLineSpacing{0.45}
