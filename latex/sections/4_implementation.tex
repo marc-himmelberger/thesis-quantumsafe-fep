@@ -3,16 +3,10 @@
 This chapter describes implementation efforts, challenges, and noteworthy information for implementers.
 \Cref{sec:tech-stack} gives an overview of the technology stack, languages, and libraries used in the implementation, with a particular focus on the changes made to the preexisting lyrebird project \cite{lyrebird} to support \drivel{}. This section also describes the environment in which the protocol was developed and tested.
 \Cref{sec:parameters} outlines the process for choosing concrete cryptographic parameters, focusing on the trade-offs between security and traffic volume.
-\Cref{sec:protocol-design} presents a high-level description of the modified \drivel{} protocol, followed by a detailed explanation of how handshake messages could be fragmented to enhance traffic shaping capabilities.
+\Cref{sec:protocol-design} presents a high-level description of the \drivel{} protocol, followed by a detailed explanation of how handshake messages could be fragmented to enhance traffic shaping capabilities.
 \Cref{sec:impl-architecture} describes how the protocol design was mapped to the actual software components, including noteworthy architectural changes and cryptographic interfaces.
-\Cref{sec:deployment} provides practical guidance for deploying and using the system, with attention to real-world integration barriers such as SOCKS proxy compatibility and network edge cases. TODO keep?
+\Cref{sec:deployment} provides practical guidance for the deployment and use of the system, with attention to real-world integration barriers.
 Finally, \cref{sec:challenges-learnings} discusses the key challenges encountered during development and how they were addressed.
-
-% TODO
-% * (Experimenting with implementing different traffic patterns, such as arbitrary fragmentation of key
-% exchange messages and/or more flexibility in clients to send arbitrary data)
-
-% => For Tor people: Consider as part of audience of report, so also accessible to non-crypto-nerds and illustrate: How to deploy, How to use, Integration barriers such as SOCKS issues -> Implementation section
 
 \section{Technology Stack and Environment} \label{sec:tech-stack}
 
@@ -85,14 +79,14 @@ These parameter sets prioritize the combinations leading to the smallest require
 The following OKEMs were considered for each NIST security level:
 \begin{itemize}
     \item ML-Kemeleon, as in \cite{irtf-cfrg-kemeleon-00}, based on ML-KEM-512 (level 1), ML-KEM-768 (level 3), and ML-KEM-1024 (level 5)
-    \item Classic McEliece, as in \cref{sec:obfuscating-classic-mceliece}, concretely Classic-McEliece-348864 (level 1), Classic-McEliece-460896 (level 3), and Classic-McEliece-6688128 (smallest ciphertext size for level 5)
+    \item Unmodified FrodoKEM \cite{NISTPQC-R3:FrodoKEM20}, concretely FrodoKEM-640-AES (level 1), FrodoKEM-976-AES (level 3), and FrodoKEM-1344-AES (level 5)
+    \item Unmodified Classic McEliece, as in \cref{sec:obfuscating-classic-mceliece}, concretely Classic-McEliece-348864 (level 1), Classic-McEliece-460896 (level 3), and Classic-McEliece-6688128 (smallest ciphertext size for level 5)
     \item $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$, as in \cref{sec:obfuscating-hqc}, concretely based on HQC-128 (level 1), HQC-192 (level 3), and HQC-256 (level 5)
 \end{itemize}
 
 The following unobfuscated KEMs were considered for each NIST security level:
 \begin{itemize}
     \item BIKE \cite{NISTPQC-R4:BIKE22}, concretely BIKE-L1 (level 1), BIKE-L3 (level 3), and BIKE-L5 (level 5)
-    \item FrodoKEM \cite{NISTPQC-R3:FrodoKEM20}, concretely FrodoKEM-640 (level 1), FrodoKEM-976 (level 3), and FrodoKEM-1344 (level 5)
     \item Unobfuscated variants for each OKEM above 
 \end{itemize}
 
@@ -100,18 +94,18 @@ The following unobfuscated KEMs were considered for each NIST security level:
     \centering  \footnotesize
     \begin{tabular}{@{} L{0.1\textwidth-\tabcolsep} | L{0.16\textwidth-2\tabcolsep} L{0.17\textwidth-2\tabcolsep} L{0.32\textwidth-2\tabcolsep} R{0.11\textwidth-2\tabcolsep} R{0.14\textwidth-\tabcolsep} @{}}
     NIST Security\newline Level & Parameter Set\newline Name & KEM\newline Component & OKEM\newline Component & Total Traffic & First Fragment \\ \hline
-    \multirow{4}{*}{Level 1} & drivel-L1a & ML-KEM-512 & FEO-ML-KEM-512 & 2 541 & 893 \\
-     & drivel-L1b & BIKE-L1 & FEO-ML-KEM-512 & 4 087 & 893 \\
+    \multirow{4}{*}{Level 1} & drivel-L1a & ML-KEM-512 & ML-Kemeleon-512 & 2 541 & 893 \\
+     & drivel-L1b & BIKE-L1 & ML-Kemeleon-512 & 4 087 & 893 \\
      & drivel-L1c & ML-KEM-512 & FEO-HQC-128 & 6 097 & 4 449 \\
-     & drivel-L1d & ML-KEM-512 & FEO-Classic-McEliece-348864 & 1760 & 112 \\ \hline
-    \multirow{4}{*}{Level 3} & drivel-L3a & ML-KEM-768 & FEO-ML-KEM-768 & 3 620 & 1 268 \\
-     & drivel-L3b & BIKE-L3 & FEO-ML-KEM-768 & 7 546 & 1 268 \\
+     & drivel-L1d & ML-KEM-512 & Classic-McEliece-348864 & 1760 & 112 \\ \hline
+    \multirow{4}{*}{Level 3} & drivel-L3a & ML-KEM-768 & ML-Kemeleon-768 & 3 620 & 1 268 \\
+     & drivel-L3b & BIKE-L3 & ML-Kemeleon-768 & 7 546 & 1 268 \\
      & drivel-L3c & ML-KEM-768 & FEO-HQC-192 & 11 346 & 8 994 \\
-     & drivel-L3d & ML-KEM-768 & FEO-Classic-McEliece-460896 & 2 524 & 172 \\ \hline
-    \multirow{4}{*}{Level 5} & drivel-L5a & ML-KEM-1024 & FEO-ML-KEM-1024 & 4 890 & 1 674 \\
-     & drivel-L5b & BIKE-L5 & FEO-ML-KEM-1024 & 12 030 & 1 674 \\
+     & drivel-L3d & ML-KEM-768 & Classic-McEliece-460896 & 2 524 & 172 \\ \hline
+    \multirow{4}{*}{Level 5} & drivel-L5a & ML-KEM-1024 & ML-Kemeleon-1024 & 4 890 & 1 674 \\
+     & drivel-L5b & BIKE-L5 & ML-Kemeleon-1024 & 12 030 & 1 674 \\
      & drivel-L5c & ML-KEM-1024 & FEO-HQC-256 & 17 653 & 14 437 \\
-     & drivel-L5d & ML-KEM-1024 & FEO-Classic-McEliece-6688128 & 3 440 & 224
+     & drivel-L5d & ML-KEM-1024 & Classic-McEliece-6688128 & 3 440 & 224
     \end{tabular}
     \caption[
         Definitions of parameter sets for \drivel{}, used in later experiments.
@@ -122,17 +116,35 @@ The following unobfuscated KEMs were considered for each NIST security level:
     \label{tab:drivel-params}
 \end{table}
 
-Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to its higher public key size compared to e.g. ML-KEM. Depending on the assumptions one is comfortable with, ``-a'' parameter sets may be suitable as only one KEM has to remain $\indcca$ secure, while ``-c'' parameter sets feature a simpler encoding. ``-d'' parameter sets employ Classic McEliece as an OKEM directly and require confidence in its pseudorandomness, but offer significantly smaller message sizes. This is discussed in more detail in \cref{sec:obfuscating-classic-mceliece}.
+Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to its higher public key size compared to e.g. ML-KEM. Due to its more conservative assumptions, but consequently higher higher public key and ciphertext sizes, FrodoKEM is not included as KEM or OKEM in any parameter set. Depending on the assumptions one is comfortable with, ``a'' parameter sets may be suitable as only one KEM has to remain unbroken, whereas ``b'' would avoid a full confidentiality and obfuscation breakdown due to its use of different KEM and OKEM, while ``c'' parameter sets feature a simpler encoding routine. Finally, ``d'' parameter sets employ Classic McEliece as an OKEM directly and require confidence in its pseudorandomness (see \cref{sec:obfuscating-classic-mceliece}), but offer significantly smaller message sizes.
 
 \section{Protocol Design} \label{sec:protocol-design}
 
-% TODO
-% \Cref{sec:protocol-design} presents a high-level description of the modified \drivel{} protocol, followed by a detailed explanation of how handshake messages could be fragmented to enhance traffic shaping capabilities.
+For a definition of the \drivel{} protocol, as we implemented it in the course of this thesis, we refer readers to \cite[Figure~6]{EPRINT:GRSV25}, which served as our primary source.
+This section quickly discusses how we chose to instantiate the generic primitives in the above source before diving into a theoretical discussion on proposed improvements to the protocol to better support traffic shaping.
 
 \subsection{Instantiating the Drivel Protocol} \label{ssec:drivel-instance}
 
-% TODO: Quickly present relevant parts/references to drivel protocol.
-% TODO: Describe adaptations. Especially symmetric encryption, and instantiations for F1, F2.
+The specification of \drivel{} in \cite[Figure~6]{EPRINT:GRSV25} defines a handful of generic cryptographic primitives, which need to be instantiated with concrete choices before implementation.
+The authors offer some recommendations in \cite[Section~4.2]{EPRINT:GRSV25}.
+
+These include the following items:
+\begin{itemize}
+    \item the PRF $F_1$ is instantiated as \textsf{HDKF-Expand} with \textsf{SHA-256} \cite{C:Krawczyk10,rfc5869},
+    
+    \item the dual-PRF is instantiated as $F_2$ as \textsf{HMAC-SHA-256} \cite{C:BelCanKra96,KraBelCan97}, and
+    
+    \item the symmetric encryption scheme $SE$ is chosen to be \textsf{AES-256-CTR} with the appropriate key lengths $\keylen_1 = \keylen_2 = 256$ bits and a fixed IV of zero bytes.
+\end{itemize}
+
+We differ from the author's recommendations and the protocol specification only in two points:
+\begin{enumerate}
+    \item We do not use XOR as our one-time secure symmetric encryption scheme, and instead use AES in CTR mode. Using XOR would involve setting $\keylen_1 = \pklen$ and $\keylen_2 = \ctxtlen$, and the outputs of \textsf{HDKF-Expand} (used as $F_1$) are inherently limited to at most 8 160 bytes. This limitation would not affect any of our parameter sets proposed in \cref{sec:parameters}, but would lead to an avoidable loss of flexibility in the choice of KEM.
+
+    \item The literal strings used for domain separation (such as e.g. ``:enckey1'') are prefixed with the string constant ``Drivel'', just as in \obfsfour{}. This cautionary measure helps to guarantee domain separation even in the case of reused keypairs over multiple protocol versions.
+\end{enumerate}
+
+Due to the fact that our implementation relies on AES anyway, and to reduce the amount of options to consider in the following sections, we support only AES variants of FrodoKEM. Similarly, but motivated also by a desire for a smaller traffic volume during the key exchange, Classic McEliece has been disabled as a KEM (though remains available as an OKEM). FrodoKEM variants using SHAKE, as well as unobfuscated Classic McEliece KEMs, could easily be re-enabled if so desired.
 
 \subsection{Discussion on Fragmenting Handshake Messages} \label{ssec:fragmentation}
 
@@ -146,37 +158,34 @@ When deploying \drivel{}, it may be desirable to offer even more flexibility for
 While \drivel{} also requires two messages to complete the handshake, \obfsfour{} messages range from 141 to 8 192 bytes in length, and \drivel{} message sizes depend on the selected KEM and OKEM. Ignoring the padding for the moment, \cref{tab:frag-msg-sizes} gives an overview of the minimum message sizes required for different combinations of KEM and OKEM in \drivel{}.
 
 \begin{table}
-    \centering \scriptsize
-    \begin{tabular}{@{} L{0.25\textwidth-\tabcolsep} | L{0.25\textwidth-2\tabcolsep} L{0.25\textwidth-2\tabcolsep} L{0.25\textwidth-\tabcolsep} @{}}
-        & FEO-Classic-McEliece\newline 348864 / 460896 / 6688128
-        & FEO-ML-KEM\newline 512 / 768 / 1024
-        & FEO-HQC\newline 128 / 192 / 256
-        \\ \hline
-    ML-KEM\newline 512 / 768 / 1024
-        & 928 / 1 372 / 1 808
-        & 1 709 / 2 468 / 3 258
-        & 5 265 / 10 194 / 16 021        \\
-    BIKE\newline L1 / L3 / L5
-        & 1 669 / 3 271 / 5 362
-        & 2 450 / 4 367 / 6 812
-        & 6 006 / 12 093 / 19 575        \\
-    HQC\newline 128 / 192 / 256
-        & 2 377 / 4 710 / 7 485
-        & 3 158 / 5 806 / 8 935
-        & 6 714 / 13 532 / 21 698        \\
-    FrodoKEM\newline 640 / 976 / 1344
-        & 9 744 / 15 820 / 21 760
-        & 10 525 / 16 916 / 23 210
-        & 14 081 / 24 642 / 35 973       \\
-    Classic-McEliece\newline 348864 / 460896 / 6688128
-        & \tiny 261 248 / 524 348 / 1 045 232
-        & \tiny 262 029 / 525 444 / 1 046 682
-        & \tiny 265 585 / 533 170 / 1 059 445
+    \centering \small
+    \begin{tabular}{@{} L{0.2\textwidth-\tabcolsep} L{0.33\textwidth-2\tabcolsep} | L{0.3\textwidth-\tabcolsep} @{}}
+    KEM\newline Component & OKEM\newline Component & Minimum Sizes\newline Level 1 / Level 3 / Level 5 \\ \hline
+    
+    \multirow{4}{*}{\shortstack[l]{ML-KEM\\ 512 / 768 / 1024}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 928 / 1 372 / 1 808 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024 & 1 709 / 2 468 / 3 258 \\
+    & FEO-HQC\newline 128 / 192 / 256 & 5 265 / 10 194 / 16 021 \\
+    & FrodoKEM\newline 640 / 976 / 1344 & 10 552 / 16 960 / 23 232 \\ \hline
+
+    \multirow{4}{*}{\shortstack[l]{BIKE\\ L1 / L3 / L5}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 1 669 / 3 271 / 5 362 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024 & 2 450 / 4 367 / 6 812 \\
+    & FEO-HQC\newline 128 / 192 / 256 & 6 006 / 12 093 / 19 575 \\
+    & FrodoKEM\newline 640 / 976 / 1344 & 11 293 / 18 859 / 26 786 \\ \hline
+
+    \multirow{4}{*}{\shortstack[l]{HQC\\ 128 / 192 / 256}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 2 377 / 4 710 / 7 485 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024 & 3 158 / 5 806 / 8 935 \\
+    & FEO-HQC\newline 128 / 192 / 256 & 6 714 / 13 532 / 21 698 \\
+    & FrodoKEM\newline 640 / 976 / 1344 & 12 001 / 20 298 / 28 909 \\ \hline
+
+    \multirow{4}{*}{\shortstack[l]{FrodoKEM\\ 640 / 976 / 1344}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 9 744 / 15 820 / 21 760 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024 & 10 525 / 16 916 / 23 210 \\
+    & FEO-HQC\newline 128 / 192 / 256 & 14 081 / 24 642 / 35 973 \\
+    & FrodoKEM\newline 640 / 976 / 1344 & 19 368 / 31 408 / 43 184
     \end{tabular}
     \caption[
-        Minimum sizes in bytes for the first \drivel{} message depending on the choice of KEM and OKEM
+        Minimum sizes in bytes for the first \drivel{} message without padding depending on the choice of KEM and OKEM
     ]{
-        Minimum sizes in bytes for the first \drivel{} message depending on the choice of KEM (rows) and OKEM (columns). Each cell contains minimum sizes for NIST security levels 1, 3, and 5. Parameter sets were selected to minimize message sizes while maintaining the targeted security level. The KEM parameter sets are identified in the row and column headers.
+        Minimum sizes in bytes for the first \drivel{} message without padding depending on the choice of KEM and OKEM. Each cell contains minimum sizes for NIST security levels 1, 3, and 5. In the case of Classic McEliece, specific KEM parameter sets were selected to minimize message sizes while maintaining the targeted security level. The KEM parameter sets are identified in the row and column headers.
     }
     \label{tab:frag-msg-sizes}
 \end{table}
@@ -228,15 +237,15 @@ Relaxing our requirements, and allowing a censor to retroactively identify bridg
 
 This approach is very similar in spirit to the first message in \obfsfour{}, and allows for much more flexibility in traffic shaping through padding. The key difference from \obfsfour{} is the removal of one of the PRF values and the replacement of the obfuscated client public key by randomized data.
 
-Sending even less data in a first fragment seems implausible, as the randomized data is used to prevent replay, and the PRF value proves knowledge of the bridge information. Using less than $x$ or 16 bytes, respectively, for either component would lower the security level, or increase the collision probability between users, forcing handshake retries.
+Sending even less data in a first fragment seems implausible, as the randomized data is used to prevent replay, and the PRF value proves knowledge of the bridge information. Using less than $x$ or 16 bytes, respectively, for either component would lower the security level or increase the collision probability between users, forcing handshake retries.
 
 \subsection{Proposed Modifications to the Drivel Protocol} \label{ssec:drivel-mod}
 
-\textbf{No changes discussed or proposed in this \cref{ssec:drivel-mod} were implemented, or practically evaluated as part of this thesis, but this discussion may be valuable to readers to understand possible future directions of the protocol.}
+\textbf{No changes discussed or proposed in this \cref{ssec:drivel-mod} were implemented or practically evaluated as part of this thesis, but this discussion may be valuable to readers to understand possible future directions of the protocol.}
 
 \textbf{This thesis employs only the unmodified variant of $\drivel{}$ presented in \cite[Figure~6]{EPRINT:GRSV25}.}
 
-The following two subsections offer different approaches to implement fragmentation of handshake messages into \drivel{}. \Cref{sssec:variant-minimal} tries to make only small changes to \drivel{}, as proposed in \cite[Figure~6]{EPRINT:GRSV25}, while \cref{sssec:variant-framing} tries to reuse existing mechanisms in \obfsfour{} and extend them from the data transfer to the handshake phase.
+The following two subsections offer different approaches to implement fragmentation of handshake messages in \drivel{}. \Cref{sssec:variant-minimal} tries to make only small changes to \drivel{}, as proposed in \cite[Figure~6]{EPRINT:GRSV25}, while \cref{sssec:variant-framing} tries to reuse existing mechanisms in \obfsfour{} and extend them from the data transfer to the handshake phase.
 
 \subsubsection{Variant 1: A Minimal Fragmentation} \label{sssec:variant-minimal}
 
@@ -282,15 +291,16 @@ Finally, active probing resistance only considers adversaries that do not know $
 \Cref{tab:frag-min-needed} shows the minimum size of a first fragment using this approach for different OKEMs.
 
 \begin{table}
-    \centering
-    \begin{tabular}{@{} L{0.1\textwidth-\tabcolsep} | R{0.35\textwidth-2\tabcolsep} R{0.25\textwidth-2\tabcolsep} R{0.2\textwidth-\tabcolsep} @{}}
-        & FEO-Classic-McEliece\newline 348864 / 460896 / 6688128
-        & FEO-ML-KEM\newline 512 / 768 / 1024
+    \centering \small
+    \begin{tabular}{@{} L{0.1\textwidth-\tabcolsep} | R{0.3\textwidth-2\tabcolsep} R{0.2\textwidth-2\tabcolsep} R{0.2\textwidth-2\tabcolsep} R{0.2\textwidth-\tabcolsep} @{}}
+        & Classic-McEliece\newline \footnotesize 348864 / 460896 / 6688128
+        & ML-Kemeleon\newline 512 / 768 / 1024
         & FEO-HQC\newline 128 / 192 / 256
+        & FrodoKEM\newline 640 / 976 / 1344
         \\ \hline
-    Level 1 & 112 & 893 & 4 449 \\
-    Level 3 & 172 & 1 268 & 8 994 \\
-    Level 5 & 224 & 1 674 & 14 437
+    Level 1 & 112 & 893 & 4 449 & 9 736 \\
+    Level 3 & 172 & 1 268 & 8 994 & 15 760 \\
+    Level 5 & 224 & 1 674 & 14 437 & 21 648
     \end{tabular}
     \caption[
         Minimum sizes in bytes of a first fragment before a bridge may respond depending on the choice of OKEM.
@@ -472,10 +482,25 @@ TODO: cryptofactory, kem/okem interfaces
 
 \paragraph{Notable Differences between \texttt{transports/drivel} and \texttt{transports/obfs4}}
 
+TODO: Implementation changes
+
 \section{Deployment and Integration Guide} \label{sec:deployment}
 % TODO
-% \Cref{sec:deployment} provides practical guidance for deploying and using the system, with attention to real-world integration barriers such as SOCKS proxy compatibility and network edge cases. TODO keep?
+% \Cref{sec:deployment} provides practical guidance for the deployment and use of the system, with attention to real-world integration barriers.
+
+% * How to deploy (same as lyrebird)
+% * How to use (added pk files)
+% * Integration barriers: Choosing KEM/OKEM, different SOCKS integration
 
 \section{Challenges and Lessons Learned} \label{sec:challenges-learnings}
 % TODO
 % Finally, \cref{sec:challenges-learnings} discusses key challenges encountered during development and how they were addressed.
+
+% * Having keys too large to derive HKDF key streams (8b counter not enough), switched to AES-CTR
+% * Lack of client arguments to choose KEM/OKEM combination, requiring extra file for public keys
+% * Note somewhere that we use the non-rejecting variant of Kemeleon
+% * Debugging I-D for Kemeleon:
+%    * https://github.com/rozbb/ct-kemeleon/blob/main/src/lib.rs#L69 does not implement SamplePreimage and directly encodes
+%    * lists partial preimage equivalence sets https://github.com/jmwample/kemeleon/blob/main/src/kemeleon/ciphertext/precomputed.rs
+%      we used these to improve SamplePreimage code. But does not have uniform distribution in https://github.com/jmwample/kemeleon/blob/main/src/kemeleon/ciphertext.rs#L150
+% * Needing to hash the same data multiple times for different F_1 calls (luckily our choice of output length requires only one block ever)

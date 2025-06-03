@@ -380,7 +380,7 @@ When we construct OKEMs in later sections of this work, we will show that they a
     And, finally, the $\sObfKE$ security also depends on the $\prf$ security of $F_1$ and $F_2$, the $\swapprf$ security of $F_2$, and the symmetric encryption scheme's one-time ciphertext indistinguishability.    
 \end{theorem}
 
-Throughout this thesis, we follow the recommendations outlined in \cite[Section~4.2]{EPRINT:GRSV25} and instantiate $F_1$ as \textsf{HDKF-Expand} with \textsf{SHA-256} \cite{C:Krawczyk10,rfc5869}, $F_2$ as \textsf{HMAC-SHA-256} \cite{C:BelCanKra96,KraBelCan97}, and the symmetric encryption scheme as AES-256-CTR with appropriate key lengths and a fixed IV of zero bytes.
+We instantiate the other parts of the \drivel{} protocol as described later in \cref{ssec:drivel-instance}.
 
 \begin{corollary}[Encapsulate-then-Encode Obfuscated Key Exchange Security]
 \label{cor:drivel-security-filter-encode}
