@@ -25,7 +25,7 @@ The \drivel{} implementation, like the other six pluggable transports in the lyr
     \item \texttt{transports} finally has submodules for each pluggable transport that each implement a common interface used by the \texttt{cmd} module. 
 \end{itemize}
 
-During the course of this thesis, the \texttt{internal} module was extensively refactored and extended. Furthermore, a new submodule \texttt{transports/drivel} was added to the \texttt{transports} module, based on a copy of the \texttt{transports/obfs4} module. We refer readers to \cref{sec:impl-architecture} for details about these changes.
+During the course of this thesis, the \texttt{internal} module was significantly refactored and extended. Furthermore, a new submodule \texttt{transports/drivel} was added to the \texttt{transports} module, based on a copy of the \texttt{transports/obfs4} module. We refer readers to \cref{sec:impl-architecture} for details about these changes.
 
 External Go dependencies required for \drivel{} and not specific to other pluggable transports are limited to the following modules and versions:
 \begin{itemize}
@@ -64,7 +64,7 @@ To perform unit and integration tests of the different software components, Go's
 
 In particular, cryptographic operations within \drivel{} are tested using positive and negative test cases on different levels. Unit tests verify the submodule's correctness, and integration tests simulate entire handshakes, including (de)serialization of messages to and from byte strings.
 
-The tests include a small variant that performs fewer tests of randomized functions, making a trade-off between execution time and completeness. All tests pass for the entire forked repository, also in their more extensive variant. 
+The tests include a small variant that performs fewer tests of randomized functions, making a trade-off between execution time and completeness. All tests pass for the entire forked repository, also in their more extensive variant.
 
 Benchmarks are also performed on multiple levels, including single KEM and OKEM operations (key generation, encapsulation, and decapsulation), as well as the execution of a complete simulated handshake. The latter benchmark allows a direct comparison to the corresponding \obfsfour{} benchmark. Furthermore, profiling can easily be performed to identify bottlenecks in the benchmark's performance and to quantify contributions to its memory consumption.
 
@@ -144,7 +144,11 @@ We differ from the author's recommendations and the protocol specification only 
     \item The literal strings used for domain separation (such as e.g. ``:enckey1'') are prefixed with the string constant ``Drivel'', just as in \obfsfour{}. This cautionary measure helps to guarantee domain separation even in the case of reused keypairs over multiple protocol versions.
 \end{enumerate}
 
-Due to the fact that our implementation relies on AES anyway, and to reduce the amount of options to consider in the following sections, we support only AES variants of FrodoKEM. Similarly, but motivated also by a desire for a smaller traffic volume during the key exchange, Classic McEliece has been disabled as a KEM (though remains available as an OKEM). FrodoKEM variants using SHAKE, as well as unobfuscated Classic McEliece KEMs, could easily be re-enabled if so desired.
+\paragraph{Disabled KEMs and OKEMs}
+
+Due to the fact that our implementation relies on AES anyway, and to reduce the amount of options to consider in the following sections, we support only AES variants of FrodoKEM.
+Similarly, but motivated also by a desire for a smaller traffic volume during the key exchange and a desire for smaller buffer sizes, Classic McEliece has been disabled as a KEM (though remains available as an OKEM).
+FrodoKEM variants using SHAKE, as well as unobfuscated Classic McEliece KEMs, could easily be re-enabled if so desired.
 
 \subsection{Discussion on Fragmenting Handshake Messages} \label{ssec:fragmentation}
 
@@ -437,6 +441,10 @@ Should readers choose to implement or improve upon this proposed variant of \dri
 % TODO
 % \Cref{sec:impl-architecture} describes how the protocol design was mapped to actual software components, including noteworthy architectural changes and cryptographic interfaces.
 
+After discussing the \drivel{} protocol (and our proposed changes) in \cref{sec:protocol-design}, we now take a closer look at how we implemented the \drivel{} protocol based on the existing \obfsfour{} implementation in the lyrebird repository.
+
+Recall the general structure of the repository into four main Go modules from \cref{sec:tech-stack}. Here, we consider two of these modules in more detail: the \texttt{internal} module, which was significantly refactored and extended, and the \texttt{transports/drivel} module containing all \drivel{}-specific code.
+
 \paragraph{Building a KEM and OKEM from the \texttt{internal/x25519ell2} Module}
 
 In the implementation of \obfsfour{}, only one method of key exchange is available: Customized Diffie-Hellman key exchange on the elliptic curve x25519, possibly using the \textsf{Elligator2} encoding on the curve points transmitted over the wire.
@@ -468,7 +476,7 @@ Finally, the randomness $t$ is not taken from the hash function output used to s
 
 \paragraph{Adding Crypto-Agility to the \texttt{internal} Module}
 
-Observing the current need for post-quantum key exchange, combined with the increasing deployment of newly standardized algorithms, it seems prudent to implement at least compile-time flexibility in the utilized key exchange schemes. Being able to exchange cryptographic algorithms is often called ``being crypto-agile''.
+Observing the current need for post-quantum key exchange, combined with the increasing deployment of newly standardized algorithms, it seems prudent to implement (at least compile-time) flexibility in the utilized key exchange schemes. Being able to exchange cryptographic algorithms is often called ``being crypto-agile''.
 
 To this end, the \drivel{} implementation contains string constants identifying the desired KEM and OKEM. The data structures for the schemes are then loaded at runtime based on these strings.
 The schemes are identified by the following naming convention:
@@ -478,29 +486,126 @@ The schemes are identified by the following naming convention:
     \item any KEM with a corresponding filter-encode obfuscator can be used to request an OKEM under the KEM name prefixed with ``FEO-'', e.g. ``FEO-x25519'' would denote $\feo[\KEM, E]$ using the components from \cref{fig:impl-x25519-kem}.
 \end{itemize}
 
-TODO: cryptofactory, kem/okem interfaces
+Note that some ``FEO-'' schemes may in fact simply be the unmodified KEM (the code uses a \texttt{nil} encoder reference), but the naming convention ensures that the name of a scheme clearly separates KEMs from OKEMs. Additionally, as discussed above in \cref{ssec:drivel-instance}, some KEMs and OKEMs available from \texttt{liboqs} are disabled to limit the number of test cases and enable some optimizations with regards to buffer sizes.
+
+Due to the different origin of these KEM and OKEM implementations, and the lack of an abstract standardized KEM interface in Go suitable for these constructions, we added several new submodules to \texttt{internal}:
+\begin{itemize}
+    \item \texttt{internal/cryptodata} offers a \texttt{CryptoData} type which holds a byte string. Conversions to and from hexadecimal representation are implemented here, as well as assertions checking the size of these byte strings. The latter is enforced as part of the constructor. This helps to prevent accidental changes to the size of these objects, and ensures that we are always working with fixed-length strings. Internally, these objects are simply Go byte slices but our type restricts the possible operations to a minimum.
+
+    \item \texttt{internal/kems} and \texttt{internal/okems} are two submodules that implement KEM and OKEM interfaces, as well as data types for serializable public keys, private keys, keypairs, ciphertexts and shared secrets. While these submodules contain very similar code, the differentiation ensures that e.g. KEM ciphertexts can only be used in a context where OKEM ciphertexts are required by explicitly casting from one type to another. Again, this helps the readability and prevents certain implementation mistakes.
+
+    \item \texttt{internal/cryptofactory} contains the final additional submodule and constitutes our main contribution to the \texttt{internal} module. Its job is to expose a list of supported KEMs and OKEMs for test purposes, as well as two constructors \texttt{NewKem} and \texttt{NewOkem} allowing for the construction of a scheme based only on its name as described above. Several nested submodules implement specific functionality:
+    \begin{itemize}
+        \item \texttt{internal/cryptofactory/encoding\_classic\_mceliece} implements a filter-encode-obfuscator for ``Classic-McEliece-6960119'',
+        \item \texttt{internal/cryptofactory/encoding\_hqc} implements filter-encode-obfuscators for all three HQC parameter sets,
+        \item \texttt{internal/cryptofactory/encoding\_kemeleon} implements the ``Non-Rejection Sampling Variant'' of the filter-encode-obfuscators for ML-KEM from \cite{irtf-cfrg-kemeleon-00},
+        \item \texttt{internal/cryptofactory/filter\_encode} defines an interface for these obfuscators and implements the generic FEO transformation from \cref{def:filter-encode-okem}, and, finally,
+        \item \texttt{internal/cryptofactory/oqs\_wrapper} implements a thin wrapper which makes the \texttt{liboqs} KEM interface compatible with our interface defined in \texttt{internal/kems}.
+    \end{itemize}
+\end{itemize}
+
+Each of the filter-encode obfuscators is covered with unit tests to check that ciphertexts are recovered without change after encoding and subsequent decoding. Our theoretical first-keygen and first-encaps success probabilities are verified, and some sanity-checks are performed to validate the encoding outputs. All available KEMs and OKEMs are also tested for their correctness and benchmarked for their performance as part of the \texttt{internal/cryptofactory} submodule.
 
 \paragraph{Notable Differences between \texttt{transports/drivel} and \texttt{transports/obfs4}}
 
-TODO: Implementation changes
+Although the \texttt{transports/drivel} module started out as a copy of \texttt{transports/obfs4}, multiple conceptual changes were made during the course of this thesis.
 
-\section{Deployment and Integration Guide} \label{sec:deployment}
-% TODO
-% \Cref{sec:deployment} provides practical guidance for the deployment and use of the system, with attention to real-world integration barriers.
+While \texttt{transports/obfs4} depends on \texttt{common/ntor} to implement the main cryptography beyond obfuscation, this functionality is now provided instead by \texttt{transports/drivel/drivelcrypto}. This functionality is now less spread out through the repository. Test cases from the \texttt{common/ntor} module were copied and extended as needed.
+Functionality of this new submodule includes:
+\begin{itemize}
+    \item the generation and (de-)serialization of $\mathsf{NodeID}$,
+    \item the definition of types for the values $\mathsf{auth}$ and $\mathsf{KEY\_SEED}$,
+    \item constant-time comparisons for $\mathsf{MAC_C}, \mathsf{MAC_S}$ and $\mathsf{auth}$,
+    \item the derivation of $\mathsf{auth}$ and $\mathsf{KEY\_SEED}$ after all protocol messages have been parsed and authenticated (as this functionality is shared between client and server),
+    \item functions to calculate $\mathsf{M_C}, \mathsf{M_S}, \mathsf{MAC_C}, \mathsf{MAC_S}$ more easily,
+    \item all relevant string constants for these procedures,
+    \item implementations for $F_1, F_2$ and the symmetric encryption scheme $SE$
+\end{itemize}
 
-% * How to deploy (same as lyrebird)
-% * How to use (added pk files)
-% * Integration barriers: Choosing KEM/OKEM, different SOCKS integration
+The framing layer \texttt{transports/drivel/framing} and packet layer \texttt{transports/drivel/packet.go} are essentially unchanged compared to \texttt{transports/obfs4}.
+
+The main protocol functionality is implemented in \texttt{transports/drivel/handshake.go}, handling state objects persisted through the course of a connection, and imlementing functions to initialize this state, parse messages, and generate responses.
+Sitting between the low-level cryptography primitives and the higher-level handshake process, this file was significantly adapted from its predecessor \texttt{transports/obfs4/handshake\_ntor.go}, and now employs the newly added data types from \texttt{internal}.
+One noteworthy change in particular is that the sizes of public keys, private keys, ciphertexts and shared secrets is not statically known anymore due to the added crypto-agility. While we could have hardcoded these values for slight performance gains, we believe it to be more prudent to respect sizes reported by \texttt{liboqs} and limit the changes required to switch out a KEM or OKEM to a minimum.
+This approach led to the addition of some runtime calculations of possible padding values and expected sizes of message components in a new \texttt{lengthDetails} object.
+
+As a final change, we consider \texttt{transports/drivel/drivel.go} and \texttt{transports/drivel/statefile.go} which handle the high-level protocol functionality such as parsing arguments, and loading saved bridge information, as well as constructing the connection used for later data transfer after the handshake phase is completed.
+A significant change here concerned the passing of bridge information between the client's configuration file and the pluggable transport implementation: The Tor ecosystem requires all pluggable transports to implement a SOCKS proxy setup. The content of the client's configuration is then sent to its local SOCKS proxy via the username and password fields (as the proxy is only available locally, there is no actual authentication) and the bridge IP is provided as a target address. In \texttt{transports/obfs4}, this configuration contains the $\mathsf{NodeID}$ as well as the server's static public key $\pk_S$. However, for post-quantum OKEMs the size of this public key exceeds the limit of SOCKS username and password sizes, which may have a combined length of at most 510 bytes. This issue has already been noted by David Fifield in the context of the Snowflake pluggable transport \cite{torprojectSnowflakeBridge}. While possible solutions have been discussed in the Tor Project, there is (at the time of writing) no standardized solution as part of the Tor ecosystem.
+
+To circumvent this limitation, clients are now required to:
+\begin{itemize}
+    \item add the so-called ``bridge-line'' to their configuration file (as for \obfsfour{}), containing (among other things) the name of the pluggable transport, IP and port of the bridge, and the $\mathsf{NodeID}$, but now also
+    \item create a file called ``drivel-key-KEYID'' containing $\pk_S$ in JSON format, where ``KEYID'' is a prefix of the $\mathsf{NodeID}$.
+\end{itemize}
+
+As the configuration is now vastly shorter, it can be transmitted via the SOCKS fields, and the pluggable transport can load the public key corresponding to the $\mathsf{NodeID}$ from disk.
+
+\section{Deployment Guide} \label{sec:deployment}
+
+Note that this setup procedure is not geared towards end users, and a more user-friendly procedure is required for wide-spread deployment.
+However, since this involves multiple changes to the current distribution mechanisms and \drivel{} may be further adapted before then, we believe that further improvements are premature at this point.
+
+In order to deploy our implementation of \drivel{} as a Tor pluggable transport, we recommend the following procedure:
+\begin{enumerate}
+    \item Clone our fork of the lyrebird repository\footnote{See \url{https://gitlab.ethz.ch/himarc/lyrebird-pq-obfs}} into a new directory called ``lyrebird''
+    
+    \item Clone the official Tor repository containing recommended container files from the ``docker-obfs4-bridge'' repository\footnote{See \url{https://gitlab.torproject.org/tpo/anti-censorship/docker-obfs4-bridge}} into another directory called ``docker'' next to the one just created
+    
+    \item Adapt the files of ``docker-obfs4-bridge'' to match the contents of the corresponding files in the \texttt{docker/bridge} folder in our analysis repository\footnote{See \url{https://gitlab.ethz.ch/himarc/thesis-quantumsafe-fep}}. This changes the build process to not use the official lyrebird repository but instead copy the contents of a local ``lyrebird'' folder, install all necessary build dependencies and perform the build. Additionally, the bridge-line format requires minor changes to the ``get-bridge-line'' and ``start-tor.sh'' files.
+
+    \item For production use, perform the following additional steps:
+    \begin{enumerate}
+        \item Remove the file \texttt{wrapper.sh}, and delete the following lines from the file \texttt{Dockerfile}
+        \begin{lstlisting}
+COPY docker/bridge/wrapper.sh /usr/bin/wrapper.sh
+RUN chmod +x /usr/bin/wrapper.sh
+        \end{lstlisting}
+
+        \item Replace ``/usr/bin/wrapper.sh'' by ``/usr/bin/lyrebird'' in \texttt{start-tor.sh}
+
+        \item Re-enable the publication of server descriptors and the bridge distribution by removing the following lines from \texttt{start-tor.sh}:
+        \begin{lstlisting}
+PublishServerDescriptor 0
+BridgeDistribution none
+        \end{lstlisting}
+    \end{enumerate}
+    \label{bul:prod-use-changes}
+
+    \item The rest of the setup requires merely setting the correct environment variables and building the docker container. This is well described in the official Tor guide\footnote{See \url{https://community.torproject.org/relay/setup/bridge/docker/}}, which references a \texttt{docker-compose.yml} file. Simply download this file, place it next to the two folders created above and replace the line ``image: thetorproject/obfs4-bridge:latest'' by the following three lines:
+    \begin{lstlisting}
+build:
+  context: .
+  dockerfile: docker/bridge/Dockerfile
+    \end{lstlisting}
+
+    \item Finally, start the tor bridge using the command \texttt{docker-compose up -d} in the same directory as \texttt{docker-compose.yml}
+\end{enumerate}
+
+To connect, clients then require the information output by ``get-bridge-line'' in the running docker container, and all JSON files in the folder \texttt{/var/lib/tor/pt\_state/} whose name starts with \texttt{drivel\_key-}.
+
+For clients, the same procedure to compile the lyrebird repository can be reused. Additionally, an installation of Tor is required, the bridge-line should be added to the \texttt{torrc} file and the public key file should be placed into the folder \texttt{/var/lib/tor/pt\_state}. This procedure is simpler as the format of bridge-lines does not have to be accounted for, and the main change is the use of a locally compiled lyrebird binary.
+
+An example of such a setup can be seen in our analysis repository, which is configured to run both a bridge and a client container locally in a very similar manner, albeit with more debugging options and automatic transfer of the bridge-line and public keys, thus the changes described above in \cref{bul:prod-use-changes}.
 
 \section{Challenges and Lessons Learned} \label{sec:challenges-learnings}
-% TODO
-% Finally, \cref{sec:challenges-learnings} discusses key challenges encountered during development and how they were addressed.
 
-% * Having keys too large to derive HKDF key streams (8b counter not enough), switched to AES-CTR
-% * Lack of client arguments to choose KEM/OKEM combination, requiring extra file for public keys
-% * Note somewhere that we use the non-rejecting variant of Kemeleon
-% * Debugging I-D for Kemeleon:
-%    * https://github.com/rozbb/ct-kemeleon/blob/main/src/lib.rs#L69 does not implement SamplePreimage and directly encodes
-%    * lists partial preimage equivalence sets https://github.com/jmwample/kemeleon/blob/main/src/kemeleon/ciphertext/precomputed.rs
-%      we used these to improve SamplePreimage code. But does not have uniform distribution in https://github.com/jmwample/kemeleon/blob/main/src/kemeleon/ciphertext.rs#L150
-% * Needing to hash the same data multiple times for different F_1 calls (luckily our choice of output length requires only one block ever)
+To summarize, the implementation of \drivel{} to the point of working test deployments, reusing existing tools for \obfsfour{} was a success.
+
+Some modifications to the protocol may prove promising in the future, both in terms of flexibility and performance, but also for obfuscation. Nonetheless, we believe this implementation to provide a valuable jumping-off point for future work.
+
+In the following, we list some concrete implementation challenges experienced during this thesis:
+\begin{itemize}
+    \item KEM public keys were too large to use the XOR symmetric encryption as outlined in \cite{EPRINT:GRSV25}, as the HKDF could not provide enough key material. This required the use of AES-CTR.
+
+    \item KEM public keys were also too large to send as part of the bridge-line in the SOCKS fields. We therefore added public key files, which are generated by the bridge and must also be sent to the client.
+
+    \item There is a lack of generic client arguments to configure the pluggable transport beyond what is available through the SOCKS fields while servers can make use of existing parsing of the environment variable ``TOR\_PT\_SERVER\_TRANSPORT\_OPTIONS''. Such a mechanism could be used in the future to avoid recompilation when changing the employed KEM and OKEM combination. Whether the KEM and OKEM settings should be part of the bridge information is left up to the Tor Project, as this requires coordination between bridges and clients to achieve interoperability while respecting client's choice of trusted schemes.
+
+    \item This thesis contains one of the first implementations of ML-Kemeleon. One previous implementation did not implement the \texttt{SamplePreimage} function from the Internet-Draft \cite{ct-kemeleon}, and another only had partial test cases for this function \cite{jmwample-kemeleon} and did not correctly sample uniformly random outputs. We implemented comprehensive tests, and verified the expected output distribution of \texttt{SamplePreimage}. Necessary changes to the Internet-Draft were identified in the process and the draft authors, as well as the authors of the two previous implementation were informed of our findings.
+
+    \item An unaddressed issue is the need to hash certain pieces of data multiple times over the course of the protocol due to the design of \drivel{}. In fact, our implementation does suffer from high memory usage compared to \obfsfour{}, and optimizations to reduce that would be beneficial. As the keys and suffixes used in HKDF change, the previous results cannot easily be reused for future calculations. In particular, requesting multiple output blocks from $F_1$ would quickly become quite costly. We consequently chose our output lengths appropriately to avoid this effect and suggested an alternative approach in \cref{sssec:variant-framing}.
+\end{itemize}
+
+In order for software to remain flexible for future adaptations, it is beneficial to avoid hardcoding specific algorithms. A modular approach where components such as encryption, PRFs, and KEMs are easily exchangeable ensures that future developments cause fewer changes to the overall system. Even innocent-looking limitations such as the SOCKS field lengths can constitute integration barriers in the future.
+
+As a final note of this chapter, the highly transparent, and open-source development of the Tor Project enabled us to focus directly on making material changes to an existing implementation. The open ecosystem was extremely valuable, and enabled us to contribute more easily.
