@@ -62,7 +62,7 @@ We were able to adapt the container's configuration to use our forked repository
 
 To perform unit and integration tests of the different software components, Go's built-in support for testing and benchmarking files was used. We have transferred all existing test cases for \obfsfour{} and extended them to include all new software components, and cover all enabled KEM/OKEM combinations.
 
-In particular, cryptographic operations within \drivel{} are tested using positive and negative test cases on different levels. Unit tests verify the submodule's correctness, and integration tests simulate entire handshakes, including (de)serialization of messages to and from byte strings.
+In particular, cryptographic operations within \drivel{} are tested using positive and negative test cases on different levels. Unit tests verify the submodule's correctness, and integration tests simulate entire handshakes, including (de-)serialization of messages to and from byte strings.
 
 The tests include a small variant that performs fewer tests of randomized functions, making a trade-off between execution time and completeness. All tests pass for the entire forked repository, also in their more extensive variant.
 
@@ -72,7 +72,7 @@ The results were collected and analyzed in Python and R. Further discussion of t
 
 \section{Choosing Parameter Sets} \label{sec:parameters}
 
-Although \drivel{} can be instantiated with any choice of KEM or OKEM, most combinations lead to inconsistent security levels or excessive message sizes. To reduce the number of combinations to a sensible amount, \cref{tab:drivel-params} defines a total of 12 sets of KEM/OKEM combinations, four matching each of the NIST security levels 1, 3, and 5.
+Although \drivel{} can be instantiated with any choice of KEM or OKEM, most combinations lead to inconsistent security levels or excessive message sizes. To reduce the number of combinations to a sensible amount, \cref{tab:drivel-params} defines a total of 12 sets of KEM/OKEM combinations, four for each of the NIST security levels 1, 3, and 5.
 
 These parameter sets prioritize the combinations leading to the smallest required total handshake traffic, excluding padding.
 
@@ -166,22 +166,22 @@ While \drivel{} also requires two messages to complete the handshake, \obfsfour{
     \begin{tabular}{@{} L{0.2\textwidth-\tabcolsep} L{0.33\textwidth-2\tabcolsep} | L{0.3\textwidth-\tabcolsep} @{}}
     KEM\newline Component & OKEM\newline Component & Minimum Sizes\newline Level 1 / Level 3 / Level 5 \\ \hline
     
-    \multirow{4}{*}{\shortstack[l]{ML-KEM\\ 512 / 768 / 1024}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 928 / 1 372 / 1 808 \\
+    \multirow{4}{*}[-2.6em]{\shortstack[l]{ML-KEM\\ 512 / 768 / 1024}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 928 / 1 372 / 1 808 \\
     & ML-Kemeleon\newline 512 / 768 / 1024 & 1 709 / 2 468 / 3 258 \\
     & FEO-HQC\newline 128 / 192 / 256 & 5 265 / 10 194 / 16 021 \\
     & FrodoKEM\newline 640 / 976 / 1344 & 10 552 / 16 960 / 23 232 \\ \hline
 
-    \multirow{4}{*}{\shortstack[l]{BIKE\\ L1 / L3 / L5}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 1 669 / 3 271 / 5 362 \\
+    \multirow{4}{*}[-2.6em]{\shortstack[l]{BIKE\\ L1 / L3 / L5}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 1 669 / 3 271 / 5 362 \\
     & ML-Kemeleon\newline 512 / 768 / 1024 & 2 450 / 4 367 / 6 812 \\
     & FEO-HQC\newline 128 / 192 / 256 & 6 006 / 12 093 / 19 575 \\
     & FrodoKEM\newline 640 / 976 / 1344 & 11 293 / 18 859 / 26 786 \\ \hline
 
-    \multirow{4}{*}{\shortstack[l]{HQC\\ 128 / 192 / 256}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 2 377 / 4 710 / 7 485 \\
+    \multirow{4}{*}[-2.6em]{\shortstack[l]{HQC\\ 128 / 192 / 256}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 2 377 / 4 710 / 7 485 \\
     & ML-Kemeleon\newline 512 / 768 / 1024 & 3 158 / 5 806 / 8 935 \\
     & FEO-HQC\newline 128 / 192 / 256 & 6 714 / 13 532 / 21 698 \\
     & FrodoKEM\newline 640 / 976 / 1344 & 12 001 / 20 298 / 28 909 \\ \hline
 
-    \multirow{4}{*}{\shortstack[l]{FrodoKEM\\ 640 / 976 / 1344}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 9 744 / 15 820 / 21 760 \\
+    \multirow{4}{*}[-2.6em]{\shortstack[l]{FrodoKEM\\ 640 / 976 / 1344}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 9 744 / 15 820 / 21 760 \\
     & ML-Kemeleon\newline 512 / 768 / 1024 & 10 525 / 16 916 / 23 210 \\
     & FEO-HQC\newline 128 / 192 / 256 & 14 081 / 24 642 / 35 973 \\
     & FrodoKEM\newline 640 / 976 / 1344 & 19 368 / 31 408 / 43 184
@@ -262,9 +262,6 @@ In this fragmentation approach, we propose a minimal change to this message, suc
 \[
     \left( c_S \conc A_C \right) \conc \mathsf{epk}_e \conc P_C \conc M_C \conc \mathsf{MAC}_C .
 \]
-
-$\mathsf{msg}_C = \mathsf{epk}_e \conc c_S \conc P_C \conc M_C \conc \mathsf{MAC}_C$
-
 
 Using this modified first message, the bridge may now start sending data earlier than in unmodified \drivel{}. Although it cannot send its second message before receiving $\mathsf{epk}_e$, it can send dummy data that the client will ignore.
 
@@ -526,7 +523,7 @@ The framing layer \texttt{transports/drivel/framing} and packet layer \texttt{tr
 
 The main protocol functionality is implemented in \texttt{transports/drivel/handshake.go}, handling state objects persisted through the course of a connection, and imlementing functions to initialize this state, parse messages, and generate responses.
 Sitting between the low-level cryptography primitives and the higher-level handshake process, this file was significantly adapted from its predecessor \texttt{transports/obfs4/handshake\_ntor.go}, and now employs the newly added data types from \texttt{internal}.
-One noteworthy change in particular is that the sizes of public keys, private keys, ciphertexts and shared secrets is not statically known anymore due to the added crypto-agility. While we could have hardcoded these values for slight performance gains, we believe it to be more prudent to respect sizes reported by \texttt{liboqs} and limit the changes required to switch out a KEM or OKEM to a minimum.
+One noteworthy change in particular is that the sizes of public keys, private keys, ciphertexts and shared secrets is not statically known anymore as the schemes are only selected at runtime. This enables us to provide a single client binary capable of connecting to multiple bridges, each using different KEM/OKEM combinations. Instead of hardcoding sizes, we respect sizes reported by \texttt{liboqs} at runtime to further reduce the changes required to switch out a KEM or OKEM.
 This approach led to the addition of some runtime calculations of possible padding values and expected sizes of message components in a new \texttt{lengthDetails} object.
 
 As a final change, we consider \texttt{transports/drivel/drivel.go} and \texttt{transports/drivel/statefile.go} which handle the high-level protocol functionality such as parsing arguments, and loading saved bridge information, as well as constructing the connection used for later data transfer after the handshake phase is completed.
@@ -535,10 +532,12 @@ A significant change here concerned the passing of bridge information between th
 To circumvent this limitation, clients are now required to:
 \begin{itemize}
     \item add the so-called ``bridge-line'' to their configuration file (as for \obfsfour{}), containing (among other things) the name of the pluggable transport, IP and port of the bridge, and the $\mathsf{NodeID}$, but now also
-    \item create a file called ``drivel-key-KEYID'' containing $\pk_S$ in JSON format, where ``KEYID'' is a prefix of the $\mathsf{NodeID}$.
+    \item download a public key file called \texttt{drivel\_key-<KEYID>} containing $\pk_S$ in JSON format, where \texttt{<KEYID>} is a prefix of $\mathsf{NodeID}$. This file is created in the correct format by the bridge upon starting.
 \end{itemize}
 
-As the configuration is now vastly shorter, it can be transmitted via the SOCKS fields, and the pluggable transport can load the public key corresponding to the $\mathsf{NodeID}$ from disk.
+As the configuration is now considerably shorter, it can be transmitted via the SOCKS fields, and the pluggable transport can load the public key corresponding to $\mathsf{NodeID}$ from the disk.
+
+Additionally, the public key file contains the names of the KEM and OKEM schemes that the bridge is configured to use. This ensures interoperability and allows clients to use different schemes depending on the selected bridge.
 
 \section{Deployment Guide} \label{sec:deployment}
 
@@ -580,7 +579,7 @@ build:
 
     \item Additionally, make sure that you set the environment variable ``TOR\_PT\_SERVER\_TRANSPORT\_OPTIONS'' in the \texttt{docker-compose.yml} file. Specify the variables ``kem-name'' and ``okem-name'' to configure the schemes used by \drivel{}. An example is:
     \begin{lstlisting}
-TOR_PT_SERVER_TRANSPORT_OPTIONS="drivel:kem-name=ML-KEM-512;drivel:okem-name=FEO-Classic-McEliece-348864
+TOR_PT_SERVER_TRANSPORT_OPTIONS="drivel:kem-name=ML-KEM-512;drivel:okem-name=FEO-Classic-McEliece-348864"
     \end{lstlisting}
 
     \item Finally, start the tor bridge using the command \texttt{docker-compose up -d} in the same directory as \texttt{docker-compose.yml}
@@ -604,7 +603,7 @@ In the following, we list some concrete implementation challenges experienced du
 
     \item KEM public keys were also too large to send as part of the bridge-line in the SOCKS fields. We therefore added public key files, which are generated by the bridge and must also be sent to the client.
 
-    \item There is a lack of generic client arguments to configure the pluggable transport beyond what is available through the SOCKS fields while servers can make use of existing parsing of the environment variable ``TOR\_PT\_SERVER\_TRANSPORT\_OPTIONS''. Such a mechanism could be used in the future to avoid recompilation when changing the employed KEM and OKEM combination. Whether the KEM and OKEM settings should be part of the bridge information is left up to the Tor Project, as this requires coordination between bridges and clients to achieve interoperability while respecting client's choice of trusted schemes.
+    \item Due to the crypto-agility introduced, the client now needs to know ahead of time, what KEM and OKEM scheme the server is configured to use. A negotiation as part of the handshake was out-of-scope for this thesis. Thus, we made servers schemes configurable via the ``TOR\_PT\_SERVER\_TRANSPORT\_OPTIONS'' environment variable and saved the names of schemes (following our naming convention) into the public key file distributed alongside the bridge-line. Clients, upon receiving $\mathsf{NodeID}$ via the SOCKS fields then load the correct file, and are now able to initialize the KEM and OKEM accordingly.
 
     \item This thesis contains one of the first implementations of ML-Kemeleon. One previous implementation \cite{ct-kemeleon} did not implement the \texttt{SamplePreimage} function from the Internet-Draft, and another \cite{jmwample-kemeleon} only had partial test cases for this function, and did not correctly sample uniformly random outputs. We implemented comprehensive tests, and verified the expected output distribution of \texttt{SamplePreimage}. Necessary changes to the Internet-Draft were identified in the process, and the draft authors, as well as the authors of the two previous implementations were informed of our findings.
 

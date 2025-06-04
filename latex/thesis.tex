@@ -113,6 +113,14 @@
 \date{June 20, 2025}
 
 % ######## CUSTOM style code ########
+\lstdefinestyle{myStyle}{
+    breaklines=true,
+    frame=leftline,
+    numbers=left,
+    backgroundcolor=\color{gray!10!white},
+}
+\lstset{style=myStyle}
+
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
 \newcommand{\getsr}{\xleftarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}

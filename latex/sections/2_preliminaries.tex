@@ -144,7 +144,7 @@ In addition to the above properties, an obfuscated KEM should satisfy stronger r
     For an unbounded adversary~$\adv$, we call the advantage~$\advantage{\ctxtunif}{\OKEM}[(\adv)] $ \emph{statistical}.
 \end{definition}
 
-\subsection{OKEM construction}
+\subsection{OKEM Construction}
 
 To construct an OKEM, a regular KEM can be augmented with encoding functions similar to \textsf{Elligator2}~\cite{CCS:BHKL13} or \textsf{Kemeleon}~\cite[Sec. 2.4]{CCS:GunSteVei24}. We define the following construct to bundle such functions - note, however, that we do not require encoded public keys in this work, which is why we will not aim to capture all components of \textsf{Elligator2} or \textsf{Kemeleon}. 
 

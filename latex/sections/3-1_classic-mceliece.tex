@@ -2,7 +2,7 @@
 
 Throughout this \cref{sec:obfuscating-classic-mceliece}, we use the positive integer variables $m,n,t,k$ where $n < 2^m$ and $k=mt-n$ as defined in \cite{NISTPQC-R4:ClassicMcEliece22}. We work with matrices and vectors over $\mathbb F_2$ when examining the KEM and use bit strings in the defintion and analysis of OKEMs. As the dimensions of the matrices and vectors are fixed for a given parameter set, we associate the matrices and vectors with their canonical encoding as bit strings of appropriate length.
 
-\paragraph{Original generation and distribution}
+\paragraph{Generation of Public Keys and Ciphertexts}
 Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in Round 4 of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}. Although NIST announced in early 2025 that Classic McEliece would not be standardized as part of this process \cite{nist-ir-8545}, we believe the scheme to be worthy of examination. Like \cite{EC:Xagawa22}, we only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
  
 In Classic McEliece, public keys are the $k$ rightmost columns of a $mt \times n$ generator matrix in systematic form ($k = n - mt$). Ciphertexts are the $mt$ data bits corresponding to $n$-bit codewords with Hamming weight exactly $t$.
@@ -81,7 +81,7 @@ Given the $\prkey$ assumption, public keys are computationally hard to distingui
     Repeating this argument for a maximum of $(mt)^2$ times, we can conclude that $\hat T$ is statistically indistinguishable from a uniformly random $mt \times k$ matrix over $\mathbb F_2$ as in $\mathsf{RandGen}'()$.
 \end{proof}
 
-\paragraph{Classic McEliece is already obfuscated}
+\paragraph{Classic McEliece is a Natural OKEM}
 We now return to our examination of ciphertext uniformity in Classic McEliece.
 
 Ciphertext uniformity follows directly from the $\prkey$ and $\mdsd$ assumptions, and we show this reduction, and thus computational indistinguishability from uniformly random bit vectors below. Additionally, implementers should note that padding public keys and ciphertexts to the byte boundary may require \emph{randomized} padding. This is only needed if the number of bits is not evenly divisible by 8, and occurs only for the parameter set ``mceliece6960119''.  All other parameter sets have $mt = 0 \mod 8$. Padding of these values with zero bits (as suggested in the Classic McEliece specification) would trivially break the desired ciphertext uniformity.

@@ -12,7 +12,7 @@
     \mathbf m \getsr \mathbb F_2^k \\
     \mathit{salt} \getsr \mathbb F_2^k \\
     \theta \gets \mathcal G(\mathbf m \mathbin\Vert \mathsf{firstBytes}(\pk,32) \mathbin\Vert \mathit{salt}) \\
-    \mathbf e, \mathbf r_1, \mathbf r_2 \gets \text{ generated from randomness } \theta \pcskipln \\
+    \mathbf e, \mathbf r_1, \mathbf r_2 \gets \text{generated from randomness } \theta \pcskipln \\
     \t  \text{such that } w(\mathbf e) = w_e \pcskipln \\
     \t  \text{and } w(\mathbf r_1) = w(\mathbf r_2) = w_r \\
     \mathbf u \gets \mathbf r_1 + \mathbf h \cdot \mathbf r_2 \\

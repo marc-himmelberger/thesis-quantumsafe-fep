@@ -5,7 +5,7 @@ As in \cref{sec:obfuscating-classic-mceliece}, we work with polynomials and vect
 
 Let $\mathcal R \subset \mathbb{F}_2[x]$ be the ring of polynomials over $\mathbb F_2$ with degree $<n$, specifically $\mathcal R := \mathbb{F}_2[x]/(x^n-1)$. Let $\mathcal R_w \subset \mathcal R$ denote the subset of polynomials with hamming weight exactly $w$. The notion $\mathbf u(1)$ is used to denote the evaluation of a polynomial $\mathbf u(x) \in \mathbb{F}_2[x]$ at the point $x=1$, note that $\mathbf u(x) \in \mathbb{F}_2$ for any fixed value of $x \in \mathbb{F}_2$. To refer to the coefficients of $\mathbf u$, we write $\mathbf u_i \in \mathbb{F}_2$, such that $\mathbf u(x) = \sum_{i=0}^{n-1} \mathbf u_i \cdot x^i$.
 
-\paragraph{Original generation and distribution of $\mathsf{HQC}$}
+\paragraph{Generation of Public Keys and Ciphertexts of $\mathsf{HQC}$}
 
 HQC is a code-based KEM selected for standardization as part of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization,nist-ir-8545}. HQC consists of three parameter sets, namely HQC-128, HQC-192, and HQC-256.
 
@@ -33,7 +33,7 @@ When referring to these assumptions in the following, we will implicitly use the
 
 A notable detail is that while \cite{EC:Xagawa22} does not mention $\mathit{salt}$, the proofs still apply for the first two ciphertext components $\mathbf u, \mathbf v$. The $\mathit{salt}$ is by definition a uniformly random value.
 
-\paragraph{Constructed encoding $E_\mathsf{HQC}$}
+\paragraph{Constructed Encoding $E_\mathsf{HQC}$}
 
 The two latter components of HQC ciphertexts $\mathbf v, \mathit{salt}$ are indistinguishable from random bit strings due to \cite{EC:Xagawa22} and by definition, respectively. We therefore need only be concerned with obfuscating $\mathbf u$.
 
@@ -59,7 +59,7 @@ The padding with random bits requires (after dropping one bit) the addition of 6
     \label{fig:hqc-encoding}
 \end{figure}
 
-\paragraph{Uniformity and success rate of $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$}
+\paragraph{Uniformity and Success Rate of $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$}
 
 We analyze the ciphertext uniformity of our encoding and reduce it to the two assumptions made above. We analyze the success rate of our encoding.
 
