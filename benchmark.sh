@@ -40,6 +40,12 @@ ensure_bridge_drivel () {
     sed $sed_no_backup "s|obfs4|drivel|g" docker/bridge/start-tor.sh docker/bridge/get-bridge-line
     sed $sed_no_backup "s|cert=|node-id=|g" docker/bridge/start-tor.sh docker/bridge/get-bridge-line
 }
+config_schemes () {
+    # Uses scheme names as arguments (KEM, then OKEM) to set enviroment variable accordingly
+    # Example: config_schemes "x25519" "FEO-x25519"
+    export TOR_PT_SERVER_TRANSPORT_OPTIONS="drivel:kem-name=$1;drivel:okem-name=$2"
+}
+# TODO change these to actually use our 12 parameter sets
 ensure_drivel_x25519 () {
     sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"x25519\"|g" lyrebird/transports/drivel/drivel.go
     sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-x25519\"|g" lyrebird/transports/drivel/drivel.go

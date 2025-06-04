@@ -12,6 +12,7 @@ services:
       - EMAIL=himarc@ethz.ch
       - NICKNAME=DrivelBridgeDev
       - TORBRIDGE_Address=172.16.113.5
+      - TOR_PT_SERVER_TRANSPORT_OPTIONS
     volumes:
       - data-bridge:/var/lib/tor
       - ./.drivel:/drivel
