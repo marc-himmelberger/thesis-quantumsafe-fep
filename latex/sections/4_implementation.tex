@@ -476,7 +476,7 @@ Finally, the randomness $t$ is not taken from the hash function output used to s
 
 \paragraph{Adding Crypto-Agility to the \texttt{internal} Module}
 
-Observing the current need for post-quantum key exchange, combined with the increasing deployment of newly standardized algorithms, it seems prudent to implement (at least compile-time) flexibility in the utilized key exchange schemes. Being able to exchange cryptographic algorithms is often called ``being crypto-agile''.
+Observing the current need for post-quantum key exchange, combined with the increasing deployment of newly standardized algorithms, it seems prudent to implement flexibility in the utilized key exchange schemes. Being able to exchange cryptographic algorithms is often called ``being crypto-agile''.
 
 To this end, the \drivel{} implementation contains string constants identifying the desired KEM and OKEM. The data structures for the schemes are then loaded at runtime based on these strings.
 The schemes are identified by the following naming convention:
@@ -578,6 +578,11 @@ build:
   dockerfile: docker/bridge/Dockerfile
     \end{lstlisting}
 
+    \item Additionally, make sure that you set the environment variable ``TOR\_PT\_SERVER\_TRANSPORT\_OPTIONS'' in the \texttt{docker-compose.yml} file. Specify the variables ``kem-name'' and ``okem-name'' to configure the schemes used by \drivel{}. An example is:
+    \begin{lstlisting}
+TOR_PT_SERVER_TRANSPORT_OPTIONS="drivel:kem-name=ML-KEM-512;drivel:okem-name=FEO-Classic-McEliece-348864
+    \end{lstlisting}
+
     \item Finally, start the tor bridge using the command \texttt{docker-compose up -d} in the same directory as \texttt{docker-compose.yml}
 \end{enumerate}
 
@@ -601,11 +606,11 @@ In the following, we list some concrete implementation challenges experienced du
 
     \item There is a lack of generic client arguments to configure the pluggable transport beyond what is available through the SOCKS fields while servers can make use of existing parsing of the environment variable ``TOR\_PT\_SERVER\_TRANSPORT\_OPTIONS''. Such a mechanism could be used in the future to avoid recompilation when changing the employed KEM and OKEM combination. Whether the KEM and OKEM settings should be part of the bridge information is left up to the Tor Project, as this requires coordination between bridges and clients to achieve interoperability while respecting client's choice of trusted schemes.
 
-    \item This thesis contains one of the first implementations of ML-Kemeleon. One previous implementation did not implement the \texttt{SamplePreimage} function from the Internet-Draft \cite{ct-kemeleon}, and another only had partial test cases for this function \cite{jmwample-kemeleon} and did not correctly sample uniformly random outputs. We implemented comprehensive tests, and verified the expected output distribution of \texttt{SamplePreimage}. Necessary changes to the Internet-Draft were identified in the process and the draft authors, as well as the authors of the two previous implementation were informed of our findings.
+    \item This thesis contains one of the first implementations of ML-Kemeleon. One previous implementation \cite{ct-kemeleon} did not implement the \texttt{SamplePreimage} function from the Internet-Draft, and another \cite{jmwample-kemeleon} only had partial test cases for this function, and did not correctly sample uniformly random outputs. We implemented comprehensive tests, and verified the expected output distribution of \texttt{SamplePreimage}. Necessary changes to the Internet-Draft were identified in the process, and the draft authors, as well as the authors of the two previous implementations were informed of our findings.
 
     \item An unaddressed issue is the need to hash certain pieces of data multiple times over the course of the protocol due to the design of \drivel{}. In fact, our implementation does suffer from high memory usage compared to \obfsfour{}, and optimizations to reduce that would be beneficial. As the keys and suffixes used in HKDF change, the previous results cannot easily be reused for future calculations. In particular, requesting multiple output blocks from $F_1$ would quickly become quite costly. We consequently chose our output lengths appropriately to avoid this effect and suggested an alternative approach in \cref{sssec:variant-framing}.
 \end{itemize}
 
-In order for software to remain flexible for future adaptations, it is beneficial to avoid hardcoding specific algorithms. A modular approach where components such as encryption, PRFs, and KEMs are easily exchangeable ensures that future developments cause fewer changes to the overall system. Even innocent-looking limitations such as the SOCKS field lengths can constitute integration barriers in the future.
+In order for software to remain flexible for future adaptations, it is beneficial to avoid hardcoding specific algorithms. A modular approach where components such as encryption, PRFs, and KEMs can be easily exchanged ensures that future developments cause fewer changes to the overall system. Even apparently harmless limitations such as SOCKS field lengths can constitute integration barriers in the future.
 
-As a final note of this chapter, the highly transparent, and open-source development of the Tor Project enabled us to focus directly on making material changes to an existing implementation. The open ecosystem was extremely valuable, and enabled us to contribute more easily.
+As a final note of this chapter, the highly transparent and open-source development of the Tor project enabled us to focus directly on making material changes to an existing implementation. The open ecosystem was extremely valuable and enabled us to contribute more easily.
