@@ -46,33 +46,44 @@ config_schemes () {
     export TOR_PT_SERVER_TRANSPORT_OPTIONS="drivel:kem-name=$1;drivel:okem-name=$2"
 }
 # TODO change these to actually use our 12 parameter sets
-ensure_drivel_x25519 () {
-    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"x25519\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-x25519\"|g" lyrebird/transports/drivel/drivel.go
+ensure_drivel_L0 () {
+    config_schemes "x25519" "FEO-x25519"
 }
-ensure_drivel_classicmceliece_348864 () {
-    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-348864\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-Classic-McEliece-348864\"|g" lyrebird/transports/drivel/drivel.go
+ensure_drivel_L1a () {
+    config_schemes "ML-KEM-512" "FEO-ML-KEM-512"
 }
-ensure_drivel_classicmceliece_6688128 () {
-    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-6688128\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-Classic-McEliece-6688128\"|g" lyrebird/transports/drivel/drivel.go
+ensure_drivel_L1b () {
+    config_schemes "BIKE-L1" "FEO-ML-KEM-512"
 }
-ensure_drivel_classicmceliece_6960119 () {
-    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"Classic-McEliece-6960119\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-Classic-McEliece-6960119\"|g" lyrebird/transports/drivel/drivel.go
+ensure_drivel_L1c () {
+    config_schemes "ML-KEM-512" "FEO-HQC-128"
 }
-ensure_drivel_mlkem_512 () {
-    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"ML-KEM-512\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-ML-KEM-512\"|g" lyrebird/transports/drivel/drivel.go
+ensure_drivel_L1d () {
+    config_schemes  "ML-KEM-512" "FEO-Classic-McEliece-348864"
 }
-ensure_drivel_mlkem_768 () {
-    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"ML-KEM-768\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-ML-KEM-768\"|g" lyrebird/transports/drivel/drivel.go
+ensure_drivel_L3a () {
+    config_schemes "ML-KEM-768" "FEO-ML-KEM-768"
 }
-ensure_drivel_mlkem_1024 () {
-    sed $sed_no_backup -E "s|\skemName\s+=.*| kemName = \"ML-KEM-1024\"|g" lyrebird/transports/drivel/drivel.go
-    sed $sed_no_backup -E "s|\sokemName\s+=.*| okemName = \"FEO-ML-KEM-1024\"|g" lyrebird/transports/drivel/drivel.go
+ensure_drivel_L3b () {
+    config_schemes "BIKE-L3" "FEO-ML-KEM-768"
+}
+ensure_drivel_L3c () {
+    config_schemes "ML-KEM-768" "FEO-HQC-192"
+}
+ensure_drivel_L3d () {
+    config_schemes  "ML-KEM-768" "FEO-Classic-McEliece-460896"
+}
+ensure_drivel_L5a () {
+    config_schemes "ML-KEM-1024" "FEO-ML-KEM-1024"
+}
+ensure_drivel_L5b () {
+    config_schemes "BIKE-L5" "FEO-ML-KEM-1024"
+}
+ensure_drivel_L5c () {
+    config_schemes "ML-KEM-1024" "FEO-HQC-256"
+}
+ensure_drivel_L5d () {
+    config_schemes  "ML-KEM-1024" "FEO-Classic-McEliece-6688128"
 }
 
 # Removes padding from lyrebird, and starts a full run in Docker
@@ -140,15 +151,21 @@ single_complete_bench () {
     full_run $1 obfs4
 
     # 2b. Full run drivel(x25519)
-    full_run $1 drivel x25519
+    full_run $1 drivel L0
 
-    # 2c. Full runs with more KEM/OKEM combinations
-    full_run $1 drivel classicmceliece_348864
-    full_run $1 drivel classicmceliece_6688128
-    full_run $1 drivel classicmceliece_6960119
-    full_run $1 drivel mlkem_512
-    full_run $1 drivel mlkem_768
-    full_run $1 drivel mlkem_1024
+    # 2c. Full runs with more KEM/OKEM combinations    
+    full_run $1 drivel L1a
+    full_run $1 drivel L1b
+    full_run $1 drivel L1c
+    full_run $1 drivel L1d
+    full_run $1 drivel L3a
+    full_run $1 drivel L3b
+    full_run $1 drivel L3c
+    full_run $1 drivel L3d
+    full_run $1 drivel L5a
+    full_run $1 drivel L5b
+    full_run $1 drivel L5c
+    full_run $1 drivel L5d
 
     log "###############"
     log "#  END RUNS   #"
