@@ -4,4 +4,3 @@ docker/tcpdump-bridge
 docker/logs
 latex/.git
 .DS_Store
-results/

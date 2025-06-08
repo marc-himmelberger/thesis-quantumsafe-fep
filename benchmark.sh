@@ -123,7 +123,7 @@ single_complete_bench () {
     cd lyrebird
 
     log "###############"
-    log "# START BENCH #"
+    log "#  BENCH 1/2  #"
     log "###############"
     
     # 1. Go benchmarks
@@ -132,6 +132,10 @@ single_complete_bench () {
     make build
     echo "=> Starting benchmark"
     make bench > $1/benchmarks/obfs4-bench.txt
+
+    log "###############"
+    log "#  BENCH 2/2  #"
+    log "###############"
 
     # 1b. main branch: Up-to-date obfs4 & drivel, total handshake time
     git checkout main
