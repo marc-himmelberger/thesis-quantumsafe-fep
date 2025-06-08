@@ -6,7 +6,7 @@ set -e
 if [[ -z "${TOR_PT_SERVER_TRANSPORT_OPTIONS}" ]]; then
     echo "WARN: Using default value for KEM/OKEM configuration. You should set TOR_PT_SERVER_TRANSPORT_OPTIONS!"
     sleep 1
-    export TOR_PT_SERVER_TRANSPORT_OPTIONS="drivel:kem-name=ML-KEM-512;drivel:okem-name=FEO-Classic-McEliece-348864"
+    export TOR_PT_SERVER_TRANSPORT_OPTIONS="drivel:kem-name=ML-KEM-512;drivel:okem-name=FEO-HQC-128"
 fi
 
 for out_folder in tcpdump tcpdump-bridge logs .drivel; do
