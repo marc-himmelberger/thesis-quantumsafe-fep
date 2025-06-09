@@ -1,0 +1,17 @@
+2025/06/09 01:41:20 [NOTICE]:  - launched
+2025/06/09 01:41:20 [INFO]: lyrebird - initializing client transport listeners
+2025/06/09 01:41:20 [INFO]: drivel - registered listener: 127.0.0.1:34187
+2025/06/09 01:41:20 [INFO]: lyrebird - accepting connections
+2025/06/09 01:41:22 [INFO]: This client has started a handshake
+2025/06/09 01:41:22 [INFO]: creating clientHandshake
+2025/06/09 01:41:22 [INFO]: client padding range [0, 0]
+2025/06/09 01:41:22 [INFO]: bridge padding range [0, 0]
+2025/06/09 01:41:22 [INFO]: size_kem_pk 800
+2025/06/09 01:41:22 [INFO]: size_kem_ctxt 768
+2025/06/09 01:41:22 [INFO]: size_okem_ctxt 1140
+2025/06/09 01:41:22 [INFO]: size_mark 16
+2025/06/09 01:41:22 [INFO]: size_mac 16
+2025/06/09 01:41:22 [INFO]: size_auth 32
+2025/06/09 01:41:22 [INFO]: clientHandshake.generateHandshake()
+2025/06/09 01:41:22 [INFO]: clientHandshake.parseServerHandshake(877 B)
+2025/06/09 01:41:22 [INFO]: This client has completed a handshake and has wrapped its connection

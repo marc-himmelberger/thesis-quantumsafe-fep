@@ -1,0 +1,98 @@
+go test -run='^$' -bench=. -count 8 -benchmem -ldflags="-X main.lyrebirdVersion=0.5.0-5-g36d0c92" ./...
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/cmd/lyrebird	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/csrand	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/drbg	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/log	[no test files]
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/ntor
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkHandshake-16    	    2198	    541720 ns/op	    7859 B/op	      98 allocs/op
+BenchmarkHandshake-16    	    2226	    540741 ns/op	    7859 B/op	      98 allocs/op
+BenchmarkHandshake-16    	    2215	    537798 ns/op	    7854 B/op	      97 allocs/op
+BenchmarkHandshake-16    	    2218	    536641 ns/op	    7855 B/op	      97 allocs/op
+BenchmarkHandshake-16    	    2241	    538820 ns/op	    7858 B/op	      98 allocs/op
+BenchmarkHandshake-16    	    2262	    544638 ns/op	    7857 B/op	      98 allocs/op
+BenchmarkHandshake-16    	    2226	    537023 ns/op	    7854 B/op	      97 allocs/op
+BenchmarkHandshake-16    	    2202	    538673 ns/op	    7854 B/op	      97 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/ntor	10.057s
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/probdist	0.002s
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/replayfilter	0.002s
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/socks5	0.004s
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/uniformdh
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkHandshake-16    	     166	   7105012 ns/op	   37949 B/op	     110 allocs/op
+BenchmarkHandshake-16    	     166	   7119121 ns/op	   37951 B/op	     110 allocs/op
+BenchmarkHandshake-16    	     168	   7094053 ns/op	   37949 B/op	     110 allocs/op
+BenchmarkHandshake-16    	     168	   7168177 ns/op	   37951 B/op	     110 allocs/op
+BenchmarkHandshake-16    	     168	   7122790 ns/op	   37952 B/op	     110 allocs/op
+BenchmarkHandshake-16    	     168	   7126363 ns/op	   37951 B/op	     110 allocs/op
+BenchmarkHandshake-16    	     163	   7103744 ns/op	   37953 B/op	     110 allocs/op
+BenchmarkHandshake-16    	     165	   7139683 ns/op	   37953 B/op	     110 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/uniformdh	15.296s
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/common/utlsutil	[no test files]
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/internal/x25519ell2
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkKeyGeneration-16    	   47553	     25301 ns/op	      48 B/op	       1 allocs/op
+BenchmarkKeyGeneration-16    	   47347	     25284 ns/op	      48 B/op	       1 allocs/op
+BenchmarkKeyGeneration-16    	   47398	     25278 ns/op	      48 B/op	       1 allocs/op
+BenchmarkKeyGeneration-16    	   47508	     25370 ns/op	      48 B/op	       1 allocs/op
+BenchmarkKeyGeneration-16    	   47325	     25435 ns/op	      48 B/op	       1 allocs/op
+BenchmarkKeyGeneration-16    	   47037	     25282 ns/op	      48 B/op	       1 allocs/op
+BenchmarkKeyGeneration-16    	   47342	     25286 ns/op	      48 B/op	       1 allocs/op
+BenchmarkKeyGeneration-16    	   47154	     25352 ns/op	      48 B/op	       1 allocs/op
+BenchmarkMap-16              	  268119	      4506 ns/op	      96 B/op	       2 allocs/op
+BenchmarkMap-16              	  264505	      4485 ns/op	      96 B/op	       2 allocs/op
+BenchmarkMap-16              	  268911	      4484 ns/op	      96 B/op	       2 allocs/op
+BenchmarkMap-16              	  268590	      4522 ns/op	      96 B/op	       2 allocs/op
+BenchmarkMap-16              	  267531	      4483 ns/op	      96 B/op	       2 allocs/op
+BenchmarkMap-16              	  265280	      4478 ns/op	      96 B/op	       2 allocs/op
+BenchmarkMap-16              	  266870	      4470 ns/op	      96 B/op	       2 allocs/op
+BenchmarkMap-16              	  266950	      4476 ns/op	      96 B/op	       2 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/internal/x25519ell2	21.644s
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/base	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/meeklite	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs2	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs3	[no test files]
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs4
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkObfs4Handshake-16    	    1795	    632628 ns/op	   28902 B/op	     152 allocs/op
+BenchmarkObfs4Handshake-16    	    1892	    632172 ns/op	   29224 B/op	     152 allocs/op
+BenchmarkObfs4Handshake-16    	    1898	    630744 ns/op	   29312 B/op	     152 allocs/op
+BenchmarkObfs4Handshake-16    	    1920	    634006 ns/op	   29256 B/op	     152 allocs/op
+BenchmarkObfs4Handshake-16    	    1876	    636903 ns/op	   29659 B/op	     152 allocs/op
+BenchmarkObfs4Handshake-16    	    1909	    632950 ns/op	   29358 B/op	     152 allocs/op
+BenchmarkObfs4Handshake-16    	    1874	    632471 ns/op	   29122 B/op	     152 allocs/op
+BenchmarkObfs4Handshake-16    	    1852	    633683 ns/op	   29363 B/op	     152 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs4	9.518s
+goos: linux
+goarch: amd64
+pkg: gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs4/framing
+cpu: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz
+BenchmarkEncoder_Encode-16    	     729	   1648381 ns/op	   11744 B/op	    1468 allocs/op
+BenchmarkEncoder_Encode-16    	     726	   1644609 ns/op	   11751 B/op	    1468 allocs/op
+BenchmarkEncoder_Encode-16    	     733	   1638184 ns/op	   11744 B/op	    1468 allocs/op
+BenchmarkEncoder_Encode-16    	     728	   1644321 ns/op	   11744 B/op	    1468 allocs/op
+BenchmarkEncoder_Encode-16    	     721	   1643451 ns/op	   11744 B/op	    1468 allocs/op
+BenchmarkEncoder_Encode-16    	     724	   1639657 ns/op	   11744 B/op	    1468 allocs/op
+BenchmarkEncoder_Encode-16    	     729	   1642169 ns/op	   11744 B/op	    1468 allocs/op
+BenchmarkEncoder_Encode-16    	     728	   1651472 ns/op	   11744 B/op	    1468 allocs/op
+PASS
+ok  	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/obfs4/framing	10.918s
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/scramblesuit	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/snowflake	[no test files]
+?   	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird/transports/webtunnel	[no test files]

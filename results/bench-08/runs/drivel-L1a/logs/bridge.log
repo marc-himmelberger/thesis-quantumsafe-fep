@@ -1,0 +1,33 @@
+Using NICKNAME=DrivelBridgeDev, OR_PORT=27797, PT_PORT=28483, and EMAIL=himarc@ethz.ch.
+Starting tor.
+Jun 09 08:36:01.578 [notice] Tor 0.4.8.14 running on Linux with Libevent 2.1.12-stable, OpenSSL 3.0.16, Zlib 1.2.13, Liblzma 5.4.1, Libzstd 1.5.4 and Glibc 2.36 as libc.
+Jun 09 08:36:01.578 [notice] Tor can't help you if you use it wrong! Learn how to be safe at https://support.torproject.org/faq/staying-anonymous/
+Jun 09 08:36:01.578 [notice] Read configuration file "/etc/tor/torrc".
+Jun 09 08:36:01.578 [notice] Based on detected system memory, MaxMemInQueues is set to 5886 MB. You can override this by setting MaxMemInQueues by hand.
+Jun 09 08:36:01.579 [notice] Opening OR listener on 0.0.0.0:27797
+Jun 09 08:36:01.579 [notice] Opened OR listener connection (ready) on 0.0.0.0:27797
+Jun 09 08:36:01.579 [notice] Opening OR listener on [::]:27797
+Jun 09 08:36:01.579 [notice] Opened OR listener connection (ready) on [::]:27797
+Jun 09 08:36:01.579 [notice] Opening Extended OR listener on 127.0.0.1:0
+Jun 09 08:36:01.579 [notice] Extended OR listener listening on port 36075.
+Jun 09 08:36:01.579 [notice] Opened Extended OR listener connection (ready) on 127.0.0.1:36075
+Jun 09 08:36:02.000 [notice] Parsing GEOIP IPv4 file /usr/share/tor/geoip.
+Jun 09 08:36:02.000 [notice] Parsing GEOIP IPv6 file /usr/share/tor/geoip6.
+Jun 09 08:36:02.000 [notice] Configured to measure statistics. Look for the *-stats files that will first be written to the data directory in 24 hours from now.
+Jun 09 08:36:02.000 [notice] Your Tor server's identity key fingerprint is 'DrivelBridgeDev 80D130BA9400ACED55C79418ACBADA0837201FC4'
+Jun 09 08:36:02.000 [notice] Your Tor bridge's hashed identity key fingerprint is 'DrivelBridgeDev EDC9E61CB626E9DA2BD004891D63D7B0137C7EBF'
+Jun 09 08:36:02.000 [notice] Your Tor server's identity key ed25519 fingerprint is 'DrivelBridgeDev dklTbdgncAQlH/wNYXgSrkrqhgBKZCabh71iNRiN1hQ'
+Jun 09 08:36:02.000 [notice] You can check the status of your bridge relay at https://bridges.torproject.org/status?id=EDC9E61CB626E9DA2BD004891D63D7B0137C7EBF
+Jun 09 08:36:02.000 [notice] Bootstrapped 0% (starting): Starting
+Jun 09 08:36:03.000 [notice] Starting with guard context "default"
+Jun 09 08:36:09.000 [notice] Registered server transport 'drivel' at '[::]:28483'
+Jun 09 08:36:10.000 [notice] Bootstrapped 5% (conn): Connecting to a relay
+Jun 09 08:36:10.000 [notice] Unable to find IPv4 address for ORPort 27797. You might want to specify IPv6Only to it or set an explicit address or set Address.
+Jun 09 08:36:10.000 [notice] Bootstrapped 10% (conn_done): Connected to a relay
+Jun 09 08:36:10.000 [notice] Bootstrapped 14% (handshake): Handshaking with a relay
+Jun 09 08:36:10.000 [notice] Bootstrapped 15% (handshake_done): Handshake with a relay done
+Jun 09 08:36:10.000 [notice] Bootstrapped 75% (enough_dirinfo): Loaded enough directory info to build circuits
+Jun 09 08:36:10.000 [notice] Bootstrapped 90% (ap_handshake_done): Handshake finished with a relay to build circuits
+Jun 09 08:36:10.000 [notice] Bootstrapped 95% (circuit_create): Establishing a Tor circuit
+Jun 09 08:36:10.000 [notice] Bootstrapped 100% (done): Done
+Jun 09 08:36:11.000 [notice] External address seen and suggested by a directory authority: 31.10.128.188

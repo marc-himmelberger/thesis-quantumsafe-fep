@@ -1,18 +1,18 @@
-2025/06/08 14:02:01 [NOTICE]:  - launched
-2025/06/08 14:02:01 [INFO]: lyrebird - initializing server transport listeners
-2025/06/08 14:02:01 [INFO]: drivel - registered listener: [scrubbed]:28483
-2025/06/08 14:02:01 [INFO]: lyrebird - accepting connections
-2025/06/08 14:02:14 [INFO]: drivel([scrubbed]:37664) - new connection
-2025/06/08 14:02:14 [INFO]: This server has received a first handshake message
-2025/06/08 14:02:14 [INFO]: creating serverHandshake
-2025/06/08 14:02:14 [INFO]: client padding range [0, 0]
-2025/06/08 14:02:14 [INFO]: bridge padding range [0, 0]
-2025/06/08 14:02:14 [INFO]: size_kem_pk 1568
-2025/06/08 14:02:14 [INFO]: size_kem_ctxt 1568
-2025/06/08 14:02:14 [INFO]: size_okem_ctxt 208
-2025/06/08 14:02:14 [INFO]: size_mark 16
-2025/06/08 14:02:14 [INFO]: size_mac 16
-2025/06/08 14:02:14 [INFO]: size_auth 32
-2025/06/08 14:02:14 [INFO]: serverHandshake.parseClientHandshake(1808 B)
-2025/06/08 14:02:14 [INFO]: This server has completed a handshake and has wrapped its connection
-2025/06/08 14:02:14 [INFO]: serverHandshake.generateHandshake()
+2025/06/09 00:37:51 [NOTICE]:  - launched
+2025/06/09 00:37:51 [INFO]: lyrebird - initializing server transport listeners
+2025/06/09 00:37:51 [INFO]: drivel - registered listener: [scrubbed]:28483
+2025/06/09 00:37:51 [INFO]: lyrebird - accepting connections
+2025/06/09 00:38:03 [INFO]: drivel([scrubbed]:55248) - new connection
+2025/06/09 00:38:03 [INFO]: This server has received a first handshake message
+2025/06/09 00:38:03 [INFO]: creating serverHandshake
+2025/06/09 00:38:03 [INFO]: client padding range [0, 0]
+2025/06/09 00:38:03 [INFO]: bridge padding range [0, 0]
+2025/06/09 00:38:03 [INFO]: size_kem_pk 1568
+2025/06/09 00:38:03 [INFO]: size_kem_ctxt 1568
+2025/06/09 00:38:03 [INFO]: size_okem_ctxt 208
+2025/06/09 00:38:03 [INFO]: size_mark 16
+2025/06/09 00:38:03 [INFO]: size_mac 16
+2025/06/09 00:38:03 [INFO]: size_auth 32
+2025/06/09 00:38:03 [INFO]: serverHandshake.parseClientHandshake(1808 B)
+2025/06/09 00:38:03 [INFO]: This server has completed a handshake and has wrapped its connection
+2025/06/09 00:38:03 [INFO]: serverHandshake.generateHandshake()

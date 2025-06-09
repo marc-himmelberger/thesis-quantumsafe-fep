@@ -1,11 +1,11 @@
-2025/06/08 13:57:48 ############
-2025/06/08 13:57:48 # /test.sh #
-2025/06/08 13:57:48 ############
+2025/06/09 00:33:45 ############
+2025/06/09 00:33:45 # /test.sh #
+2025/06/09 00:33:45 ############
 Tor version 0.4.6.10.
 Tor is running on Linux with Libevent 2.1.12-stable, OpenSSL 3.0.2, Zlib 1.2.11, Liblzma 5.2.5, Libzstd 1.4.8 and Glibc 2.35 as libc.
 Tor compiled with GCC version 11.2.0
-2025/06/08 13:57:48 [PASS] Tor present
-2025/06/08 13:57:48 Current torrc:
+2025/06/09 00:33:45 [PASS] Tor present
+2025/06/09 00:33:45 Current torrc:
 # Enable Control Port for https://gitweb.torproject.org/torspec.git/tree/control-spec.txt
 ControlPort 9051
 
@@ -16,15 +16,15 @@ ClientTransportPlugin obfs4 exec /usr/bin/lyrebird --enableLogging --logLevel IN
 
 # Added by test.sh script: HashedControlPassword $torpass
 # Added by test.sh script: Bridge info
-Bridge drivel 172.16.113.5:28483 80D130BA9400ACED55C79418ACBADA0837201FC4 node-id=ec76c6223c351fad33597e562569731bb0c526b1 iat-mode=0
-HashedControlPassword 16:7B867AA7D5E5B271601706133B5FC252A9DB4979FC00DE0C32F25E21BB
-2025/06/08 13:57:48 [PASS] Tor service started
-2025/06/08 13:57:48 Waiting 5s
-2025/06/08 13:57:53 Continuing...
-2025/06/08 13:57:53 [PASS] Tor info about circuit-status looks good
-2025/06/08 13:57:53 [PASS] Tor info about orconn-status looks good
-2025/06/08 13:57:53 [PASS] Tor info about entry-guards looks good
-2025/06/08 13:57:53 using api.ipify.org at 104.26.12.205
-2025/06/08 13:57:53 Regular IP: {"ip":"31.10.128.188"}
-2025/06/08 13:57:54 Torify IP: {"ip":"204.8.96.167"}
-2025/06/08 13:57:54 [PASS] Received a new IP
+Bridge drivel 172.16.113.5:28483 80D130BA9400ACED55C79418ACBADA0837201FC4 node-id=b807e4a712560fe714cb493e1c61cf21829a3662 iat-mode=0
+HashedControlPassword 16:64BED5A114E121476021F41F4965EA19ABD88554D1569FEEAF94BBA99F
+2025/06/09 00:33:45 [PASS] Tor service started
+2025/06/09 00:33:45 Waiting 5s
+2025/06/09 00:33:50 Continuing...
+2025/06/09 00:33:50 [PASS] Tor info about circuit-status looks good
+2025/06/09 00:33:50 [PASS] Tor info about orconn-status looks good
+2025/06/09 00:33:50 [PASS] Tor info about entry-guards looks good
+2025/06/09 00:33:51 using api.ipify.org at 104.26.13.205
+2025/06/09 00:33:51 Regular IP: {"ip":"31.10.128.188"}
+2025/06/09 00:33:52 Torify IP: {"ip":"78.142.18.219"}
+2025/06/09 00:33:52 [PASS] Received a new IP
