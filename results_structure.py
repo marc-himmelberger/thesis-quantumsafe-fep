@@ -298,6 +298,16 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
 
         print(f"parsed logs files: {run_folder}")
 
+        assert isinstance(padding_client, int), "Missing value for: padding_client"
+        assert isinstance(padding_bridge, int), "Missing value for: padding_bridge"
+        assert isinstance(size_kem_pk, int), "Missing value for: size_kem_pk"
+        assert isinstance(size_kem_ctxt, int), "Missing value for: size_kem_ctxt"
+        assert isinstance(size_okem_ctxt, int), "Missing value for: size_okem_ctxt"
+        assert isinstance(size_mark, int), "Missing value for: size_mark"
+        assert isinstance(size_mac, int), "Missing value for: size_mac"
+        assert isinstance(size_auth, int), "Missing value for: size_auth"
+        assert isinstance(num_handshakes, int), "Missing value for: num_handshakes"
+
         class ClientHs(Packet):
             name = "ClientHs "
             fields_desc: list = [
@@ -310,6 +320,10 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 StrFixedLenField("mac", default=None, length=size_mac),
             ]
 
+        required_client_hs_len = (
+            size_kem_pk + size_okem_ctxt + padding_client + size_mark + size_mac
+        )
+
         class BridgeHs(Packet):
             name = "BridgeHs "
             fields_desc: list = [
@@ -319,6 +333,10 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 StrFixedLenField("mark", default=None, length=size_mark),
                 StrFixedLenField("mac", default=None, length=size_mac),
             ]
+
+        required_bridge_hs_len = (
+            size_kem_ctxt + size_auth + padding_bridge + size_mark + size_mac
+        )
 
         # Handle tcpdump
         packets = rdpcap(str(run_folder.joinpath("tcpdump", "tcpdump.pcap")))
@@ -364,8 +382,14 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
             assert handshake[0][TCP].flags == "S", "1st not SYN"
             assert handshake[1][TCP].flags == "SA", "2nd not SYN, ACK"
             assert handshake[2][TCP].flags == "A", "3rd not ACK"
+
+            # TODO: now collect data until we reach required_client_hs_len - call it all "client_hs"
+            # TODO: assert src is now CLIENT_IP
             assert handshake[3][TCP].flags == "PA", "4th not PSH, ACK"
             assert handshake[4][TCP].flags == "A", "5th not ACK"
+
+            # TODO: then collect data until we reach required_bridge_hs_len - call it all "bridge_hs"
+            # TODO: assert dst is now CLIENT_IP
             assert handshake[5][TCP].flags == "PA", "6th not PSH, ACK"
             assert handshake[6][TCP].flags == "A", "7th not ACK"
 
@@ -374,6 +398,7 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
 
             client_hs: Packet = handshake[3]
             bridge_hs: Packet = handshake[5]
+            # Put concatenated payloads in here for visualization
             client_hs_data: bytes = client_hs[TCP].payload.load
             bridge_hs_data: bytes = bridge_hs[TCP].payload.load
             client_hs_pkt = ClientHs(client_hs_data)
@@ -416,6 +441,7 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 bridge_hs_data
             ), "Bridge packet had no payload?"
 
+            # TODO add an entry for each packet
             entries_hs = pd.DataFrame.from_dict(
                 {
                     "protocol": run_protocol,
