@@ -7,6 +7,7 @@ library(dplyr, warn.conflicts = FALSE)
 library(tidyr)
 library(zeallot)
 library(ggh4x)
+library(ggfittext)
 
 setwd(dir = "~/thesis-quantumsafe-fep/results")
 if (!interactive()) {
@@ -33,7 +34,7 @@ equal_group_size <- function(df) {
 
 # State of implementation and OQS relevance
 active_kems <- drivel_parameter_sets <- readr::read_delim(
-  'nist_level  ;  algo  
+    "nist_level  ;  algo
        L0      ;  x25519
        L0      ;  FEO-x25519
        L1      ;  FEO-Classic-McEliece-348864
@@ -58,24 +59,26 @@ active_kems <- drivel_parameter_sets <- readr::read_delim(
        L5      ;  HQC-256
        L1      ;  FEO-HQC-128
        L3      ;  FEO-HQC-192
-       L5      ;  FEO-HQC-256',
-trim_ws = TRUE, comment="#", delim=";")
+       L5      ;  FEO-HQC-256",
+    trim_ws = TRUE, comment = "#", delim = ";"
+)
 drivel_parameter_sets <- readr::read_delim(
-  '   Name     ;  Combination
-    Drivel-L0  ;  x25519|FEO-x25519
-    Drivel-L1  ;  ML-KEM-512|FEO-ML-KEM-512
-    Drivel-L1  ;  BIKE-L1|FEO-ML-KEM-512
-    Drivel-L1  ;  ML-KEM-512|FEO-HQC-128
-    Drivel-L1  ;  ML-KEM-512|FEO-Classic-McEliece-348864
-    Drivel-L3  ;  ML-KEM-768|FEO-ML-KEM-768
-    Drivel-L3  ;  BIKE-L3|FEO-ML-KEM-768
-    Drivel-L3  ;  ML-KEM-768|FEO-HQC-192
-    Drivel-L3  ;  ML-KEM-768|FEO-Classic-McEliece-460896
-    Drivel-L5  ;  ML-KEM-1024|FEO-ML-KEM-1024
-    Drivel-L5  ;  BIKE-L5|FEO-ML-KEM-1024
-    Drivel-L5  ;  ML-KEM-1024|FEO-HQC-256
-    Drivel-L5  ;  ML-KEM-1024|FEO-Classic-McEliece-6688128',
-trim_ws = TRUE, comment="#", delim=";")
+    "   Name    ;  Combination
+    Drivel-L0   ;  x25519|FEO-x25519
+    Drivel-L1a  ;  ML-KEM-512|FEO-ML-KEM-512
+    Drivel-L1b  ;  BIKE-L1|FEO-ML-KEM-512
+    Drivel-L1c  ;  ML-KEM-512|FEO-HQC-128
+    Drivel-L1d  ;  ML-KEM-512|FEO-Classic-McEliece-348864
+    Drivel-L3a  ;  ML-KEM-768|FEO-ML-KEM-768
+    Drivel-L3b  ;  BIKE-L3|FEO-ML-KEM-768
+    Drivel-L3c  ;  ML-KEM-768|FEO-HQC-192
+    Drivel-L3d  ;  ML-KEM-768|FEO-Classic-McEliece-460896
+    Drivel-L5a  ;  ML-KEM-1024|FEO-ML-KEM-1024
+    Drivel-L5b  ;  BIKE-L5|FEO-ML-KEM-1024
+    Drivel-L5c  ;  ML-KEM-1024|FEO-HQC-256
+    Drivel-L5d  ;  ML-KEM-1024|FEO-Classic-McEliece-6688128",
+    trim_ws = TRUE, comment = "#", delim = ";"
+)
 
 #################
 #  START DATA   #
@@ -83,26 +86,29 @@ trim_ws = TRUE, comment="#", delim=";")
 
 # OQS reference data
 df_oqs <- read.csv("../supercop_liboqs.csv") %>%
+    rename(algo = algorithm) %>%
+    inner_join(
+        active_kems,
+        by = c("algo" = "algo")
+    ) %>%
     mutate(
-        highlight = ifelse(algorithm %in% active_kems$algo, "Implemented", "Other"),
-        order = ifelse(algorithm %in% active_kems$algo, 0, 1),
-        inter = reorder(paste0(op, " (", highlight, ")"), order),
-        algo = reorder(algorithm, order)
+        order = match(nist_level, c("L0", "L1", "L3", "L5")),
+        algo = reorder(algo, order)
     ) %>%
     pivot_longer(
         c(X25..ms.per.op, X50..ms.per.op, X75..ms.per.op),
         names_to = NULL,
         values_to = "perf"
     ) %>%
-    select(perf, algo, inter)
+    select(perf, algo, op)
 
 # Benchmark data
 data_bench <- read.csv("structured/benchmarks.csv")
 data_bench <- data_bench %>%
-    left_join(drivel_parameter_sets, by=c("subbench" = "Combination")) %>%
-    rename(protocol_with_level_pretty = Name) %>%
+    left_join(drivel_parameter_sets, by = c("subbench" = "Combination")) %>%
+    rename(protocol_with_level_and_subid_pretty = Name) %>%
     mutate(
-        perf = 10^-3 * time.iter,
+        perf = 10^-6 * time.iter, # ns/op to ms/op
         protocol_pretty = ifelse(grepl("transports/obfs4", benchmark),
             "Obfs4",
             ifelse(grepl("transports/drivel", benchmark),
@@ -110,14 +116,18 @@ data_bench <- data_bench %>%
                 "?"
             )
         ),
-        protocol_with_level_pretty= ifelse(grepl("transports/obfs4", benchmark),
+        protocol_with_level_pretty = ifelse(grepl("transports/obfs4", benchmark),
             "Obfs4",
-            protocol_with_level_pretty
+            sub("[abcd]$", "", protocol_with_level_and_subid_pretty)
         ),
         subbench_pretty = ifelse(grepl("transports/obfs4", benchmark),
             "x25519ell2",
             gsub("\\|", "\n", subbench)
         )
+    ) %>%
+    mutate(
+        order = match(protocol_with_level_and_subid_pretty, drivel_parameter_sets$Name),
+        subbench_pretty = reorder(subbench_pretty, order)
     )
 
 # Runs data
@@ -180,16 +190,19 @@ data_traffic <- read.csv("structured/traffic.csv") %>%
 #   drop data_traffic rows for first handshake ("handshake,bridge" with smaller numbers - one "upstream" one "downstream")
 #   for all "data,bridge", reduce timestamp by delta between "handshake,bridge,upstream"
 # XXX: I'm lazy, so I just looked up the appropriate rows myself
-delta_handshake <- data_traffic[data_traffic$X == 1100,]$timestamp # timestamp for first packet is "0"
+delta_handshake <- data_traffic[data_traffic$X == 1099, ]$timestamp # timestamp for first packet is "0"
 data_traffic <- data_traffic %>%
     filter(
-        ! X %in% c(1098, 1099)
+        !X %in% c(1097, 1098)
     ) %>%
     mutate(
-        timestamp = ifelse(X >= 1100 & X <= 1219,
+        timestamp = ifelse(X >= 1099 & X <= 1358,
             timestamp - delta_handshake,
             timestamp
         )
+    ) %>%
+    filter(
+        timestamp >= 0
     )
 rm(delta_handshake)
 
@@ -255,7 +268,7 @@ data_handshake %>%
     facet_grid(~protocol_with_level_pretty, scales = "free_x", space = "free")
 data_handshake %>%
     ggplot(aes(y = bytes.alloc, x = subbench_pretty, fill = branch)) +
-    ggtitle(paste0("Handshake Memory Usage (n=", n, ")")) +
+    ggtitle(paste0("Simulated Handshake Memory Usage (n=", n, ")")) +
     xlab("Benchmark name") +
     ylab("Bytes allocated [B/op]") +
     geom_boxplot(notch = TRUE) +
@@ -279,7 +292,8 @@ data_kems <- data_bench %>%
         encoding = ifelse(grepl("^FEO-", algo_name), "FEO", "-") # "FEO" or "-"
     ) %>%
     inner_join(
-        active_kems, by=c("algo"="algo")
+        active_kems,
+        by = c("algo" = "algo")
     ) %>%
     mutate(
         order = match(nist_level, c("L0", "L1", "L3", "L5")),
@@ -290,32 +304,70 @@ n <- data_kems %>%
     group_by(algo, op) %>%
     equal_group_size()
 
+df_oqs <- df_oqs %>%
+    group_by(algo, op) %>%
+    summarise(
+        perf_oqs_mean = mean(perf),
+        perf_oqs_sd = sd(perf),
+        .groups = "drop"
+    )
+
 data_kems %>%
-    ggplot(aes(y = perf, x = algo, fill = op)) +
-    scale_fill_manual(
-        values = c(
-            "#F8766D", "#00BA38", "#619CFF",
-            "lightgrey", "grey", "darkgrey"
-        ),
-    ) +
+    group_by(algo, op) %>%
+    summarise(
+        perf_ours_mean = mean(perf),
+        perf_ours_sd = sd(perf),
+        base_kem = first(base_kem),
+        encoding = first(encoding),
+        .groups = "drop"
+    ) %>% 
+    left_join(
+        df_oqs,
+        by = c("algo" = "algo", "op" = "op")
+    ) %>%
+    pivot_longer(
+        !c(algo, op, base_kem, encoding),
+        names_to = c("origin", "metric"),
+        names_pattern = "perf_(.*)_(.*)",
+        values_to = "value",
+    ) %>%
+    pivot_wider(
+        names_from = metric,
+        values_from = value
+    ) %>%
+    mutate(
+        op_origin = ifelse(origin == "oqs",
+            paste0(op, " (OQS)"),
+            op
+        )
+    ) %>%
+    ggplot(aes(y = mean, x = algo, color = op_origin)) +
+    #scale_fill_manual(
+    #    values = c(
+    #        "#F8766D", "#00BA38", "#619CFF",
+    #        "lightgrey", "grey", "darkgrey"
+    #    ),
+    #) +
     ggtitle(paste0("(O)KEM Running Time (n=", n, ")")) +
-    labs(fill = "Operation") +
+    labs(color = "Operation") +
     xlab("Benchmark name") +
     ylab("log Running time [ms/op]") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_y_continuous(trans = "log10") +
-    geom_col(position = "dodge", width = 1) +
-    facet_nested(~base_kem + encoding, scales = "free_x", space = "free") # +
-# stat_summary(
-#     data = df_oqs,
-#     aes(y = perf, x = algo, fill = inter),
-#     fun = median, fun.min = min, fun.max = max,
-#     inherit.aes = FALSE, colour = "black", size = 0.3,
-#     position = position_dodge(width = 1)
-# )
-# TODO eventually find a way to tell this story :D
+    geom_point(position = position_dodge(1)) +
+    geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), position = position_dodge(1), width=1) +
+    facet_nested(~ base_kem + encoding, scales = "free_x", space = "free") 
+
 data_kems %>%
-    ggplot(aes(y = bytes.alloc, x = algo, fill = op)) +
+    group_by(algo, op) %>%
+    summarise(
+        mean = mean(bytes.alloc),
+        sd = sd(bytes.alloc),
+        base_kem = first(base_kem),
+        encoding = first(encoding),
+        .groups = "drop"
+    ) %>%
+    ggplot(aes(y = mean, x = algo, color = op)) +
     scale_fill_manual(
         values = c(
             "#F8766D", "#00BA38", "#619CFF",
@@ -323,13 +375,14 @@ data_kems %>%
         ),
     ) +
     ggtitle(paste0("(O)KEM Memory Usage (n=", n, ")")) +
-    labs(fill = "Operation") +
+    labs(color = "Operation") +
     xlab("Benchmark name") +
     ylab("log Bytes allocated [B/op]") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_y_continuous(trans = "log10") +
-    geom_col(position = "dodge") +
-    facet_nested(~base_kem + encoding, scales = "free_x", space = "free")
+    geom_point(position = position_dodge(1)) +
+    geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), position = position_dodge(1), width=1) +
+    facet_nested(~ base_kem + encoding, scales = "free_x", space = "free")
 
 # ---------- TRAFFIC DATA ----------
 transform_traffic <- function(data, size_column, granularity) {
@@ -381,18 +434,18 @@ data_traffic_overview %>%
     facet_wrap(~transport, ncol = 1, scales = "free_y")
 # TODO: Pick a version, this is a bit shorter
 data_traffic_overview %>%
-  mutate( # Example: "Drivel (L3b)"
-    transport_type = sub(" \\(.*$", "", transport), # "Drivel"
-  ) %>%
-  ggplot(aes(y = bitrate, x = time_bin, fill = packet_type)) +
-  ggtitle(paste0("Network Traffic over Time (TCP payloads, n=", n, ")")) +
-  labs(fill = "Packet type (peer)") +
-  xlab("Time since client Tor startup [s]") +
-  ylab("Network traffic [kbps]") +
-  scale_x_continuous(n.breaks = 10) +
-  geom_col() +
-  theme(legend.position = "bottom") +
-  facet_wrap(~transport_type, ncol = 1, scales = "free_y")
+    mutate( # Example: "Drivel (L3b)"
+        transport_type = sub(" \\(.*$", "", transport), # "Drivel"
+    ) %>%
+    ggplot(aes(y = bitrate, x = time_bin, fill = packet_type)) +
+    ggtitle(paste0("Network Traffic over Time (TCP payloads, n=", n, ")")) +
+    labs(fill = "Packet type (peer)") +
+    xlab("Time since client Tor startup [s]") +
+    ylab("Network traffic [kbps]") +
+    scale_x_continuous(n.breaks = 10) +
+    geom_col() +
+    theme(legend.position = "bottom") +
+    facet_wrap(~transport_type, ncol = 1, scales = "free_y")
 
 
 # Shows traffic in handshake only but more detailed
@@ -403,8 +456,7 @@ c(n, data_traffic_handshake) %<-% (
         transform_traffic(key.exchange.size, 4 - max_handshakes)
 )
 
-# TODO: Totals are wrong because some messages are now split over multiple TCP packets, each with size 7240 max.
-# Python should be changed to recognize this, but we then need to do sum-per-replicate and mean-over-replicates
+# Totals do sum-per-replicate and mean-over-replicates, as there may be data split over multiple packets
 data_traffic_handshake_totals <- data_traffic %>%
     filter(grepl("handshake", packet_type)) %>%
     group_by(transport, direction, replicate) %>%
@@ -444,39 +496,48 @@ ggarrange(p1, p2,
 )
 # TODO: Pick a version, this is a bit shorter
 p1 <- data_traffic_handshake %>%
-  mutate( # Example: "Drivel (L3b)"
-    transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
-  ) %>%
-  ggplot(aes(y = bitrate, x = time_bin * 1000)) +
-  ggtitle(paste0("Traffic for Key Exchange (TCP payloads, n=", n, ")")) +
-  xlab("Time since client Tor startup [ms]") +
-  ylab("Network traffic [kbps]") +
-  scale_x_continuous(n.breaks = 10) +
-  geom_col() +
-  facet_wrap(~transport_type, ncol = 1, scales = "free_y")
+    mutate( # Example: "Drivel (L3b)"
+        transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
+        transport_letter = ifelse(grepl("L0|obfs4", transport), # "b" or "" for obfs4
+          "a", # default letter for L0 and obfs4
+          sub("^.*L\\d", "", sub("\\)", "", transport))
+        )
+    ) %>%
+    ggplot(aes(y = bitrate, x = time_bin * 1000, fill=transport_letter)) +
+    ggtitle(paste0("Traffic for Key Exchange (TCP payloads, n=", n, ")")) +
+    xlab("Time since client Tor startup [ms]") +
+    ylab("Network traffic [kbps]") +
+    scale_x_continuous(n.breaks = 10) +
+    geom_col() +
+    guides(fill = "none") + # hides "transport_letter" from legend
+    facet_wrap(~transport_type, ncol = 1, scales = "free_y")
 p2 <- data_traffic_handshake_totals %>%
-  mutate( # Example: "Drivel (L3b)"
-    transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
-    transport_subid = sub("\\)$", "", sub(".* \\(", "", transport)) # "L3a"
-  ) %>%
-  ggplot(aes(y = total, x = transport_subid)) +
-  ggtitle("Total bytes") +
-  theme(
-    #axis.title.x = element_blank(),
-    #axis.text.x = element_blank(),
-    #axis.ticks.x = element_blank(),
-    #axis.title.y = element_blank(),
-  ) +
-  geom_col() +
-  geom_text(aes(y = total, label = paste(total, "B"), vjust = ifelse(total > 0, 2, -1)), color = "white") +
-  facet_wrap(~transport_type, ncol = 1, scales = "free")
+    mutate( # Example: "Drivel (L3b)"
+        transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
+        transport_subid = sub("\\)$", "", sub(".* \\(", "", transport)), # "L3a"
+        transport_letter = ifelse(grepl("L0|obfs4", transport), # "b" or "" for obfs4
+            "a", # default letter for L0 and obfs4
+            sub("^.*L\\d", "", sub("\\)", "", transport))
+        )
+    ) %>%
+    ggplot(aes(y = total, x = transport_subid, label = total, fill=transport_letter)) +
+    ggtitle("Total bytes") +
+    theme(
+        # axis.title.x = element_blank(),
+        # axis.text.x = element_blank(),
+        # axis.ticks.x = element_blank(),
+        # axis.title.y = element_blank(),
+    ) +
+    geom_col() +
+    geom_bar_text() +
+    guides(fill = "none") + # hides "transport_letter" from legend
+    facet_wrap(~transport_type, ncol = 1, scales = "free")
 
 ggarrange(p1, p2,
-          nrow = 1, align = "h",
-          widths = c(2, 1),
-          common.legend = TRUE
+    nrow = 1, align = "h",
+    widths = c(2, 1),
+    common.legend = TRUE
 )
-# TODO: Fix totals
 
 # Shows frequency distribution of TCP payload sizes
 print("---- data_traffic ----")
@@ -496,20 +557,20 @@ data_traffic %>%
     facet_wrap(~transport, ncol = 1, scales = "free_y")
 # TODO: Pick a version, this is a bit shorter
 data_traffic %>%
-  mutate( # Example: "Drivel (L3b)"
-    transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
-    TCP.packet.size = ifelse(packet_type == "data", TCP.payload.size + 32, TCP.payload.size + 40)
-  ) %>%
-  ggplot(aes(x = TCP.packet.size, fill = packet_type)) +
-  ggtitle("Distribution of TCP Packet Sizes") +
-  labs(fill = "Packet type (peer)") +
-  xlab("log TCP packet size [B]") +
-  ylab("Frequency [% of packets]") +
-  scale_y_continuous(labels = scales::percent) +
-  scale_x_log10() +
-  expand_limits(x = 10) +
-  geom_histogram(aes(y = after_stat(count / sum(count))), binwidth = 0.1) +
-  facet_wrap(~transport_type, ncol = 1, scales = "free_y")
+    mutate( # Example: "Drivel (L3b)"
+        transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
+        TCP.packet.size = ifelse(packet_type == "data", TCP.payload.size + 32, TCP.payload.size + 40)
+    ) %>%
+    ggplot(aes(x = TCP.packet.size, fill = packet_type)) +
+    ggtitle("Distribution of TCP Packet Sizes") +
+    labs(fill = "Packet type (peer)") +
+    xlab("log TCP packet size [B]") +
+    ylab("Frequency [% of packets]") +
+    scale_y_continuous(labels = scales::percent) +
+    scale_x_log10() +
+    expand_limits(x = 10) +
+    geom_histogram(aes(y = after_stat(count / sum(count))), binwidth = 0.1) +
+    facet_wrap(~transport_type, ncol = 1, scales = "free_y")
 
 # Shows handshake packet contents by size (uses runs.csv, per transport and container - rest labels)
 print("---- data_runs ----")
@@ -525,21 +586,23 @@ data_runs %>%
     facet_wrap(~transport, nrow = 1, scales = "free_y")
 # TODO: Pick a version, this is a bit shorter
 data_runs %>%
-  mutate( # Example: "Drivel (L3b)"
-    transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
-    transport_subid = sub("\\)$", "", sub(".* \\(", "", transport)) # "L3a"
-  ) %>%
-  ggplot(aes(x = container, y = size, fill = field)) +
-  ggtitle("Composition of Handshake Packets") +
-  xlab("Packet origin") +
-  ylab("Field size [B]") +
-  scale_y_continuous(breaks = function(z) seq(0, range(z)[2], by = 2^(floor(log2(max(z))) - 2))) +
-  geom_col() +
-  geom_hline(aes(yintercept = 7240, linetype = "TCP Segmentation Size Limit (using GSO)"), colour= 'red') +
-  geom_hline(aes(yintercept = 1460, linetype = "TCP Maximum Segment Size (MSS)"), colour= 'blue') +
-  scale_linetype_manual(name = "size limits", 
-                        values = c("dotted", "dotted")) +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
-  facet_nested(~transport_type + transport_subid)
+    mutate( # Example: "Drivel (L3b)"
+        transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
+        transport_subid = sub("\\)$", "", sub(".* \\(", "", transport)) # "L3a"
+    ) %>%
+    ggplot(aes(x = container, y = size, fill = field)) +
+    ggtitle("Composition of Handshake Packets") +
+    xlab("Packet origin") +
+    ylab("Field size [B]") +
+    scale_y_continuous(breaks = function(z) seq(0, range(z)[2], by = 2^(floor(log2(max(z))) - 2))) +
+    geom_col() +
+    geom_hline(aes(yintercept = 7240, linetype = "TCP Segmentation Size Limit (using GSO)"), colour = "red") +
+    geom_hline(aes(yintercept = 1460, linetype = "TCP Maximum Segment Size (MSS)"), colour = "blue") +
+    scale_linetype_manual(
+        name = "size limits",
+        values = c("dotted", "dotted")
+    ) +
+    theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+    facet_nested(~ transport_type + transport_subid)
 
 warnings()

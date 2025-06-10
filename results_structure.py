@@ -377,30 +377,66 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         ), "Expected number of handshakes does not match SYN packets to bridge"
         print(f"found {num_handshakes} handshakes: {run_folder}")
 
+        # tuples of indices for handshake packet regions (start inclusive, end exclusive)
+        handshake_packet_regions: list[tuple[int, int]] = []
         for i, start_index in enumerate(syn_packet_indices):
-            handshake: list[Packet] = tcp_bridge[start_index : start_index + 7]
+            handshake: list[Packet] = tcp_bridge[start_index : start_index + 3]
             assert handshake[0][TCP].flags == "S", "1st not SYN"
             assert handshake[1][TCP].flags == "SA", "2nd not SYN, ACK"
             assert handshake[2][TCP].flags == "A", "3rd not ACK"
 
-            # TODO: now collect data until we reach required_client_hs_len - call it all "client_hs"
-            # TODO: assert src is now CLIENT_IP
-            assert handshake[3][TCP].flags == "PA", "4th not PSH, ACK"
-            assert handshake[4][TCP].flags == "A", "5th not ACK"
+            # index of the first packet not used for handshake data
+            next_index = start_index + 3
+            # bytestrings containing data from relevant packets, possibly with some excess
+            client_hs_data: bytes = b""
+            bridge_hs_data: bytes = b""
 
-            # TODO: then collect data until we reach required_bridge_hs_len - call it all "bridge_hs"
-            # TODO: assert dst is now CLIENT_IP
-            assert handshake[5][TCP].flags == "PA", "6th not PSH, ACK"
-            assert handshake[6][TCP].flags == "A", "7th not ACK"
+            while len(client_hs_data) < required_client_hs_len:
+                # consume two more packets, push+ack (upstream) and ack (downstream)
+                assert (
+                    tcp_bridge[next_index][TCP].flags == "PA"
+                ), "missing client_hs data, but next is not PSH, ACK"
+                assert (
+                    tcp_bridge[next_index][IP].src == CLIENT_IP
+                ), "missing client_hs data, but next is not upstream"
+                assert (
+                    tcp_bridge[next_index + 1][TCP].flags == "A"
+                ), "missing client_hs data, but 2nd next is not ACK"
+                assert (
+                    tcp_bridge[next_index + 1][IP].dst == CLIENT_IP
+                ), "missing client_hs data, but 2nd next is not downstream"
 
-            assert handshake[3].haslayer(Raw), "4th not raw data"
-            assert handshake[5].haslayer(Raw), "6th not raw data"
+                handshake.extend(tcp_bridge[next_index : next_index + 2])
+                client_hs_data += tcp_bridge[next_index][TCP].payload.load
+                next_index += 2
+            assert (
+                len(client_hs_data) == required_client_hs_len
+            ), "Client sent excessive data"
 
-            client_hs: Packet = handshake[3]
-            bridge_hs: Packet = handshake[5]
-            # Put concatenated payloads in here for visualization
-            client_hs_data: bytes = client_hs[TCP].payload.load
-            bridge_hs_data: bytes = bridge_hs[TCP].payload.load
+            while len(bridge_hs_data) < required_bridge_hs_len:
+                # consume two more packets, push+ack (downstream) and ack (upstream)
+                assert (
+                    tcp_bridge[next_index][TCP].flags == "PA"
+                ), "missing bridge_hs data, but next is not PSH, ACK"
+                assert (
+                    tcp_bridge[next_index][IP].dst == CLIENT_IP
+                ), "missing bridge_hs data, but next is not downstream"
+                assert (
+                    tcp_bridge[next_index + 1][TCP].flags == "A"
+                ), "missing bridge_hs data, but 2nd next is not ACK"
+                assert (
+                    tcp_bridge[next_index + 1][IP].src == CLIENT_IP
+                ), "missing bridge_hs data, but 2nd next is not upstream"
+
+                handshake.extend(tcp_bridge[next_index : next_index + 2])
+                bridge_hs_data += tcp_bridge[next_index][TCP].payload.load
+                next_index += 2
+            assert (
+                len(bridge_hs_data) > required_bridge_hs_len
+            ), "Bridge did not send excessive data"
+
+            handshake_packet_regions.append((start_index, next_index))
+
             client_hs_pkt = ClientHs(client_hs_data)
             bridge_hs_pkt = BridgeHs(bridge_hs_data)
 
@@ -441,23 +477,55 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 bridge_hs_data
             ), "Bridge packet had no payload?"
 
-            # TODO add an entry for each packet
+            # TODO add an entry for each PSH+ACK packet in handshake
+            psh_ack_packets = [p for p in handshake if p[TCP].flags == "PA"]
+            # How much of each TCP payload was used for key exchange (i.e. not for inlineseedframe)
+            key_ex_sizes = []
+            remaining_client_hs_len = required_client_hs_len
+            remaining_bridge_hs_len = required_bridge_hs_len
+            for p in psh_ack_packets:
+                payload_len = len(p[TCP].payload)
+                if p[IP].src == CLIENT_IP:
+                    assert (
+                        remaining_client_hs_len > 0
+                        and remaining_client_hs_len >= payload_len
+                    ), "BUG: too much client data"
+                    key_ex_sizes.append(payload_len)
+                    remaining_client_hs_len -= payload_len
+                else:
+                    assert remaining_bridge_hs_len > 0, "BUG: too much client data"
+                    keyex_data_len = min(remaining_bridge_hs_len, payload_len)
+                    key_ex_sizes.append(keyex_data_len)
+                    remaining_bridge_hs_len -= keyex_data_len
+            assert (
+                remaining_client_hs_len == 0
+            ), "Incomplete distribution of client TCP payload lengths to key exchange sizes"
+            assert (
+                remaining_bridge_hs_len == 0
+            ), "Incomplete distribution of bridge TCP payload lengths to key exchange sizes"
+
             entries_hs = pd.DataFrame.from_dict(
                 {
                     "protocol": run_protocol,
                     "run config": run_config,
-                    "type": ["handshake", "handshake"],
-                    "peer": ["bridge", "bridge"],
-                    "timestamp": [client_hs.time, bridge_hs.time],
-                    "direction": ["upstream", "downstream"],
-                    "TCP payload size": [len(client_hs_data), len(bridge_hs_data)],
-                    "key exchange size": [len(client_hs_pkt), len(bridge_hs_pkt)],
+                    "type": "handshake",
+                    "peer": "bridge",
+                    "timestamp": [p.time for p in psh_ack_packets],
+                    "direction": [
+                        "upstream" if p[IP].src == CLIENT_IP else "downstream"
+                        for p in psh_ack_packets
+                    ],
+                    "TCP payload size": [len(p[TCP].payload) for p in psh_ack_packets],
+                    "key exchange size": key_ex_sizes,
                 }
             )
             df_traffic = pd.concat([df_traffic, entries_hs], ignore_index=True)
         for i, p in enumerate(tcp_bridge):
             # skip handshake packets, add rest
-            if any(i < start_index + 7 for start_index in syn_packet_indices):
+            if any(
+                i >= start_index and i < next_index
+                for (start_index, next_index) in handshake_packet_regions
+            ):
                 continue
             entry_tunnel = pd.DataFrame.from_dict(
                 {
