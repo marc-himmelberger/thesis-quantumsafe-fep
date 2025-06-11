@@ -4,7 +4,7 @@
 In pseudocode, we use the notation $x \gets A(y)$ to express an assignment to a variable $x$ using the result of the deterministic computation $A(y)$. When the computation is probabilistic, we write $x \getsr A(y)$.
 Uniformly random sampling of $x$ from a set $S$ is denoted $x \getsr S$.
 
-Throughout this thesis, we employ the quantum random oracle model (QROM) where applicable. For the definition of pseudorandom functions (PRF), message authentication codes (MAC), authenticated encryption (AE), symmetric encryption (SE), as well as the notion of PRF security, we refer readers to the excellent introductory textbook \cite{katz_lindell}.
+For the definition of pseudorandom functions (PRF), message authentication codes (MAC), authenticated encryption (AE), symmetric encryption (SE), as well as the notion of PRF security, we refer readers to the introductory textbook \cite{katz_lindell}.
 Dual-PRF security is defined in \cite[Section~7.1]{CCS:GunSteVei24}.
 
 \section{Review of Prior Work} \label{sec:review-gsv24}
@@ -13,7 +13,7 @@ Günther et al. \cite{CCS:GunSteVei24} first described a framework for the prova
 
 The work of Günther et al. was iterated in \cite{EPRINT:GRSV25} where the notation was simplified, and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel{}, the obfuscated key exchange protocol we will implement in this thesis.
 
-We adapt the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} to our setting. Concretely, we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted in encrypted form or out-of-band in \drivel{}. Note that we will retain the ability to reject certain public keys, as this can be required for obfuscating ciphertexts. The definitions are equivalent in all other aspects.
+We adapt the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} to our setting. Concretely, we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted in encrypted form (obviating the need for public-key obfsucation) or out-of-band in \drivel{}. Note that we will retain the ability to reject certain public keys, as this can be required for obfuscating ciphertexts. The definitions are equivalent in all other aspects.
 
 \subsection{Key Encapsulation Mechanisms}
 
@@ -46,13 +46,13 @@ We say that a KEM~$\KEM=(\kgen, \encaps, \decaps)$ is \emph{$\delta_\KEM$-correc
 \end{definition}
 
 To define what it means for a KEM to be secure, we require two security notions. One focuses on indistinguishability of ciphertexts ($\indcca$), i.e. given a public key and ciphertext, it should be hard to differentiate the encapsulated shared secret from uniformly random elements of the key space.
-This captures the goal that an adversary (even given the public key $\pk$) does not learn any information about the shared secret encapsulated in the challenge ciphertext $c^*$, even when allowed to obtain decapsulations of other ciphertexts.
+This captures the goal that an adversary (given the public key $\pk$) does not learn any information about the shared secret encapsulated in the challenge ciphertext $c^*$, even when allowed to obtain decapsulations of other ciphertexts.
 This notion is central to the main premise of KEMs, namely to initialize a secure communication channel given only one party's public key by means of setting up a shared secret.
 
-A second notion is strong pseudorandomness ($\sprcca$), i.e. given a public key, it should be hard to differentiate a ciphertext-key pair obtained from encapsulation for that public key from a pair consisting of a randomly sampled ciphertext and a uniformly randomly sampled key, even when allowed to obtain decapsulations of other ciphertexts.
-This captures the goal that ciphertexts must "look randomly chosen" among a set of possible ciphertexts and should look unrelated to any given public key - even given the corresponding shared secret.
+A second notion is strong pseudorandomness ($\sprcca$), i.e. given a public key, it should be hard to differentiate a ciphertext-key pair obtained from encapsulation for that public key from a pair consisting of a simulated ciphertext and a uniformly randomly sampled key, even when allowed to obtain decapsulations of other ciphertexts.
+This captures the goal that ciphertexts must "look randomly chosen" among some set of possible ciphertexts and should look unrelated to any given public key --- even given the corresponding shared secret.
 This is expressed through the use of a simulator $\mathcal S$ and $\sprcca$ is always achieved with respect to such a simulator.
-This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22}, and is satisfied by many KEMs that are being considered for use in quantum-safe communication \cite{EC:Xagawa22}. We use $\sprcca$ security to argue about the distribution of ciphertext bits.
+This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22} in the context of establishing anonymity of KEMs, and is satisfied by many KEMs that are being considered for use in quantum-safe communication \cite{EC:Xagawa22}. We use $\sprcca$ security to argue about the distribution of ciphertext bits.
 
 \begin{definition}[KEM security] \label{def:kem-security}
     We define two security notions, $\indcca$ and $\sprcca$, using the games shown in \cref{fig:kem-security}, and we define the respective advantages of an adversary~$\adv$ against the $\mathsf{goal} \in \{\indcca, \sprcca\}$ security of a KEM~$\KEM$ as
@@ -65,7 +65,7 @@ This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22}, and 
 
     We also define two common choices for the simulators used in the game $\sprcca$: \begin{itemize}
         \item Let $\simulunif$ be a simulator that outputs uniformly random ciphertexts from the ciphertext space of $\KEM$.
-        \item Let $\simulbin$ be a simulator that outputs uniformly random elements of $\bin^\ell$, where $\ell$ is a suitable integer where the mapping between bit strings and ciphertexts is clear from context, and $\ell = \obfctxtlen$ in the particular case of OKEMs.
+        \item Let $\simulbin$ be a simulator that outputs uniformly random elements of $\bin^\ell$, where $\ell$ is a suitable integer.
     \end{itemize}
 \end{definition}
 
@@ -115,11 +115,11 @@ This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22}, and 
     As in \cref{def:kem}, we also demand the KEM correctness for OKEMs.
 \end{definition}
 
-For OKEMs, the notions of $\indcca$ security, OKEM correctness, and public-key collision probability are defined exactly as for KEMs (see \cref{fig:kem-security,def:kem-corr,def:pk-collisions}). For the $\sprcca$ security of OKEMs, we restrict the more general definition of KEMs to always use the simulator $\simulbin$.
+For OKEMs, the notions of $\indcca$ security, OKEM correctness, and public-key collision probability are defined exactly as for KEMs (see \cref{fig:kem-security,def:kem-corr,def:pk-collisions}). For the $\sprcca$ security of OKEMs, we restrict the more general definition of KEMs to always use the simulator $\simulbin$ with $\ell = \obfctxtlen$.
 
 We occasionally denote the length in bits of KEM and OKEM public keys and ciphertext as $\pklen, \ctxtlen, \obfpklen, \obfctxtlen$ respectively.
 
-In addition to the above properties, an obfuscated KEM should satisfy stronger randomness requirements than KEMs. In particular, its ciphertexts should not be distinguishable from random bit strings. This is in contrast to regular KEMs that may have recognizable structure in $c$ even if they are $\sprcca$-secure.
+In addition to the above properties, an obfuscated KEM should satisfy additional randomness requirements. In particular, its ciphertexts should not be distinguishable from random bit strings. This is in contrast to regular KEMs that may have recognizable structure in $c$ even if they are $\sprcca$-secure.
 
 \begin{definition}[Ciphertext uniformity]
 \label{def:ctxt-uniformity}
@@ -144,9 +144,11 @@ In addition to the above properties, an obfuscated KEM should satisfy stronger r
     For an unbounded adversary~$\adv$, we call the advantage~$\advantage{\ctxtunif}{\OKEM}[(\adv)] $ \emph{statistical}.
 \end{definition}
 
-\subsection{OKEM Construction}
+\subsection{Constructing OKEMs}
 
-To construct an OKEM, a regular KEM can be augmented with encoding functions similar to \textsf{Elligator2}~\cite{CCS:BHKL13} or \textsf{Kemeleon}~\cite[Sec. 2.4]{CCS:GunSteVei24}. We define the following construct to bundle such functions - note, however, that we do not require encoded public keys in this work, which is why we will not aim to capture all components of \textsf{Elligator2} or \textsf{Kemeleon}. 
+To construct an OKEM, a regular KEM can be augmented with encoding functions similar to \textsf{Elligator2}~\cite{CCS:BHKL13} or \textsf{Kemeleon}~\cite[Sec. 2.4]{CCS:GunSteVei24}. We define the following construct to bundle such functions --- note, however, that we do not require encoded public keys in this work, which is why we will not aim to capture all components of \textsf{Elligator2} or \textsf{Kemeleon}.
+
+The construction below relies on two primary components to provide obfuscation of ciphertexts: First, the construction may reject or ``filter'' certain KEM public keys to ensure that the public keys and ciphertexts appear unrelated. Secondly, the ciphertexts generated by the KEM's encapsulation function might be ``encoded'' to resemble uniformly random bit strings and thus hide their structure. Together, these components are capable of obfuscating KEM ciphertexts.
 
 \begin{definition}[Filter-Encode Obfuscator]
 \label{def:filter-encode-obfs}
@@ -225,11 +227,12 @@ To construct an OKEM, a regular KEM can be augmented with encoding functions sim
 
 Note that in this construction, the first-keygen success probability from \cref{def:first-keygen-success} is precisely the probability that \cref{ln:feo-reject-keygen} was executed only once in a given execution of $\kgen'$, and similarly, the first-encaps success probability from \cref{def:first-encaps-success} is precisely the probability that \cref{ln:feo-reject-ctxt} was executed only once in a given execution of $\encaps'$.
 
-For an OKEM constructed according to \cref{def:filter-encode-okem} using appropriate encoding/decoding functions, it was shown in \cite[Theorems 2.12 and 2.13]{CCS:GunSteVei24} that the central security notions are preserved. The results apply to our filter-encode transformation, as it can be viewed as a special case of the more general keygen/encaps-then-encode construction from \cite{CCS:GunSteVei24}:
+For an OKEM constructed according to \cref{def:filter-encode-okem} using appropriate encoding/decoding functions, it was shown in \cite[Theorems 2.12 and 2.13]{CCS:GunSteVei24} that the central security notions are preserved. The proofs both employ reductions to KEM security notions that reproduce the obfuscator's operations, aborting if public keys are rejected or encoding fails.
+The results apply to our filter-encode transformation, as it can be viewed as a special case of the more general keygen/encaps-then-encode construction from \cite{CCS:GunSteVei24}:
 
 \begin{theorem}[Filter-Encode Security]
 \label{thm:filter-encode-security}
-    Let $\OKEM$ be a filter-encode obfuscated obfuscated KEM based on a regular KEM $\KEM$ and a corresponding obfuscator $E$ as per \cref{def:filter-encode-obfs}.
+    Let $\OKEM = \feo[\KEM, E]$ be a filter-encode obfuscated obfuscated KEM based on a regular KEM $\KEM$ and a corresponding obfuscator $E$ as per \cref{def:filter-encode-obfs}.
     For any adversary $\adv$ against the $\indcca$ security of $\OKEM$, there exists an algorithm $\bdv$ such that
     \[
         \advantage{\indcca}{\OKEM}[(\adv)]
@@ -258,9 +261,9 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
 
 \begin{lemma}[Ciphertext Uniformity from SPR-CPA]
 \label{lem:ctxt-unif-for-bijections}
-    Let $\OKEM$ be a filter-encode obfuscated KEM based on a regular KEM $\KEM$ and a corresponding obfuscator $E$ with a \emph{deterministic} encoding function $\encodectxt$.
+    Let $\OKEM = \feo[\KEM, E]$ be a filter-encode obfuscated KEM based on a regular KEM $\KEM$ and a corresponding obfuscator $E$ with a \emph{deterministic} encoding function $\encodectxt$.
 
-    Let $\mathbf{P}' \subseteq \mathbf{P}$ denote the subset of the public key space of $\KEM$ where $\filterpk$ outputs $1$, i.e. the set of allowed public keys.
+    Let $\mathbf{P}' \subseteq \mathbf{P}$ denote the subset of the public key space of $\KEM$ for which $\filterpk$ outputs $1$, i.e. the set of allowed public keys.
     Let $\mathbf{C}' \subseteq \mathbf{C}$ then denote the subset of the ciphertext space of $\KEM$ where $\encodectxt$ does not output $\bot$, i.e. the set of encodeable ciphertexts.
     Let $\bin^\ell$ be the output space of $\encodectxt$.
 
@@ -289,12 +292,12 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
         \advantage{\ctxtunif}{\OKEM}[(\adv)] = \left| p_0 - p_1 \right|
     \]
 
-    Due to the rejection-sampling in $G'$, the sampling of $c$ in $G'$ is statistically indistinguishable from directly sampling $c \in \mathbf{C}'$. As $\encodectxt$ is bijective, it will output a uniformly random bit string upon input of a uniformly random element from its domain. This makes $G'$ and $G_0$ statistically indistinguishable, i.e.
+    Due to the rejection-sampling in $G'$, the sampling of $c$ in $G'$ is statistically indistinguishable from directly sampling $c \in \mathbf{C}'$. As $\encodectxt$ is bijective, it will output a uniformly random bit string upon input of a uniformly random element from $\mathbf{C}'$. This makes $G'$ and $G_0$ statistically indistinguishable, i.e.
     \[ p' = p_0. \]
 
     To bound the difference between $p_1$ and $p'$, we reduce to the $\sprcpa$ security of $\KEM$:
     Let $b$ be the bit from the $\sprcpa$ game. Let $\bdv$ be a reduction which, given $\pk, c, K$, computes $b \gets \filterpk(\pk)$, $\hat c \gets \encodectxt(c)$, aborts if $b=0$ or $\hat c = \bot$, and otherwise outputs $\adv(\pk, \hat c)$.
-    Assuming $\bdv$ does not abort, this perfectly simulates either game $G_1$ (if $b=1$) or game $G'$ (if $b=0$) towards $\adv$.
+    Assuming $\bdv$ does not abort, this perfectly simulates either game $G_1$ (if $b=1$) or game $G'$ (if $b=0$) towards $\adv$. Recall that $\simulunif$ samples uniformly at random from $\mathbf{C}$.
     
     Let $\mathsf{ABRT}$ denote the event that $\bdv$ aborts, and let $b'$ be the output of $\adv$. Using advantage rewriting we can then express the advantage of $\bdv$ in the $\sprcpa$ game as follows:
     \begin{align*}
@@ -343,9 +346,9 @@ Furthermore, \cite{CCS:GunSteVei24} provides a formal security model and proofs 
 
 To define the security of their obfuscated key exchange protocol, \cite{CCS:GunSteVei24} introduces the security notion of strong Obfuscated Key Exchange security ($\sObfKE$), capturing key indistinguishability, explicit server authentication, strong obfuscation, and probing resistance. Strong obfuscation describes the protocol's ability to be unidentifiable (compared to a simulated protocol run) by an adversary, so long as the server's private key is not revealed. Probing resistance, in turn, means that servers should not respond to messages from adversaries unless the server's public key was revealed \cite[Section~4.1]{CCS:GunSteVei24}.
 
-In their follow-up work, \cite{EPRINT:GRSV25} constructed the \drivel{} protocol for the same general purpose. Compared to \pqobfs{}, \drivel{} only has one conceptual difference, in that it allows the client to use a KEM instead of an OKEM.
+In their follow-up work, \cite{EPRINT:GRSV25} constructed the \drivel{} protocol for the same general purpose. Compared to \pqobfs{}, \drivel{} only has one conceptual difference, in that it allows one of the two involved schemes to be a KEM instead of an OKEM.
 This is accomplished by the derivation of symmetric encryption keys from the semi-secret server information combined with a shared secret generated from an OKEM encapsulation against the server's public key (which was distributed out-of-band).
-The symmetric encryption keys are then used to encrypt the client's KEM public key in the first message, and the KEM ciphertext in the server's reply.
+The symmetric encryption keys can then be used to encrypt the KEM public key in the first message, and the KEM ciphertext in the server's reply.
 
 This change has several advantages:
 \begin{itemize}
@@ -353,6 +356,8 @@ This change has several advantages:
     \item This completely removes the need for obfuscated OKEM public keys, the server's public key is distributed out-of-band anyway, and the client's public key is now encrypted.
     \item If appropriate OKEM and KEM are used then \drivel{} can offer hybrid obfuscation, i.e. \drivel{} can combine traditional and post-quantum schemes to hedge against security failures in either component.
 \end{itemize}
+
+The entire specification? for drivel is copied from Fig. 6 GRSV25 here for reference -> also update all citations to point here. Take code from drivel-minimal but check changes, or use git.
 
 The following theorem is a summary of \cite[Theorem~5]{EPRINT:GRSV25} and gives requirements on the functions used to instantiate \drivel{} in order to achieve $\sObfKE$ security. The instantiation requires a KEM, an OKEM, two functions $F_1, F_2$ used for authenticity as well as key derivation, and a symmetric encryption scheme.
 
@@ -380,7 +385,7 @@ When we construct OKEMs in later sections of this work, we will show that they a
     And, finally, the $\sObfKE$ security also depends on the $\prf$ security of $F_1$ and $F_2$, the $\swapprf$ security of $F_2$, and the symmetric encryption scheme's one-time ciphertext indistinguishability.    
 \end{theorem}
 
-We instantiate the other parts of the \drivel{} protocol as described later in \cref{ssec:drivel-instance}.
+We instantiate $F_1,F_2$ and the symmetric encryption scheme for the \drivel{} protocol as described later in \cref{ssec:drivel-instance}.
 
 \begin{corollary}[Encapsulate-then-Encode Obfuscated Key Exchange Security]
 \label{cor:drivel-security-filter-encode}

@@ -93,16 +93,16 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
 \label{lem:hqc-ctxt-unif}
     Let $\mathbf F_0 := \{u \in \mathcal R \mid u(1) = 0 \}$ be the set of 0-parity polynomials with degree $<n$. \\
     Let $\mathcal S$ be a KEM encapsulation simulator that outputs $\mathbf u \getsr \mathcal F_0, \mathbf v \getsr \bin^{n_1n_2}$, and $\mathit{salt} \getsr \bin^{128}$.
-    For brevity, let further $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$ and $\sigma := \epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}}$ as per \cref{lem:hqc-first-keygen-success}. 
+    For brevity, let further $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$.
 
     For any adversary $\adv$ against the ciphertext uniformity of $\OKEM$, there exists an adversary $\bdv$ against the $\sprcca$ security of $\mathsf{HQC}$ with respect to the simulator $\mathcal S$, and adversaries $\cdv_1, \cdv_2$ against the $\twodqcsd$ and $\threedqcsd$ assumptions respectively, such that
-    \[
+    \begin{align*}
         \advantage{\ctxtunif}{\OKEM}[(\adv)]
-        \leq 1/\sigma \cdot \advantage{\sprcca}{\mathsf{HQC},\mathcal S}[(\bdv)]
-        \leq 1/\sigma \cdot \left(
+        &\leq 1/\epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}} \cdot \advantage{\sprcca}{\mathsf{HQC},\mathcal S}[(\bdv)] \\
+        &\leq 1/\epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}} \cdot \left(
             \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)]
         \right).
-    \]
+    \end{align*}
 \end{lemma}
 \begin{proof}
     The encoding that we defined outputs bit strings of size $\obfctxtlen := n-1+n_1n_2+128$.
@@ -110,7 +110,7 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
     The reduction from ciphertext uniformity to $\sprcca$ follows directly from \cref{lem:ctxt-unif-for-bijections} using the function $E_\mathsf{HQC}.\encodectxt: \mathcal F_0 \to \bin^\obfctxtlen$, mapping vectors and polynomials to their canonical representation as bit strings.
     This encoding function is deterministic, bijective, and never fails, that is, $\epsilon^\firstencapssuccess_{\mathsf{HQC},\encodectxt} = 1$ according to \cref{lem:hqc-first-encaps-success}.
 
-    Recall also that the first-keygen success probability depends on the parameter set, this is reflected in $\sigma$.
+    Recall also that the first-keygen success probability depends on the parameter set.
 
     In \cite[Lemma~P.2]{EC:Xagawa22}, a reduction is given from $\sprcca$ w.r.t. $\mathcal S$ to the $\twodqcsd$ and $\threedqcsd$ assumptions. The proof can easily be adapted to include the $\mathit{salt}$ which would increase the number of arguments for the random oracle $\mathsf G$, but no additional assumption is needed.
 \end{proof}
@@ -118,18 +118,18 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
 The OKEM construction also satisfies the KEM security notions:
 
 \begin{theorem}[KEM Security]
-    Let $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$ be a filter-encode obfuscated KEM as per \cref{def:filter-encode-okem}, and let $\sigma := \epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}}$ as per \cref{lem:hqc-first-keygen-success}.
+    Let $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$ be a filter-encode obfuscated KEM as per \cref{def:filter-encode-okem}.
     
     For any adversary $\adv$ against the $\indcca$ security of $\OKEM$, there exists an algorithm $\bdv$ such that
-    \[ \advantage{\indcca}{\OKEM}[(\adv)] \leq 1/\sigma \cdot \advantage{\indcca}{\mathsf{HQC}}[(\bdv)]. \]
+    \[ \advantage{\indcca}{\OKEM}[(\adv)] \leq 1/\epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}} \cdot \advantage{\indcca}{\mathsf{HQC}}[(\bdv)]. \]
 
     Further, for any adversary $\adv$ against the $\sprcca$ security of $\OKEM$, there exist algorithms $\bdv_1, \bdv_2$ and $\cdv_1, \cdv_2$ such that
     \begin{align*}
         \advantage{\sprcca}{\OKEM}[(\adv)] &\leq
-        1/\sigma \cdot \advantage{\sprcca}{\mathsf{HQC},\simulunif}[(\bdv_1)]
+        1/\epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}} \cdot \advantage{\sprcca}{\mathsf{HQC},\simulunif}[(\bdv_1)]
         + \advantage{\ctxtunif}{\OKEM}[(\bdv_2)] \\
         &\leq
-        1/\sigma \cdot \left(
+        1/\epsilon^\firstkeygensuccess_{\mathsf{HQC}, E_\mathsf{HQC}} \cdot \left(
             \advantage{\sprcca}{\mathsf{HQC},\simulunif}[(\bdv_1)]
             + \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)]
         \right).

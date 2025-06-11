@@ -1,6 +1,6 @@
 \chapter{Implementing drivel}\label{ch:implementation}
 
-This chapter describes implementation efforts, challenges, and noteworthy information for implementers.
+This chapter describes implementation efforts, challenges, and noteworthy information for implementers, including deployment steps and practical considerations such as traffic shaping.
 \Cref{sec:tech-stack} gives an overview of the technology stack, languages, and libraries used in the implementation, with a particular focus on the changes made to the preexisting lyrebird project \cite{lyrebird} to support \drivel{}. This section also describes the environment in which the protocol was developed and tested.
 \Cref{sec:parameters} outlines the process for choosing concrete cryptographic parameters, focusing on the trade-offs between security and traffic volume.
 \Cref{sec:protocol-design} presents a high-level description of the \drivel{} protocol, followed by a detailed explanation of how handshake messages could be fragmented to enhance traffic shaping capabilities.
@@ -14,7 +14,7 @@ The implementation created as part of this thesis is available via GitLab. It co
 
 \paragraph{Structure of the lyrebird Fork and Dependencies}
 
-The \drivel{} implementation, like the other six pluggable transports in the lyrebird repository, is written in Go. The lyrebird respoitory contains several Go modules:
+The \drivel{} implementation, like the other six pluggable transports in the lyrebird repository, is written in Go. The lyrebird repository contains several Go modules:
 \begin{itemize}
     \item \texttt{cmd} implements general pluggable transport logic and represents the program entry point.
     
@@ -56,7 +56,7 @@ However, the inclusion of C code also means that a fully static compilation of t
 \end{itemize}
 
 To run end-to-end tests, the official bridge setup guide \cite{tor-bridge-setup} refers, among other options, to a Docker container \cite{tor-bridge-docker}.
-We were able to adapt the container's configuration to use our forked repository and our modified build process instead of the upstream version. The required dynamic libraries were already present on the system, demonstrating that deployment should not be hindered by our modifications to the dependencies and executable.
+We were able to adapt the container's configuration to use our forked repository and our modified build process (which now includes building \texttt{liboqs}) instead of the upstream version. The required dynamic libraries were already present on the system, demonstrating that deployment should not be hindered by our modifications to the dependencies and executable.
 
 \paragraph{Testing and Benchmarking}
 
@@ -72,24 +72,42 @@ The results were collected and analyzed in Python and R. Further discussion of t
 
 \section{Choosing Parameter Sets} \label{sec:parameters}
 
-Although \drivel{} can be instantiated with any choice of KEM or OKEM, most combinations lead to inconsistent security levels or excessive message sizes. To reduce the number of combinations to a sensible amount, \cref{tab:drivel-params} defines a total of 12 sets of KEM/OKEM combinations, four for each of the NIST security levels 1, 3, and 5.
+\paragraph{Supported KEMs and OKEMs}
+We begin with an overview of all supported KEMs and OKEMs in our implementation, including their parameter sets and corresponding NIST security levels 1, 3, and 5.
 
-These parameter sets prioritize the combinations leading to the smallest required total handshake traffic, excluding padding.
-
-The following OKEMs were considered for each NIST security level:
+The following OKEMs are available for each NIST security level:
 \begin{itemize}
     \item ML-Kemeleon, as in \cite{irtf-cfrg-kemeleon-00}, based on ML-KEM-512 (level 1), ML-KEM-768 (level 3), and ML-KEM-1024 (level 5)
     \item Unmodified FrodoKEM \cite{NISTPQC-R3:FrodoKEM20}, concretely FrodoKEM-640-AES (level 1), FrodoKEM-976-AES (level 3), and FrodoKEM-1344-AES (level 5)
-    \item Unmodified Classic McEliece, as in \cref{sec:obfuscating-classic-mceliece}, concretely Classic-McEliece-348864 (level 1), Classic-McEliece-460896 (level 3), and Classic-McEliece-6688128 (smallest ciphertext size for level 5)
+    \item Unmodified Classic McEliece, as in \cref{sec:obfuscating-classic-mceliece}, concretely Classic-McEliece-348864 (level 1), Classic-McEliece-460896 (level 3), as well as Classic-McEliece-6688128, Classic-McEliece-6960119, and Classic-McEliece-8192128 (all three claiming level 5)
     \item $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$, as in \cref{sec:obfuscating-hqc}, concretely based on HQC-128 (level 1), HQC-192 (level 3), and HQC-256 (level 5)
 \end{itemize}
 
-The following unobfuscated KEMs were considered for each NIST security level:
+In addition, it is possible to use the implementation of x25519 and \textsf{Elligator2}~\cite{CCS:BHKL13} as an OKEM, but as this OKEM would not be resistant against quantum-computers, we only include it for the purposes of performance comparisons with \obfsfour{}.
+
+For the selection of a KEM, the implementation supports the following for each NIST security level:
 \begin{itemize}
     \item BIKE \cite{NISTPQC-R4:BIKE22}, concretely BIKE-L1 (level 1), BIKE-L3 (level 3), and BIKE-L5 (level 5)
-    \item Unobfuscated variants for each OKEM above 
+    \item Streamlined NTRU Prime \cite{NISTPQC-R3:NTRUPrime20}, concretely sntrup761 (level 2)
+    \item Unobfuscated variants for each OKEM listed above, except Classic-McEliece
 \end{itemize}
 
+Again, it is also possible to use a KEM based on x25519, which is not quantum-safe.
+
+\paragraph{Disabled KEMs and OKEMs}
+
+Due to the fact that our implementation relies on AES to instantiate the symmetric encryption component of \drivel{}, and to reduce the amount of options to consider in the following sections, we support only AES variants of FrodoKEM, even though SHAKE version are offered by \texttt{liboqs}.
+Similarly, but motivated also by a desire for a smaller traffic volume during the key exchange and a desire for smaller buffer sizes, Classic McEliece has been disabled as a KEM (though it remains available as an OKEM).
+FrodoKEM variants using SHAKE, as well as unobfuscated Classic McEliece KEMs, could easily be re-enabled if so desired.
+
+\paragraph{Selected Combinations}
+
+Although \drivel{} can be instantiated with any choice of KEM or OKEM listed above, most combinations lead to inconsistent security levels or excessive message sizes. To reduce the number of combinations to a sensible amount, \cref{tab:drivel-params} defines a total of 12 sets of KEM/OKEM combinations, four for each of the NIST security levels 1, 3, and 5.
+
+For the selection of parameter sets, we can observe that Classic-McEliece-6960119, and Classic-McEliece-8192128 will not selected as an OKEM because they achieve no higher NIST security level than Classic-McEliece-6688128 but use longer ciphertexts.
+Further, we did not use sntrup761 as a KEM even though it would offer a 30\% reduction in size compared to BIKE-L1, as no other NTRU Prime parameter sets are available for NIST levels 3 and 5.
+
+These parameter sets prioritize the selection of combinations that lead to the smallest required total handshake traffic, excluding padding.
 \begin{table}
     \centering  \footnotesize
     \begin{tabular}{@{} L{0.1\textwidth-\tabcolsep} | L{0.16\textwidth-2\tabcolsep} L{0.17\textwidth-2\tabcolsep} L{0.32\textwidth-2\tabcolsep} R{0.11\textwidth-2\tabcolsep} R{0.14\textwidth-\tabcolsep} @{}}
@@ -116,7 +134,11 @@ The following unobfuscated KEMs were considered for each NIST security level:
     \label{tab:drivel-params}
 \end{table}
 
-Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to its higher public key size compared to e.g. ML-KEM. Due to its more conservative assumptions, but consequently higher higher public key and ciphertext sizes, FrodoKEM is not included as KEM or OKEM in any parameter set. Depending on the assumptions one is comfortable with, ``a'' parameter sets may be suitable as only one KEM has to remain unbroken, whereas ``b'' would avoid a full confidentiality and obfuscation breakdown due to its use of different KEM and OKEM, while ``c'' parameter sets feature a simpler encoding routine. Finally, ``d'' parameter sets employ Classic McEliece as an OKEM directly and require confidence in its pseudorandomness (see \cref{sec:obfuscating-classic-mceliece}), but offer significantly smaller message sizes.
+Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to its larger public key size compared to both ML-KEM and BIKE. Due to its more conservative assumptions, but consequently larger public key and ciphertext sizes, FrodoKEM is not included as KEM or OKEM in any parameter set. Depending on the assumptions one is comfortable with, ``a'' parameter sets may be suitable as only one KEM has to remain unbroken, whereas ``b'' can profit from different underlying assumptions for its KEM and OKEM, while ``c'' parameter sets feature a simpler encoding routine. Finally, ``d'' parameter sets employ Classic McEliece as an OKEM directly and require confidence in its pseudorandomness (see \cref{sec:obfuscating-classic-mceliece}), but offer significantly smaller message sizes.
+
+When choosing between ``a'' and ``b'' parameter sets, it is worth considering the likelihood of the following scenario where a censor manages to break just one assumption underlying a used KEM or OKEM.
+In an ``a'' parameter set, only the assumptions underlying ML-KEM are relevant, but a break could lead to a complete loss of confidentiality as censors might be able to infer the shared secrets generated in recorded key exchanges, decrypt all corresponding traffic and impersonate the bridge server from then on out.
+In an ``b'' parameter set, the use of different underlying assumptions makes a break in any assumption more likely, but breaking only one assumption does not immediately mean a loss of all security guarantees: As an example, a censor that completely breaks an OKEM may impersonate bridge servers and retroactively identify obfuscated key exchanges, but cannot recover the KEM shared secrets and is thus not able to retroactively decrypt recorded traffic.
 
 \section{Protocol Design} \label{sec:protocol-design}
 
@@ -125,10 +147,10 @@ This section quickly discusses how we chose to instantiate the generic primitive
 
 \subsection{Instantiating the Drivel Protocol} \label{ssec:drivel-instance}
 
-The specification of \drivel{} in \cite[Figure~6]{EPRINT:GRSV25} defines a handful of generic cryptographic primitives, which need to be instantiated with concrete choices before implementation.
+The specification of \drivel{} in \cite[Figure~6]{EPRINT:GRSV25} defines a handful of generic cryptographic primitives that need to be instantiated with concrete choices before implementation.
 The authors offer some recommendations in \cite[Section~4.2]{EPRINT:GRSV25}.
 
-These include the following items:
+We instantiate the primitives as follows:
 \begin{itemize}
     \item the PRF $F_1$ is instantiated as \textsf{HDKF-Expand} with \textsf{SHA-256} \cite{C:Krawczyk10,rfc5869},
     
@@ -144,12 +166,6 @@ We differ from the author's recommendations and the protocol specification only 
     \item The literal strings used for domain separation (such as e.g. ``:enckey1'') are prefixed with the string constant ``Drivel'', just as in \obfsfour{}. This cautionary measure helps to guarantee domain separation even in the case of reused keypairs over multiple protocol versions.
 \end{enumerate}
 
-\paragraph{Disabled KEMs and OKEMs}
-
-Due to the fact that our implementation relies on AES anyway, and to reduce the amount of options to consider in the following sections, we support only AES variants of FrodoKEM.
-Similarly, but motivated also by a desire for a smaller traffic volume during the key exchange and a desire for smaller buffer sizes, Classic McEliece has been disabled as a KEM (though remains available as an OKEM).
-FrodoKEM variants using SHAKE, as well as unobfuscated Classic McEliece KEMs, could easily be re-enabled if so desired.
-
 \subsection{Discussion on Fragmenting Handshake Messages} \label{ssec:fragmentation}
 
 This section analyzes possibilities to allow for more flexibility in shaping \drivel{} traffic. Avoiding fingerprinting based on certain sizes, directionalities and timing of messages between client and bridge is crucial to evade censors.
@@ -162,34 +178,39 @@ When deploying \drivel{}, it may be desirable to offer even more flexibility for
 While \drivel{} also requires two messages to complete the handshake, \obfsfour{} messages range from 141 to 8 192 bytes in length, and \drivel{} message sizes depend on the selected KEM and OKEM. Ignoring the padding for the moment, \cref{tab:frag-msg-sizes} gives an overview of the minimum message sizes required for different combinations of KEM and OKEM in \drivel{}.
 
 \begin{table}
-    \centering \small
+    \centering \footnotesize
     \begin{tabular}{@{} L{0.2\textwidth-\tabcolsep} L{0.33\textwidth-2\tabcolsep} | L{0.3\textwidth-\tabcolsep} @{}}
-    KEM\newline Component & OKEM\newline Component & Minimum Sizes\newline Level 1 / Level 3 / Level 5 \\ \hline
+    KEM with\newline Parameter Sets & OKEM with\newline Parameter Sets & Minimum Sizes (bytes)\newline Level 1 / Level 3 / Level 5 \\ \hline
     
-    \multirow{4}{*}[-2.6em]{\shortstack[l]{ML-KEM\\ 512 / 768 / 1024}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 928 / 1 372 / 1 808 \\
-    & ML-Kemeleon\newline 512 / 768 / 1024 & 1 709 / 2 468 / 3 258 \\
-    & FEO-HQC\newline 128 / 192 / 256 & 5 265 / 10 194 / 16 021 \\
-    & FrodoKEM\newline 640 / 976 / 1344 & 10 552 / 16 960 / 23 232 \\ \hline
+    \multirow{4}{*}[-2.6em]{\shortstack[l]{ML-KEM\\ 512 / 768 / 1024}}
+    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 928 / 1 372 / 1 808 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 1 709 / 2 468 / 3 258 \\
+    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 5 265 / 10 194 / 16 021 \\
+    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 10 552 / 16 960 / 23 232 \\ \hline
 
-    \multirow{4}{*}[-2.6em]{\shortstack[l]{BIKE\\ L1 / L3 / L5}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 1 669 / 3 271 / 5 362 \\
-    & ML-Kemeleon\newline 512 / 768 / 1024 & 2 450 / 4 367 / 6 812 \\
-    & FEO-HQC\newline 128 / 192 / 256 & 6 006 / 12 093 / 19 575 \\
-    & FrodoKEM\newline 640 / 976 / 1344 & 11 293 / 18 859 / 26 786 \\ \hline
+    \multirow{4}{*}[-2.6em]{\shortstack[l]{BIKE\\ L1 / L3 / L5}}
+    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 1 669 / 3 271 / 5 362 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 2 450 / 4 367 / 6 812 \\
+    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 6 006 / 12 093 / 19 575 \\
+    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 11 293 / 18 859 / 26 786 \\ \hline
 
-    \multirow{4}{*}[-2.6em]{\shortstack[l]{HQC\\ 128 / 192 / 256}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 2 377 / 4 710 / 7 485 \\
-    & ML-Kemeleon\newline 512 / 768 / 1024 & 3 158 / 5 806 / 8 935 \\
-    & FEO-HQC\newline 128 / 192 / 256 & 6 714 / 13 532 / 21 698 \\
-    & FrodoKEM\newline 640 / 976 / 1344 & 12 001 / 20 298 / 28 909 \\ \hline
+    \multirow{4}{*}[-2.6em]{\shortstack[l]{HQC\\ 128 / 192 / 256}}
+    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 2 377 / 4 710 / 7 485 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 3 158 / 5 806 / 8 935 \\
+    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 6 714 / 13 532 / 21 698 \\
+    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 12 001 / 20 298 / 28 909 \\ \hline
 
-    \multirow{4}{*}[-2.6em]{\shortstack[l]{FrodoKEM\\ 640 / 976 / 1344}} & Classic-McEliece\newline 348864 / 460896 / 6688128 & 9 744 / 15 820 / 21 760 \\
-    & ML-Kemeleon\newline 512 / 768 / 1024 & 10 525 / 16 916 / 23 210 \\
-    & FEO-HQC\newline 128 / 192 / 256 & 14 081 / 24 642 / 35 973 \\
-    & FrodoKEM\newline 640 / 976 / 1344 & 19 368 / 31 408 / 43 184
+    \multirow{4}{*}[-2.6em]{\shortstack[l]{FrodoKEM\\ 640 / 976 / 1344}} 
+    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 9 744 / 15 820 / 21 760 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 10 525 / 16 916 / 23 210 \\
+    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 14 081 / 24 642 / 35 973 \\
+    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 19 368 / 31 408 / 43 184
     \end{tabular}
     \caption[
         Minimum sizes in bytes for the first \drivel{} message without padding depending on the choice of KEM and OKEM
     ]{
-        Minimum sizes in bytes for the first \drivel{} message without padding depending on the choice of KEM and OKEM. Each cell contains minimum sizes for NIST security levels 1, 3, and 5. In the case of Classic McEliece, specific KEM parameter sets were selected to minimize message sizes while maintaining the targeted security level. The KEM parameter sets are identified in the row and column headers.
+        Minimum sizes in bytes for the first \drivel{} message without padding depending on the choice of KEM and OKEM. Each cell contains minimum sizes for NIST security levels 1, 3, and 5.
+        In the case of Classic McEliece, specific KEM parameter sets were selected to minimize message sizes while maintaining the targeted security level. The KEM parameter sets are identified in the first two columns.
     }
     \label{tab:frag-msg-sizes}
 \end{table}
@@ -201,7 +222,7 @@ As is obvious from the table, sending the entire first \drivel{} message in full
 \paragraph{Desirable Security Properties}
 Before discussing the options to mitigate this risk, let us recall one of the advantages \drivel{} has over \obfsfour{}. In \obfsfour{}, censors can retroactively identify handshake packets by verifying the MAC value if the bridge information is leaked, as the MAC it is keyed only with the bridge information. This allows censors to definitively identify clients that had previously connected to a bridge, as well as any future clients connecting to the bridge. This property has been discussed in \cite[Section~6]{CCS:GunSteVei24} and was also recognized earlier by David Fifield in \cite{obfs4-pk-reveal-distinguisher}.
 
-Instead, \drivel{} establishes a shared secret between the client and the bridge in the first message. This shared secret is then used in addition to the bridge information to key the PRF. Censors therefore cannot retroactively identify obfuscated key exchanges with certainty, unless the OKEM private key is leaked. We will refer to this property here as \emph{strong obfuscation} ($\sObf$).
+Instead, \drivel{} establishes a shared secret between the client and the bridge in the first message. This shared secret is then used in addition to the bridge information to key the PRF. Censors therefore cannot retroactively identify obfuscated key exchanges with certainty, unless the OKEM private key is leaked. We will refer to this property here as \emph{strong obfuscation} ($\sObf$), as formally defined in \cite{CCS:GunSteVei24}.
 
 For $\drivel$ to maintain its security, it is necessary that:
 \begin{itemize}
@@ -215,10 +236,10 @@ Due to the required proof in the client's initial communication alone, it is str
 To break up the first large \drivel{} message, we could, for example, split it into parts and let the server respond after receiving smaller parts. However, the first such ``fragment'' would need to contain at least a suitable proof that the client knows the bridge information.
 
 \paragraph{An Informal Security Notion}
-In order to outline the above requirements a bit more, we can informally define the initial interaction between an adversary and the bridge servers. One goal, among others, is to arrive at a shared secret, that can aid in subsequent fragmentation, using just the first message from the client to the server.
+In order to outline the above requirements a bit more, we can informally define the initial interaction between an adversary and the bridge servers. One goal of the initial exchange, among others, is to arrive at a shared secret, that can aid in subsequent fragmentation, using just the first message from the client to the server.
 This effectively means that a first fragment could be viewed as a KEM ciphertext: Bridge information is generated and distributed, a message is sent by a client to the bridge and a shared secret is computed. Conversly, the first fragment may also be viewed as a MAC tag: Bridge information is assumed to be secret and shared between two parties, and used to authenticate a communication.
 
-Let us also assume that there is no possibility for bridges to save state about each client (e.g. similar to TLS 1.3 session resumption) and that no pre-shared symmetric keys are available (which would trivialize the entire handshake).
+Let us also assume that there is no possibility for bridges to save state about each client, that clients are unwilling to save state for the bridges due to privacy concerns (both options could be implemented e.g. similar to TLS 1.3 session resumption \cite[Section~2.2]{rfc8446}) and that no pre-shared symmetric keys are available (which would trivialize the entire handshake).
 
 We will now examine what properties this exchange should satisfy:
 \begin{itemize}
@@ -226,10 +247,10 @@ We will now examine what properties this exchange should satisfy:
 
     \item Adversaries should not be able to link a shared secret to any given first fragment observed on the network. Viewing the exchange as a KEM, and accounting for possible active attacks, this corresponds to $\indcca$ security.
     
-    \item Adversaries should not be able to create first fragments that, when parsed by the bridge, correspond to a valid shared secret, without access to the bridge information. This would allows bridges to respond, violating probing resistance. Here, we can view the exchange as a MAC application using the previously shared bridge information as a key. The property then corresponds to the standard notion of strongly secure MACs as defined in \cite[Definition~4.3]{katz_lindell}, \cite[Chapter~2]{AC:BelNam00}.
+    \item Adversaries should not be able to create first fragments that, when parsed by the bridge, correspond to a valid messages, without access to the bridge information. This would allow bridges to respond, violating probing resistance. Here, we can view the exchange as a MAC application using the previously shared bridge information as a key. The property then corresponds to the standard notion of strongly secure MACs as defined in \cite[Definition~4.3]{katz_lindell}, \cite[Chapter~2]{AC:BelNam00}.
 \end{itemize}
 
-Note also that in the case of plain \drivel{}, these properties are achieved when using the entire first message as a ``first fragment'': The first two requirements are covered by the OKEM, and the last property is achieved by authenticating every message with a PRF value.
+Note also that in the case of \drivel{}, without any modifications discussed below, these properties are achieved when using the entire first message as a ``first fragment'': The first two requirements are covered by the OKEM, and the last property is achieved by authenticating every message with a PRF value.
 
 It is hard to imagine a significant potential in message size reduction outside of removing other components of the first \drivel{} message, as we conjecture the following: Any protocol satisfying these three requirements could act as an OKEM (or an inefficient MAC). The existence of a more efficient protocol would thus imply the existence of a more efficient OKEM, which, due to the large scope of the NIST Standardization, seems implausible. This gives us confidence that the constructions in \cref{ssec:drivel-mod} below are both close to optimal in terms of first fragment size.
 
@@ -237,11 +258,20 @@ It is hard to imagine a significant potential in message size reduction outside 
 We have focused on maintaining $\sObf$ security during fragmentation up until now, as this was also a design goal for \drivel{}.
 If, however, compromises could be made in regards to $\sObf$ security, the fragmentation would not suffer the constraints outlined above.
 
-Relaxing our requirements, and allowing a censor to retroactively identify bridges given their bridge information, the following fragmentation strategy becomes reasonable: The client sends a first fragment of $x+16$ bytes, consisting of $x$ bytes of randomized data and a 16 byte PRF keyed with the bridge information. Padding may be added between the two blocks. The choice of $x$ does not impact the security, but reduces the chance of bridges rejecting honest connection attempts due to repeated PRF values. In particular, the chance of collisions in those $x$ bytes must be kept small within a given epoch hour. As an example, assuming 52 active users per bridge \cite{tor-metrics}, each making 60 handshakes per epoch hour, then choosing $x=6$ random bytes already yields a collision probability around $3 \cdot 10^{-8}$ by the birthday bound.
+Relaxing our requirements, and allowing a censor to retroactively identify bridges given their bridge information, the following fragmentation strategy becomes reasonable: The client sends a first fragment of $x+16$ bytes, consisting only of $x$ bytes of uniformly random data and a 16 byte PRF keyed with the bridge information. Padding may be added between the two blocks. The choice of $x$ does not impact the security, but reduces the chance of bridges rejecting honest connection attempts due to repeated PRF values.
 
-This approach is very similar in spirit to the first message in \obfsfour{}, and allows for much more flexibility in traffic shaping through padding. The key difference from \obfsfour{} is the removal of one of the PRF values and the replacement of the obfuscated client public key by randomized data.
+The rejection of repeated PRF values works using ``epoch hours'', i.e. the number of seconds since the Unix epoch divided by 60.
+The current epoch hour is used as an input to every PRF calculation, and verifiers only accept PRF values that used an epoch hour not different from their local value by more than 1.
+This allows bridges to partially clear the set of already received PRF values (used to prevent replay attacks checks) every hour.
+In particular, the value of $x$ must be such that the chance of collisions in those $x$ bytes must be kept small within a given epoch hour.
 
-Sending even less data in a first fragment seems implausible, as the randomized data is used to prevent replay, and the PRF value proves knowledge of the bridge information. Using less than $x$ or 16 bytes, respectively, for either component would lower the security level or increase the collision probability between users, forcing handshake retries.
+As an example, \cite{tor-metrics} reports around 112 000 users across all pluggable transports and around 1 900 bridges, so assuming an even distribution of users across bridges, this would mean an average of 60 active users per bridge, each making at most 60 handshakes per epoch hour. Using those numbers, choosing $x=6$ already yields a collision probability $\leq 3 \cdot 10^{-8}$ by the birthday bound (with $2^{48}$ possible values and only $2^{11.8}$ samples per epoch hour).
+
+This approach is very similar in spirit to the first message in \obfsfour{} (in that it does not use a shared secret in the calculation of the PRF value) and allows for much more flexibility in traffic shaping through padding. The key difference from \obfsfour{} is the removal of one of the PRF values and the aggressive reduction in message size by replacing the obfuscated client public key with randomized data.
+
+If implementations are willing to accept some additional complexity, these $x$ bytes of uniformly random data might also be replaced with the start of any key exchange message that would be sent after this initial message (e.g. the first $x$ bytes of $\mathsf{epk}_e$ in the case of \drivel{}). This would achieve the same effect of proving that the client knows the bridge information as soon as possible, as long as collisions in the first $x$ bytes are sufficiently unlikely.
+
+Sending even less data in a first fragment seems implausible, as the randomized data is necessary to prevent replay attacks while avoiding false positives, and the PRF value proves knowledge of the bridge information. Using less than $x$ or 16 bytes, respectively, for either component would lower the security level or increase the collision probability between users, forcing handshake retries.
 
 \subsection{Proposed Modifications to the Drivel Protocol} \label{ssec:drivel-mod}
 
@@ -253,11 +283,11 @@ The following two subsections offer different approaches to implement fragmentat
 
 \subsubsection{Variant 1: A Minimal Fragmentation} \label{sssec:variant-minimal}
 
-One way to achieve the security properties described in \cref{ssec:fragmentation} in a space-efficient manner would be to send one OKEM ciphertext plus a 16 byte PRF as the first fragment. The PRF would be keyed by a combination of the shared secret and the bridge information (as in \drivel{}).
+One way to achieve the security properties described in \cref{ssec:fragmentation} in a space-efficient manner would be to send one OKEM ciphertext plus a 16 byte PRF value as the first fragment. The PRF would be keyed by a combination of the shared secret and the bridge information (as in \drivel{}).
 
 Recall from \cite[Figure~6]{EPRINT:GRSV25} that the first \drivel{} message is constructed as $\mathsf{epk}_e \conc c_S \conc P_C \conc M_C \conc \mathsf{MAC}_C$, where $\mathsf{epk}_e$ is the encrypted KEM public key, $c_S$ is the OKEM ciphertext of interest, $M_C$ helps delimit the message, and $\mathsf{MAC}_C$ authenticates all preceding data.
 
-In this fragmentation approach, we propose a minimal change to this message, such that encrypted public keys are sent later, and an additional PRF value is sent directly following the OKEM ciphertext. Reusing the same variables, parenthesizing the first fragment for clarity, and introducing $A_C \gets F_1(ES, c_S \conc \text{``:authc''})$ as an authenticator, this would lead to the following first protocol message:
+In this fragmentation approach, we propose a minimal change to this message, such that encrypted public keys $\mathsf{epk}_e$ are sent later, and an additional PRF value (the ``authenticator'') is sent directly following the OKEM ciphertext. Reusing the same variables, parenthesizing the first fragment for clarity, and introducing $A_C \gets F_1(ES, c_S \conc \text{``:authc''})$ as an authenticator, this would lead to the following first protocol message:
 
 \[
     \left( c_S \conc A_C \right) \conc \mathsf{epk}_e \conc P_C \conc M_C \conc \mathsf{MAC}_C .
@@ -283,13 +313,13 @@ The adapted protocol specification is visualized in \cref{fig:modified-drivel-mi
     \label{fig:modified-drivel-minimal}
 \end{figure}
 
-Implementers should note that the newly introduced $A_C$ must also be saved to protect against replay attacks. This replaces the existing replay protection in \obfsfour{} which uses $\mathsf{MAC}_C$. The same mechanism can be reused.
+Implementers should note that the newly introduced $A_C$ must be saved to protect against replay attacks. This replaces the existing replay protection in \obfsfour{} which uses $\mathsf{MAC}_C$. The same mechanism can be reused.
 
 There is no need to check for repeats between $\mathsf{MAC}_C$ values in this variant. The goal of these checks is to prevent the server from answering on replayed messages, in order to resist active probing.
-The only scenario in which an additional $\mathsf{MAC}_C$ check would be effective is for different $A_C$ values but identical $\mathsf{MAC}_C$ in two subsequent exchanges with the same server. However, since $A_S$ is fully determined by $c_S, \pk_S$ and $\mathsf{NodeID}$, the two exchanges could not use the same value of $c_S$.
+The only scenario in which an additional $\mathsf{MAC}_C$ check would be effective is for different $A_C$ values but identical $\mathsf{MAC}_C$ in two subsequent exchanges with the same server. However, since $A_C$ is fully determined by $c_S, \pk_S$ and $\mathsf{NodeID}$, the two exchanges could not use the same value of $c_S$.
 Finally, active probing resistance only considers adversaries that do not know $\mathsf{NodeID}$ (otherwise probing is trivial), and therefore could not produce a valid $A_C$ for fresh values of $c_S$ without breaking the PRF security of $F_1$ (assuming that $F_2$ is a random oracle).
 
-\Cref{tab:frag-min-needed} shows the minimum size of a first fragment using this approach for different OKEMs.
+\Cref{tab:frag-min-needed} shows the minimum size of a first fragment using this approach for different OKEMs. Note that this is simply the size of OKEM ciphertexts plus 16 bytes for the PRF value.
 
 \begin{table}
     \centering \small
@@ -380,7 +410,7 @@ This allows active attackers to choose any TCP burst after the initial handshake
 
 This contrasts harshly with the handling of errors and invalid MAC values in the handshake procedure: There, a random delay between 1 and 60 seconds from the start of the connection is chosen as a deadline, and if a client causes an error in the handshake or does not send enough data in the first 30 seconds, the connection is closed only at this randomized deadline.
 
-If active attackers attempt to fingerprint the connection by modifying the length value to provoke a closure of the connection (e.g. flipping the most significant bit, ensuring an invalid length), the length value is instead chosen as a random valid length between 16 to 1446 bytes. As the connection then remains blocked until the corresponding amount of AE ciphertext is received before the connection is closed, this attack cannot provoke a closure after a fixed, identifiable amount of data.
+If active attackers attempt to fingerprint the connection by modifying the length value to provoke a closure of the connection (e.g. flipping the most significant bit, ensuring an invalid length), the length value is instead chosen as a random valid length between 16 to 1446 bytes. As the connection then remains blocked until the corresponding amount of AE ciphertext is received before the connection is closed, this attack cannot provoke a closure after a fixed, identifiable amount of data. The concept of ``secure closures'' of channels in general is discussed in more detail in \cite{Fenske2024}.
 
 The main purpose of the length field obfuscation is therefore not to hide it from active attackers, or protect against manipulation (this is done by the authenticated encryption), but instead to make the protocol harder to identify. To this end, it is not clear to us, why $S$ is not instead chosen as e.g. $S \gets H(K_H, \mathsf{counter})$ to obtain a similarly secure random value to use in the XOR operation. This would remove the need for $\mathsf{IV}, S$ altogether and streamline the construction. Additionally, the \drivel{} PRF $F_1$ could be reused, reducing the number of primitives required in the protocol.
 
@@ -391,7 +421,8 @@ To construct a system capable of flexible traffic shaping, it is necessary to sp
 The existing packet-based system in \obfsfour{} achieves exactly this, while providing authentication and side-stepping attacks from \cite{SP:AlbPatWat09}. Each packet incurs an overhead of 3 bytes plus configurable padding, and each frame (containing one or more packets, depending on the bridge configuration) adds 18 bytes.
 The only precondition is a securely shared $\mathsf{KEY\_SEED}$.
 
-It is possible to employ this system (possibly changing the employed schemes to match the security levels) directly in \drivel{}, using e.g. the early secret $ES$ after transmitting $c_S \conc A_C$ without encoding, and later switching to $\mathsf{KEY\_SEED}$ after the handshake is completed.
+It is possible to employ this system directly in \drivel{} (possibly changing the employed schemes in the framing layer to match KEM and OKEM security levels).
+For example, we could first transmit $c_S \conc A_C$ without using the framing layer, and then initialize the framing layer using a key derived from the early secret $ES$. Later, we could re-initialize the framing layer using yet another key after the handshake is completed.
 
 However, since the framing layer already aims to provide obfuscation, integrity, and confidentiality, the need for $P_C, M_C, \mathsf{MAC}_C, P_S, M_S, \mathsf{MAC}_S$ would disappear. Note that the message transcript is implicitly validated by including the $\mathsf{context}$ value when calculating $\mathsf{KEY\_SEED}$. Furthermore, it would not be necessary to encrypt $\pk_e$ at all.
 
@@ -399,6 +430,12 @@ We believe it to be worthwhile to modify \drivel{} accordingly, allowing almost 
 Conversely, this rather extensive change would require adapting the extensive $\sObfKE$ security proof for \drivel{} presented in \cite{EPRINT:GRSV25}.
 
 This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation of \cite[Figure~6]{EPRINT:GRSV25}. Let $FL$ denote the framing layer presented above. Then $FL.\mathsf{Rekey}(k)$ indicates that the framing layer is reinitialized using $k$ as the $\mathsf{KEY\_SEED}$ value following the process outlined above.
+
+In addition, we took the opportunity to propose a simplification of the calculation of PRF values in order to optimize memory performance:
+As $F_1$ is implemented as \textsf{HDKF-Expand}, its state after digesting part of its input cannot be reused for further calls to $F_1$ (due to e.g. the string constants used for domain separation) and its entire input must be re-hashed when requesting multiple output blocks.
+Both shortcomings can be circumvented by instead pre-hashing long inputs without appending a string constant. This hash state could also be reused when more inputs are desired in the later stages of the protocol.
+
+To this end, we introduce a hash function $\mathbf{H}$ and replace the inputs to $F_1$ appropriately. This approach is similar in spirit to e.g. the calculation of the transcript hash in TLS 1.3 by keeping a running hash value \cite[Section~4.4.1]{rfc8446}.
 
 \begin{figure}
     \input{algorithms/drivel-framing}
@@ -424,7 +461,7 @@ This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation
 Should readers choose to implement or improve upon this proposed variant of \drivel{}, we encourage them to also consider the following items:
 
 \begin{itemize}
-    \item Calculating $\mathbf{H}(\mathsf{context}_2)$ can be done efficiently by reusing the hash state after digesting $\mathsf{context}_2$, avoiding the need to hash $\mathsf{context}_1$ twice. The hash outputs can be reused for two invocations of $F_1$ each time.
+    \item Calculating $\mathbf{H}(\mathsf{context}_2)$ can be done efficiently by reusing the hash state after digesting $\mathsf{context}_1$, avoiding the need to hash $\mathsf{context}_1$ twice. The hash outputs can be reused for two invocations of $F_1$ each time.
     
     \item This variant does not have a security proof like \drivel{}, and producing one would require formalizing the guarantees provided by the framing layer.
 
@@ -483,7 +520,7 @@ The schemes are identified by the following naming convention:
     \item any KEM with a corresponding filter-encode obfuscator can be used to request an OKEM under the KEM name prefixed with ``FEO-'', e.g. ``FEO-x25519'' would denote $\feo[\KEM, E]$ using the components from \cref{fig:impl-x25519-kem}.
 \end{itemize}
 
-Note that some ``FEO-'' schemes may in fact simply be the unmodified KEM (the code uses a \texttt{nil} encoder reference), but the naming convention ensures that the name of a scheme clearly separates KEMs from OKEMs. Additionally, as discussed above in \cref{ssec:drivel-instance}, some KEMs and OKEMs available from \texttt{liboqs} are disabled to limit the number of test cases and enable some optimizations with regards to buffer sizes.
+Note that some ``FEO-'' schemes may in fact simply be the unmodified KEM (the code uses a \texttt{nil} encoder reference), but the naming convention ensures that the name of a scheme clearly separates KEMs from OKEMs. Additionally, as discussed above in \cref{sec:parameters}, some KEMs and OKEMs available from \texttt{liboqs} are disabled to limit the number of test cases and enable some optimizations with regards to buffer sizes.
 
 Due to the different origin of these KEM and OKEM implementations, and the lack of an abstract standardized KEM interface in Go suitable for these constructions, we added several new submodules to \texttt{internal}:
 \begin{itemize}
@@ -497,7 +534,7 @@ Due to the different origin of these KEM and OKEM implementations, and the lack 
         \item \texttt{internal/cryptofactory/encoding\_hqc} implements filter-encode-obfuscators for all three HQC parameter sets,
         \item \texttt{internal/cryptofactory/encoding\_kemeleon} implements the ``Non-Rejection Sampling Variant'' of the filter-encode-obfuscators for ML-KEM from \cite{irtf-cfrg-kemeleon-00},
         \item \texttt{internal/cryptofactory/filter\_encode} defines an interface for these obfuscators and implements the generic FEO transformation from \cref{def:filter-encode-okem}, and, finally,
-        \item \texttt{internal/cryptofactory/oqs\_wrapper} implements a thin wrapper which makes the \texttt{liboqs} KEM interface compatible with our interface defined in \texttt{internal/kems}.
+        \item \texttt{internal/cryptofactory/oqs\_wrapper} implements a thin wrapper which makes the \texttt{liboqs} KEM interface compatible with our interface defined in \texttt{internal/kems}\footnote{Our interface differs from the existing \texttt{liboqs} and Go interfaces in that it uses the data types introduced in \texttt{internal/cryptodata}, more closely matches the KEM syntax used in this thesis, and provides fewer pieces of information about the KEM.}.
     \end{itemize}
 \end{itemize}
 
@@ -521,7 +558,7 @@ Functionality of this new submodule includes:
 
 The framing layer \texttt{transports/drivel/framing} and packet layer \texttt{transports/drivel/packet.go} are essentially unchanged compared to \texttt{transports/obfs4}.
 
-The main protocol functionality is implemented in \texttt{transports/drivel/handshake.go}, handling state objects persisted through the course of a connection, and imlementing functions to initialize this state, parse messages, and generate responses.
+The main protocol functionality is implemented in \texttt{transports/drivel/handshake.go}, handling state objects persisted through the course of a connection, and implementing functions to initialize this state, parse messages, and generate responses.
 Sitting between the low-level cryptography primitives and the higher-level handshake process, this file was significantly adapted from its predecessor \texttt{transports/obfs4/handshake\_ntor.go}, and now employs the newly added data types from \texttt{internal}.
 One noteworthy change in particular is that the sizes of public keys, private keys, ciphertexts and shared secrets is not statically known anymore as the schemes are only selected at runtime. This enables us to provide a single client binary capable of connecting to multiple bridges, each using different KEM/OKEM combinations. Instead of hardcoding sizes, we respect sizes reported by \texttt{liboqs} at runtime to further reduce the changes required to switch out a KEM or OKEM.
 This approach led to the addition of some runtime calculations of possible padding values and expected sizes of message components in a new \texttt{lengthDetails} object.
@@ -595,7 +632,7 @@ An example of such a setup can be seen in our analysis repository, which is conf
 
 To summarize, the implementation of \drivel{} to the point of working test deployments, reusing existing tools for \obfsfour{} was a success.
 
-Some modifications to the protocol may prove promising in the future, both in terms of flexibility and performance, but also for obfuscation. Nonetheless, we believe this implementation to provide a valuable jumping-off point for future work.
+Some modifications to the protocol may prove promising in the future, both in terms of flexibility and performance, but also for obfuscation. Nonetheless, we believe this implementation to provide a valuable starting point for future work.
 
 In the following, we list some concrete implementation challenges experienced during this thesis:
 \begin{itemize}

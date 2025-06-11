@@ -98,9 +98,9 @@
 	\NextLine
 	\ServerActionLeft{\highlightbox{$\mathsf{context}_2 \gets \mathsf{context}_1 \conc \pk_e \conc c_e$}}
 	\NextLine
-	\ServerActionLeft{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, \mathbf{H}(\mathsf{context}_2) \conc \textlit{:key\_extract\_2})$}
+	\ServerActionLeft{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, $\highlightbox{$\mathbf{H}(\mathsf{context}_2)$}$ \conc \textlit{:key\_extract\_2})$}
 	\NextLine
-	\ServerActionLeft{$\mathsf{auth} \gets \funPRF(FS, \mathbf{H}(\mathsf{context}_2) \conc \textlit{:server\_mac})$}
+	\ServerActionLeft{$\mathsf{auth} \gets \funPRF(FS, $\highlightbox{$\mathbf{H}(\mathsf{context}_2)$}$ \conc \textlit{:server\_mac})$}
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\NextLine[1.5]
 	\ServerToClient{\highlightbox{$\mathsf{msg}_S = c_e \conc \mathsf{auth}$}}{}
@@ -115,9 +115,9 @@
 	\NextLine
 	\ClientAction{\highlightbox{$\mathsf{context}_2 \gets \mathsf{context}_1 \conc \pk_e \conc c_e$}}
 	\NextLine
-	\ClientAction{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, \mathbf{H}(\mathsf{context}_2) \| \textlit{:key\_extract\_2})$}
+	\ClientAction{$\mathsf{KEY\_SEED}_2 \gets \funPRF(FS, $\highlightbox{$\mathbf{H}(\mathsf{context}_2)$}$ \| \textlit{:key\_extract\_2})$}
 	\NextLine
-	\ClientAction{if $\funPRF(FS, \mathbf{H}(\mathsf{context}_2) \conc \textlit{:server\_mac}) \neq \mathsf{auth}$: $\texttt{break}$}
+	\ClientAction{if $\funPRF(FS, $\highlightbox{$\mathbf{H}(\mathsf{context}_2)$}$ \conc \textlit{:server\_mac}) \neq \mathsf{auth}$: $\texttt{break}$}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Rekeying 2

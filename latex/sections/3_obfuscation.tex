@@ -29,33 +29,43 @@ Finally, we give concrete bounds for the first-keygen success probabilities, fir
         (cf. \cref{lem:classic-mceliece-ctxt-unif})
         & $1$
         & $1$
-        & $96$ (\textsf{mceliece348864}, +0)\newline
-          $156$ (\textsf{mceliece460896}, +0)\newline
-          $208$ (\textsf{mceliece6688128}, +0)\newline
-          $194$ (\textsf{mceliece6960119}, +0)\newline
-          $208$ (\textsf{mceliece8192128}, +0)\newline \\
+        & 96 (\textsf{mceliece348864}, +0)\newline
+          156 (\textsf{mceliece460896}, +0)\newline
+          208 (\textsf{mceliece6688128}, +0)\newline
+          194 (\textsf{mceliece6960119}, +0)\newline
+          208 (\textsf{mceliece8192128}, +0)\newline \\
 
         HQC \cite{NISTPQC-R4:HQC22} / $E_\mathsf{HQC}$ \newline
         (cf. \cref{sec:obfuscating-hqc})
-        & $\leq 1/2 \cdot \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
-        $\leq \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
-        $\leq 1/2 \cdot \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
-        (\textsf{HQC-128}, \textsf{HQC-192}, \textsf{HQC-256}, resp.,\newline
-        cf. \cref{lem:hqc-ctxt-unif})
+        & $\leq 2 \cdot \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
+        (\textsf{HQC-128}, cf. \cref{lem:hqc-ctxt-unif})\vspace{0.5em}
         & $1/2$ (\textsf{HQC-128})\newline
-          $1$ (\textsf{HQC-192})\newline
-          $1/2$ (\textsf{HQC-256})\newline
-          (cf. \cref{lem:hqc-first-keygen-success})
+        (cf. \cref{lem:hqc-first-keygen-success})
         & $1$\newline
           (cf. \cref{lem:hqc-first-encaps-success})
-        & $4433$ (\textsf{HQC-128}, +0)\newline
-          $8978$ (\textsf{HQC-192}, +0)\newline
-          $14421$ (\textsf{HQC-256}, +0)\newline \\
+        & 4 433 (\textsf{HQC-128}, +0)
+        \\
+
+        & $\leq \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
+        (\textsf{HQC-192}, cf. \cref{lem:hqc-ctxt-unif})\vspace{0.5em}
+        & $1$ (\textsf{HQC-192})\newline
+        (cf. \cref{lem:hqc-first-keygen-success})
+        &
+        & 8 978 (\textsf{HQC-192}, +0)
+        \\
+
+        & $\leq 2 \cdot \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
+        (\textsf{HQC-256}, cf. \cref{lem:hqc-ctxt-unif})\vspace{0.5em}
+        & $1/2$ (\textsf{HQC-256})\newline
+        (cf. \cref{lem:hqc-first-keygen-success})
+        &
+        & 14 421 (\textsf{HQC-256}, +0)
     \end{tabular}
     }
     \caption[
         Summary of KEMs, their corresponding encodings and the results of our analysis.
     ]{
-        Summary of KEMs, their corresponding encodings and the results of our analysis. The analysis results are referenced, and, for output sizes, the differences in bytes from the KEM ciphertext size is given. Where values in a cell differ depending on the chosen KEM parameter set, all values are shown and the parameter set is referenced. This table can be viewed as an extension of \cite[Table~2]{CCS:GunSteVei24}.}
+        Summary of KEMs, their corresponding encodings and the results of our analysis. The analysis results are referenced, and, for output sizes, the differences in bytes from the KEM ciphertext size is given. Where values in a cell differ depending on the chosen KEM parameter set, all values are shown and the parameter set is referenced. This table can be viewed as an extension of \cite[Table~2]{CCS:GunSteVei24}.
+    }
     \label{tab:obfuscation-summary}
 \end{table}
