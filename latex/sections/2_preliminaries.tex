@@ -385,7 +385,7 @@ When we construct OKEMs in later sections of this work, we will show that they a
     And, finally, the $\sObfKE$ security also depends on the $\prf$ security of $F_1$ and $F_2$, the $\swapprf$ security of $F_2$, and the symmetric encryption scheme's one-time ciphertext indistinguishability.    
 \end{theorem}
 
-We instantiate $F_1,F_2$ and the symmetric encryption scheme for the \drivel{} protocol as described later in \cref{ssec:drivel-instance}.
+We instantiate $F_1,F_2$ and the symmetric encryption scheme for the \drivel{} protocol as described later in \cref{sec:drivel-instance}.
 
 \begin{corollary}[Encapsulate-then-Encode Obfuscated Key Exchange Security]
 \label{cor:drivel-security-filter-encode}
@@ -400,3 +400,24 @@ We instantiate $F_1,F_2$ and the symmetric encryption scheme for the \drivel{} p
         \item $\ctxtunif$ security of $\feo[\KEM',E]$
     \end{itemize}
 \end{corollary}
+
+\subsection{The Drivel Protocol}
+
+In this thesis, we implement and evaluate the \drivel{} protocol, which targets $\sObfKE$ security.
+To make this document more self-contained, we reproduce the central definition of \drivel{} from \cite[Figure~6]{EPRINT:GRSV25} below.
+For further information not reproduced in \cref{fig:drivel}, we refer readers to the original paper.
+
+\begin{figure}
+    \input{algorithms/drivel}
+    \caption[
+        The \drivel{} obfuscated key exchange protocol.
+    ]{
+        The \drivel{} obfuscated key exchange protocol.
+        $\OKEM$ is an OKEM satisfying $\indcca, \sprcca$ security, and ciphertext uniformity.
+        $KEM$ is an $\indonecca$-secure KEM.
+        $SE$ is a length-preserving, one-time ciphertext indistinguishable, symmetric encryption scheme.
+        $F_1$ is a PRF and $F_2$ is a dual PRF.
+        This Figure is a reproduction of \cite[Figure~6]{EPRINT:GRSV25} but without highlights and slight changes to the KEM and OKEM syntax.
+    }
+    \label{fig:drivel}
+\end{figure}

@@ -117,7 +117,7 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
 
 The OKEM construction also satisfies the KEM security notions:
 
-\begin{theorem}[KEM Security]
+\begin{corollary}[KEM Security]
     Let $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$ be a filter-encode obfuscated KEM as per \cref{def:filter-encode-okem}.
     
     For any adversary $\adv$ against the $\indcca$ security of $\OKEM$, there exists an algorithm $\bdv$ such that
@@ -134,7 +134,7 @@ The OKEM construction also satisfies the KEM security notions:
             + \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)]
         \right).
     \end{align*}
-\end{theorem}
+\end{corollary}
 \begin{proof}
     IND-CCA security follows from \cite[Theorem~2.12]{CCS:GunSteVei24}, together with \cref{lem:hqc-first-keygen-success,lem:hqc-first-encaps-success}.
     

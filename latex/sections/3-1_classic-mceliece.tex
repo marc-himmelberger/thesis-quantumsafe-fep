@@ -129,31 +129,11 @@ In contrast to the common use cases of newly standardized KEMs, this thesis does
 By possibly breaking $\prkey$, \cite{cryptoeprint:2024/1193} undermines the validity of the proof in \cite{EC:Xagawa22} by invalidating the transition from real to random public keys, and consequently also invalidates the above proof of \cref{lem:classic-mceliece-ctxt-unif}.
 
 The Classic McEliece team has noted that the concrete computational cost of the syzygy distinguisher appears to be unpractical. Concretely, they claim the need for $2^{529}$ operations to break even the smallest parameter set \cite{mceliece-529-20250417}. This compares to a brute-force attack cost of only $2^{256}$ operations to examine all possible seed values $\delta$ from \cref{fig:classic-mceliece-spec}.
-Nonetheless, the recent work in \cite{cryptoeprint:2024/1193} illustrates that assumptions about the pseudorandomness of Classic McEliece public keys that previously seemed plausible may not hold up to future in-depth examination.
+However, recent work in \cite{cryptoeprint:2024/1193} illustrates that assumptions about the pseudorandomness of Classic McEliece public keys that previously seemed plausible may not hold up to future in-depth examination.
 
 While our arguments above used the $\prkey$ and $\mdsd$ assumptions directly, we do not explicitly require pseudorandomness of public keys and use $\prkey$ only because $\mdsd$ relies upon it.
-We therefore propose in \cref{conj:classic-mceliece-ctxt-unif-skdsd} that an alternative proof of \cref{lem:classic-mceliece-ctxt-unif} could be constructed along the lines of \cref{lem:ctxt-unif-for-bijections} and \cite{EC:Xagawa22}, using the assumption that the following problem is computationally hard.
+We note that changing the $\mdsd$ assumption to not use $\mathsf{RandGen}()$ but instead do key generation as in Classic McEliece would be equivalent to $\ctxtunif$ security.
+Therefore, it is possible that even if there are good attacks against $\prkey$, Classic McEliece could still achieve $\ctxtunif$ security without any changes to the scheme.
 
-\begin{definition}[Structured-Key Decisional Syndrome Decoding Problem]
-\label{def:classic-mceliece-alt-assump}
-    Let $\mathsf{CM}$ be the KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22}.
-
-    We define the  \emph{Structured-Key Decisional Syndrome Decoding Problem} ($\skdsd$) to be the following challenge.
-    
-    Given $T, \sk \getsr \mathsf{CM}.\kgen()$ and a ciphertext $u$, decide whether $u$ was chosen as a uniformly random bit string of length $mt$, or by sampling $e \getsr \mathsf{FixedWeight}()$ and letting $u \gets \left[ I_{mt} \mid T \right] \cdot e$.
-\end{definition}
-
-\begin{conjecture}[Alternative ciphertext uniformity of Classic McEliece]
-\label{conj:classic-mceliece-ctxt-unif-skdsd}
-    Let $\mathsf{CM}$ be the obfuscated KEM defined by the Classic McEliece specification \cite{NISTPQC-R4:ClassicMcEliece22} with obfuscated ciphertext length $\obfctxtlen = n-k$.
-
-    For any adversary $\adv$ against the ciphertext uniformity of $\mathsf{CM}$, there exists an adversary $\bdv$ against the $\sprcca$ security of $\mathsf{CM}$ with respect to the simulator $\simulunif$, and an adversary $\cdv$ against the $\skdsd$ assumption, such that
-    \[
-        \advantage{\ctxtunif}{\mathsf{CM}}[(\adv)]
-        \leq \advantage{\sprcca}{\KEM,\simulunif}[(\bdv)]
-        \leq \advantage{\skdsd}{}[(\cdv)].
-    \]
-\end{conjecture}
-
-In summary, the attack described in \cite{cryptoeprint:2024/1193} appears to have high concrete costs, but uncertainty is growing surrounding the $\prkey$ assumption. Additionally, the small size of Classic McEliece's ciphertexts would make it an efficient choice to use in \drivel{}.
+In summary, the attack described in \cite{cryptoeprint:2024/1193} appears to have high concrete costs, but uncertainty is growing surrounding the $\prkey$ assumption, which our presented proof uses indirectly. Additionally, the small size of Classic McEliece's ciphertexts would make it an efficient choice to use in \drivel{}.
 Therefore, we will include Classic McEliece as an OKEM component of \drivel{} and examine it further in \cref{ch:implementation}, but we purposely place it at the bottom of the list of parameter sets examined.
