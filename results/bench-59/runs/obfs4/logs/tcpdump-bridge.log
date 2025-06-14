@@ -1,0 +1,4 @@
+tcpdump: listening on any, link-type LINUX_SLL (Linux cooked), capture size 262144 bytes
+Got 6Got 14Got 14Got 16Got 16Got 16Got 16Got 128Got 148Got 159Got 201Got 261Got 312Got 327Got 384Got 474Got 524Got 574Got 591Got 636Got 638638 packets captured
+776 packets received by filter
+0 packets dropped by kernel

@@ -1,0 +1,8 @@
+2025/06/14 00:20:06 [NOTICE]:  - launched
+2025/06/14 00:20:06 [INFO]: lyrebird - initializing client transport listeners
+2025/06/14 00:20:06 [INFO]: obfs4 - registered listener: 127.0.0.1:35743
+2025/06/14 00:20:06 [INFO]: lyrebird - accepting connections
+2025/06/14 00:20:08 [INFO]: creating clientHandshake
+2025/06/14 00:20:08 [INFO]: padding range [77, 77]
+2025/06/14 00:20:08 [INFO]: clientHandshake.generateHandshake()
+2025/06/14 00:20:08 [INFO]: clientHandshake.parseServerHandshake(141 B)

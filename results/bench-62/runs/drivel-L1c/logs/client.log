@@ -1,0 +1,30 @@
+2025/06/14 00:22:07 ############
+2025/06/14 00:22:07 # /test.sh #
+2025/06/14 00:22:07 ############
+Tor version 0.4.6.10.
+Tor is running on Linux with Libevent 2.1.12-stable, OpenSSL 3.0.2, Zlib 1.2.11, Liblzma 5.2.5, Libzstd 1.4.8 and Glibc 2.35 as libc.
+Tor compiled with GCC version 11.2.0
+2025/06/14 00:22:07 [PASS] Tor present
+2025/06/14 00:22:07 Current torrc:
+# Enable Control Port for https://gitweb.torproject.org/torspec.git/tree/control-spec.txt
+ControlPort 9051
+
+# Using Bridges, obsf4
+UseBridges 1
+ClientTransportPlugin drivel exec /usr/bin/lyrebird --enableLogging --logLevel INFO
+ClientTransportPlugin obfs4 exec /usr/bin/lyrebird --enableLogging --logLevel INFO
+
+# Added by test.sh script: HashedControlPassword $torpass
+# Added by test.sh script: Bridge info
+Bridge drivel 172.16.113.5:28483 80D130BA9400ACED55C79418ACBADA0837201FC4 node-id=6e034a3a859f5493667dcaf1b1d7571333248bf9 iat-mode=0
+HashedControlPassword 16:4E48B9D0956796EC60880A13109E70E5319A89C37A48A3B34B9C67AF97
+2025/06/14 00:22:07 [PASS] Tor service started
+2025/06/14 00:22:07 Waiting 5s
+2025/06/14 00:22:12 Continuing...
+2025/06/14 00:22:12 [PASS] Tor info about circuit-status looks good
+2025/06/14 00:22:12 [PASS] Tor info about orconn-status looks good
+2025/06/14 00:22:12 [PASS] Tor info about entry-guards looks good
+2025/06/14 00:22:12 using api.ipify.org at 172.67.74.152
+2025/06/14 00:22:12 Regular IP: {"ip":"31.10.128.188"}
+2025/06/14 00:22:13 Torify IP: {"ip":"185.195.71.244"}
+2025/06/14 00:22:13 [PASS] Received a new IP

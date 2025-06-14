@@ -1,0 +1,18 @@
+2025/06/13 18:46:37 [NOTICE]:  - launched
+2025/06/13 18:46:37 [INFO]: lyrebird - initializing server transport listeners
+2025/06/13 18:46:37 [INFO]: drivel - registered listener: [scrubbed]:28483
+2025/06/13 18:46:37 [INFO]: lyrebird - accepting connections
+2025/06/13 18:46:47 [INFO]: drivel([scrubbed]:38108) - new connection
+2025/06/13 18:46:47 [INFO]: This server has received a first handshake message
+2025/06/13 18:46:47 [INFO]: creating serverHandshake
+2025/06/13 18:46:47 [INFO]: client padding range [0, 0]
+2025/06/13 18:46:47 [INFO]: bridge padding range [0, 0]
+2025/06/13 18:46:47 [INFO]: size_kem_pk 1568
+2025/06/13 18:46:47 [INFO]: size_kem_ctxt 1568
+2025/06/13 18:46:47 [INFO]: size_okem_ctxt 1905
+2025/06/13 18:46:47 [INFO]: size_mark 16
+2025/06/13 18:46:47 [INFO]: size_mac 16
+2025/06/13 18:46:47 [INFO]: size_auth 32
+2025/06/13 18:46:47 [INFO]: serverHandshake.parseClientHandshake(3505 B)
+2025/06/13 18:46:47 [INFO]: This server has completed a handshake and has wrapped its connection
+2025/06/13 18:46:47 [INFO]: serverHandshake.generateHandshake()

@@ -120,35 +120,37 @@ single_complete_bench () {
     echo "Found clean lyrebird/ working tree. Proceeding..."
     mkdir -p $1/benchmarks
 
-    cd lyrebird
+    if (( $2 > 8 )); then
+        cd lyrebird
 
-    log "###############"
-    log "#  BENCH 1/2  #"
-    log "###############"
-    
-    # 1. Go benchmarks
-    # 1a. obfs4-bench branch: Original obfs4, total handshake time
-    git checkout obfs4-bench
-    make build
-    echo "=> Starting benchmark"
-    make bench > $1/benchmarks/obfs4-bench.txt
+        log "###############"
+        log "#  BENCH 1/2  #"
+        log "###############"
+        
+        # 1. Go benchmarks
+        # 1a. obfs4-bench branch: Original obfs4, total handshake time
+        git checkout obfs4-bench
+        make build
+        echo "=> Starting benchmark"
+        make bench > $1/benchmarks/obfs4-bench.txt
 
-    log "###############"
-    log "#  BENCH 2/2  #"
-    log "###############"
+        log "###############"
+        log "#  BENCH 2/2  #"
+        log "###############"
 
-    # 1b. main branch: Up-to-date obfs4 & drivel, total handshake time
-    git checkout main
-    make build
-    echo "=> Starting benchmark"
-    make bench > $1/benchmarks/main.txt
+        # 1b. main branch: Up-to-date obfs4 & drivel, total handshake time
+        git checkout main
+        make build
+        echo "=> Starting benchmark"
+        make bench > $1/benchmarks/main.txt
 
-    log "###############"
-    log "#  END BENCH  #"
-    log "# START RUNS  #"
-    log "###############"
+        log "###############"
+        log "#  END BENCH  #"
+        log "# START RUNS  #"
+        log "###############"
 
-    cd ..
+        cd ..
+    fi
 
     # 2. Full-stack comparisons
     # 2a. Full run obfs4
@@ -188,7 +190,7 @@ for i in $(seq 1 $no_complete_replicas); do
     mkdir -p $out_dir
 
     log "Starting benchmark into $out_dir"
-    (single_complete_bench $out_dir) 2>&1 >$out_dir/benchmark.log
+    (single_complete_bench $out_dir $i) 2>&1 >$out_dir/benchmark.log
     log "Completed benchmark for $out_dir"
 done
 log "Completed all benchmarks :D"
