@@ -13,9 +13,9 @@ setwd(dir = "~/thesis-quantumsafe-fep/results")
 if (!interactive()) {
     # Code for non-interactive sessions (e.g., Rscript)
     cat("This is running via Rscript, outputting to PDF...\n")
-    aspect = c(4, 3)
-    scale = 2.3
-    size_in = aspect * scale
+    aspect <- c(4, 3)
+    scale <- 2.3
+    size_in <- aspect * scale
     pdf("Rplots.pdf", width = size_in[1], height = size_in[2])
 }
 
@@ -136,6 +136,13 @@ data_bench <- data_bench %>%
 # Runs data
 data_runs <- read.csv("structured/runs.csv")
 max_handshakes <- 1 # XXX: Hack, see below; max(data_runs$handshakes)
+stopifnot(
+    2 == (
+        data_runs %>% # assert that only one replicate has multiple handshakes
+        filter(handshakes > 1) %>%
+        nrow()
+    )
+)
 data_runs <- data_runs %>%
     select(-c(handshakes)) %>%
     pivot_longer(
@@ -343,20 +350,20 @@ data_kems %>%
         values_from = value
     ) %>%
     mutate(
-      origin = reorder(origin, match(origin, rev(origin)))
+        origin = reorder(origin, match(origin, rev(origin)))
     ) %>%
     ggplot(aes(y = mean, x = algo, color = op, shape = origin, alpha = origin)) +
     ggtitle(paste0("(O)KEM Running Time (n=", n, ")")) +
     labs(color = "Operation", shape = "Data Set") +
     xlab("Benchmark name") +
     ylab("log Running time [ms/op]") +
-    theme(legend.position="left", axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme(legend.position = "left", axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_alpha_manual(values = c(0.7, 1)) +
     guides(alpha = "none") +
     scale_shape_manual(values = c(4, 16)) +
     scale_y_continuous(trans = "log10") +
-    geom_point(position = position_dodge(1), size=2) +
-    #geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), position = position_dodge(1), width = 1, alpha=0.5) +
+    geom_point(position = position_dodge(1), size = 2) +
+    # geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), position = position_dodge(1), width = 1, alpha=0.5) +
     facet_nested(~ base_kem + encoding, scales = "free_x", space = "free")
 
 data_kems %>%
@@ -379,10 +386,10 @@ data_kems %>%
     labs(color = "Operation") +
     xlab("Benchmark name") +
     ylab("log Bytes allocated [B/op]") +
-    theme(legend.position="left", axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme(legend.position = "left", axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_y_continuous(trans = "log10") +
-    geom_point(position = position_dodge(1), size=2) +
-    #geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), position = position_dodge(1), width = 1) +
+    geom_point(position = position_dodge(1), size = 2) +
+    # geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), position = position_dodge(1), width = 1) +
     facet_nested(~ base_kem + encoding, scales = "free_x", space = "free")
 
 # ---------- TRAFFIC DATA ----------
@@ -505,14 +512,14 @@ data_traffic_hist <- data_traffic %>%
         transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
         transport_subid = sub("\\)$", "", sub(".* \\(", "", transport)), # "L3a"
         transport_letter = ifelse(grepl("L0|obfs4", transport), # "b" or "" for obfs4
-                                  "a", # default letter for L0 and obfs4
-                                  sub("^.*L\\d", "", sub("\\)", "", transport))
+            "a", # default letter for L0 and obfs4
+            sub("^.*L\\d", "", sub("\\)", "", transport))
         ),
         TCP.packet.size = ifelse(packet_type == "data", TCP.payload.size + 32, TCP.payload.size + 40),
         bin = cut_width(log10(TCP.packet.size), width = 0.1),
-        TCP.packet.size.binned = 10 ^ round(log10(TCP.packet.size), digits=1)
+        TCP.packet.size.binned = 10^round(log10(TCP.packet.size), digits = 1)
     ) %>%
-    group_by(packet_type,transport_type, bin) %>%
+    group_by(packet_type, transport_type, bin) %>%
     summarise(
         count = n(),
         TCP.packet.size = first(TCP.packet.size.binned),
@@ -537,7 +544,7 @@ p1 <- data_traffic_hist %>%
     guides(fill = guide_legend(nrow = 2), linetype = guide_legend(nrow = 2)) + # Number of rows for legend
     scale_y_continuous(labels = scales::percent) +
     scale_x_log10() +
-    geom_col(width=0.1) +
+    geom_col(width = 0.1) +
     geom_vline(aes(xintercept = 7240, linetype = "TCP Segmentation Size Limit (using GSO)"), colour = "red") +
     geom_vline(aes(xintercept = 1460, linetype = "TCP Maximum Segment Size (MSS)"), colour = "blue") +
     scale_linetype_manual(
@@ -554,7 +561,7 @@ p2 <- data_traffic_hist %>%
     ylab("Frequency [% of handshake packets]") +
     scale_y_continuous(labels = scales::percent) +
     scale_x_log10() +
-    geom_col(fill = "#619cff", width=0.1) +
+    geom_col(fill = "#619cff", width = 0.1) +
     geom_vline(aes(xintercept = 7240, linetype = "TCP Segmentation Size Limit (using GSO)"), colour = "red") +
     geom_vline(aes(xintercept = 1460, linetype = "TCP Maximum Segment Size (MSS)"), colour = "blue") +
     scale_linetype_manual(
@@ -564,10 +571,10 @@ p2 <- data_traffic_hist %>%
     facet_wrap(~transport_type, ncol = 1, scales = "free_y")
 
 ggarrange(p1, p2,
-          nrow = 1, align = "h",
-          widths = c(2, 1),
-          common.legend = TRUE,
-          legend = "bottom"
+    nrow = 1, align = "h",
+    widths = c(2, 1),
+    common.legend = TRUE,
+    legend = "bottom"
 )
 
 # Shows handshake packet contents by size (uses runs.csv, per transport and container - rest labels)

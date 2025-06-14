@@ -574,29 +574,33 @@ def main():
 
     for repl_folder in sorted(RESULTS_FOLDER.glob("bench-*")):
         repl = int(repl_folder.name[6:])
+        benchmarks_folder = repl_folder.joinpath("benchmarks")
+        runs_folder = repl_folder.joinpath("runs")
 
-        data_bench = structure_benchmarks(repl_folder.joinpath("benchmarks"))
-        data_runs, data_traffic = structure_runs(repl_folder.joinpath("runs"))
+        if benchmarks_folder.exists():
+            data_bench = structure_benchmarks(benchmarks_folder)
+            data_bench["replicate"] = repl
 
-        data_bench["replicate"] = repl
-        data_runs["replicate"] = repl
-        data_traffic["replicate"] = repl
+            df_bench = (
+                data_bench
+                if df_bench is None
+                else pd.concat([df_bench, data_bench], ignore_index=True)
+            )
+        if runs_folder.exists():
+            data_runs, data_traffic = structure_runs(runs_folder)
+            data_runs["replicate"] = repl
+            data_traffic["replicate"] = repl
 
-        df_bench = (
-            data_bench
-            if df_bench is None
-            else pd.concat([df_bench, data_bench], ignore_index=True)
-        )
-        df_runs = (
-            data_runs
-            if df_runs is None
-            else pd.concat([df_runs, data_runs], ignore_index=True)
-        )
-        df_traffic = (
-            data_traffic
-            if df_traffic is None
-            else pd.concat([df_traffic, data_traffic], ignore_index=True)
-        )
+            df_runs = (
+                data_runs
+                if df_runs is None
+                else pd.concat([df_runs, data_runs], ignore_index=True)
+            )
+            df_traffic = (
+                data_traffic
+                if df_traffic is None
+                else pd.concat([df_traffic, data_traffic], ignore_index=True)
+            )
 
     assert df_bench is not None and df_runs is not None and df_traffic is not None
 
