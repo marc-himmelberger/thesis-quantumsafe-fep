@@ -11,7 +11,7 @@ Dual-PRF security is defined in \cite[Section~7.1]{CCS:GunSteVei24}.
 
 Günther et al. \cite{CCS:GunSteVei24} first described a framework for the provable security of obfuscated key exchange, extending efforts by Fenske and Johnson \cite{CCS:FenJoh24}, whose work focused on the data transfer phase of fully encrypted protocols.
 
-The work of Günther et al. was iterated in \cite{EPRINT:GRSV25} where the notation was simplified, and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel{}, the obfuscated key exchange protocol we will implement in this thesis.
+The work of Günther et al.~was iterated in \cite{EPRINT:GRSV25} where the notation was simplified and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel{}, the obfuscated key exchange protocol we will implement in this thesis.
 
 We adapt the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} to our setting. Concretely, we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted in encrypted form (obviating the need for public-key obfsucation) or out-of-band in \drivel{}. Note that we will retain the ability to reject certain public keys, as this can be required for obfuscating ciphertexts. The definitions are equivalent in all other aspects.
 
@@ -45,11 +45,11 @@ We say that a KEM~$\KEM=(\kgen, \encaps, \decaps)$ is \emph{$\delta_\KEM$-correc
 \]
 \end{definition}
 
-To define what it means for a KEM to be secure, we require two security notions. One focuses on indistinguishability of ciphertexts ($\indcca$), i.e. given a public key and ciphertext, it should be hard to differentiate the encapsulated shared secret from uniformly random elements of the key space.
+To define what it means for a KEM to be secure, we require two security notions. One focuses on indistinguishability of ciphertexts ($\indcca$), i.e., given a public key and ciphertext, it should be hard to differentiate the encapsulated shared secret from uniformly random elements of the key space.
 This captures the goal that an adversary (given the public key $\pk$) does not learn any information about the shared secret encapsulated in the challenge ciphertext $c^*$, even when allowed to obtain decapsulations of other ciphertexts.
 This notion is central to the main premise of KEMs, namely to initialize a secure communication channel given only one party's public key by means of setting up a shared secret.
 
-A second notion is strong pseudorandomness ($\sprcca$), i.e. given a public key, it should be hard to differentiate a ciphertext-key pair obtained from encapsulation for that public key from a pair consisting of a simulated ciphertext and a uniformly randomly sampled key, even when allowed to obtain decapsulations of other ciphertexts.
+A second notion is strong pseudorandomness ($\sprcca$), i.e., given a public key, it should be hard to differentiate a ciphertext-key pair obtained from encapsulation for that public key from a pair consisting of a simulated ciphertext and a uniformly randomly sampled key, even when allowed to obtain decapsulations of other ciphertexts.
 This captures the goal that ciphertexts must "look randomly chosen" among some set of possible ciphertexts and should look unrelated to any given public key --- even given the corresponding shared secret.
 This is expressed through the use of a simulator $\mathcal S$ and $\sprcca$ is always achieved with respect to such a simulator.
 This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22} in the context of establishing anonymity of KEMs, and is satisfied by many KEMs that are being considered for use in quantum-safe communication \cite{EC:Xagawa22}. We use $\sprcca$ security to argue about the distribution of ciphertext bits.
@@ -352,8 +352,8 @@ The symmetric encryption keys can then be used to encrypt the KEM public key in 
 
 This change has several advantages:
 \begin{itemize}
-    \item The use of KEM for the client allows for shorter messages and more efficient computation. The overhead of symmetric encryption is small.
-    \item This completely removes the need for obfuscated OKEM public keys, the server's public key is distributed out-of-band anyway, and the client's public key is now encrypted.
+    \item The use of a KEM for the client allows for shorter messages and more efficient computation. The overhead of symmetric encryption is small.
+    \item This completely removes the need for obfuscated OKEM public keys: the server's public key is distributed out-of-band anyway and the client's public key is now encrypted.
     \item If appropriate OKEM and KEM are used then \drivel{} can offer hybrid obfuscation, i.e. \drivel{} can combine traditional and post-quantum schemes to hedge against security failures in either component.
 \end{itemize}
 

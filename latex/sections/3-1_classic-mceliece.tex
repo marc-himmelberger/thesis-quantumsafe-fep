@@ -54,7 +54,7 @@ Given the $\prkey$ assumption, public keys are computationally hard to distingui
 
 \begin{proof}
     We first examine the rejection sampling behavior around \cref{ln:randgen-reject}: A resampling occurs if and only if a reduction of $\hat H$ to systematic form (also known as \emph{reduced row echelon form} or \emph{row canonical form}) fails. This reduction, in turn, fails if and only if the $mt$ leftmost columns of $\hat H$ do not form a full rank square matrix.
-    The probability for a $mt \times mt$ matrix with i.i.d. uniformly random entries over $\mathbb F_2$ to be of full rank is exactly~\cite{DBLP:journals/corr/SalmondGGC14}
+    The probability for a $mt \times mt$ matrix with i.i.d.~uniformly random entries over $\mathbb F_2$ to be of full rank is exactly~\cite{DBLP:journals/corr/SalmondGGC14}
     \[ p_\mathsf{FR} := \prod_{i=1}^{mt} \left( 1-2^{-i} \right). \]
     
     For the parameter sets used in Classic McEliece ($768 \leq mt \leq 1664$), this is \[ p_\mathsf{FR} \approx 0.288788 . \]
@@ -121,7 +121,7 @@ We have seen that Classic McEliece, as specified in \cite{NISTPQC-R4:ClassicMcEl
 
 \paragraph{The Syzygy Distinguisher}
 
-It is worth highlighting that the above analysis in this chapter has been carried out primarily on the basis of the same assumptions as \cite{EC:Xagawa22}. However, since its publication, some theoretical progress has been made in the analysis of one of the two central assumptions in the above analysis. A recent publication by Randriambololona, presented at Eurocrypt 2025 during the final third of this thesis, \cite{cryptoeprint:2024/1193} claims to provide a subexponential-time distinguisher against the $\prkey$ assumption.
+It is worth highlighting that the above analysis in this chapter has been carried out primarily on the basis of the same assumptions as \cite{EC:Xagawa22}. However, since its publication, some theoretical progress has been made in the analysis of one of the two central assumptions in the above analysis. A recent publication by Randriambololona, presented at Eurocrypt 2025 during the writing of this thesis, \cite{cryptoeprint:2024/1193} claims to provide a subexponential-time distinguisher against the $\prkey$ assumption.
 
 Discussions have sparked around this publication, noting that this does not invalidate the $\indcca$ security of the Classic McEliece KEM \cite{mceliece-529-20250417}, as only one-wayness is required from the public-key encryption scheme.
 In contrast to the common use cases of newly standardized KEMs, this thesis does in fact indirectly depend on public keys being indistinguishable from uniformly random matrices, since the reduction of $\sprcca$ security in \cite{EC:Xagawa22} is only capable of replacing genuine Classic McEliece ciphertexts by random bit strings by first invoking the $\prkey$ assumption to switch to $\mathsf{RandGen}$ before later proving pseudorandomness from the $\mdsd$ assumption.

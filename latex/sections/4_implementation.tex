@@ -21,7 +21,7 @@ The \drivel{} implementation, like the other six pluggable transports in the lyr
     
     \item \texttt{common} contains various useful implementations such as cryptographically secure random number generation (CSRNG), deterministic random bit generation (DRBG), logging, probability distributions, filter objects to prevent replay attacks, SOCKS5 implementation, etc. These implementations may be reused outside of the lyrebird repository. 
     
-    \item \texttt{internal} contains implementations that are only reusable within lyrebird. The upstream repository only contained an x25519 and \textsf{Elligator2}~\cite{CCS:BHKL13} implementation in this module.
+    \item \texttt{internal} contains implementations that are only reusable within lyrebird. The upstream repository only contained an X25519 and \textsf{Elligator2}~\cite{CCS:BHKL13} implementation in this module.
     
     \item \texttt{transports} finally has submodules for each pluggable transport that each implement a common interface used by the \texttt{cmd} module. 
 \end{itemize}
@@ -84,7 +84,7 @@ The following OKEMs are available for each NIST security level:
     \item $\feo[\mathsf{HQC}, E_\mathsf{HQC}]$, as in \cref{sec:obfuscating-hqc}, concretely based on HQC-128 (level 1), HQC-192 (level 3), and HQC-256 (level 5)
 \end{itemize}
 
-In addition, it is possible to use the implementation of x25519 and \textsf{Elligator2}~\cite{CCS:BHKL13} as an OKEM, but as this OKEM would not be resistant against quantum-computers, we only include it for the purposes of performance comparisons with \obfsfour{}.
+In addition, it is possible to use the implementation of X25519 and \textsf{Elligator2}~\cite{CCS:BHKL13} as an OKEM, but as this OKEM would not be resistant against quantum-computers, we only include it for the purposes of performance comparisons with \obfsfour{}.
 
 For the selection of a KEM, the implementation supports the following for each NIST security level:
 \begin{itemize}
@@ -93,11 +93,11 @@ For the selection of a KEM, the implementation supports the following for each N
     \item Unobfuscated variants for each OKEM listed above, except Classic-McEliece
 \end{itemize}
 
-Again, it is also possible to use a KEM based on x25519, which is not quantum-safe.
+Again, it is also possible to use a KEM based on X25519, which is not quantum-safe.
 
 \paragraph{Disabled KEMs and OKEMs}
 
-Due to the fact that our implementation relies on AES to instantiate the symmetric encryption component of \drivel{}, and to reduce the amount of options to consider in the following sections, we support only AES variants of FrodoKEM, even though SHAKE version are offered by \texttt{liboqs}.
+Due to the fact that our implementation relies on AES to instantiate the symmetric encryption component of \drivel{}, and to reduce the amount of options to consider in the following sections, we support only AES variants of FrodoKEM, even though SHAKE versions are offered by \texttt{liboqs}.
 Similarly, but motivated also by a desire for a smaller traffic volume during the key exchange and a desire for smaller buffer sizes, Classic McEliece has been disabled as a KEM (though it remains available as an OKEM).
 FrodoKEM variants using SHAKE, as well as unobfuscated Classic McEliece KEMs, could easily be re-enabled if so desired.
 
@@ -174,7 +174,7 @@ In the implementation of \obfsfour{}, only one method of key exchange is availab
 
 Post-quantum key-exchange algorithms are almost universally specified using the syntax of KEMs. In order to compare \drivel{} performance in the traditional setting with its performance using post-quantum KEMs, we have extended the \texttt{internal/x25519ell2} module to implement a KEM and a filter-encode obfuscator performing \textsf{Elligator2}. \Cref{fig:impl-x25519-kem} shows pseudocode illustrating the usage of the module by \obfsfour{} (through its use of the \texttt{common/ntor} module), alongside the construction of our x25519 KEM.
 
-As our goal is simply to show how the KEM construction was extracted from the existing code, we omit the full definition of \obfsfour{} here. Suffice to say, the protocol involves one static keypair $\pk_\mathsf{id}, \sk_\mathsf{id}$ (the public key is part of the bridge information) and two ephemeral keypairs generated during the handshake procedure. The static keypair has no encodings applied to the public key (as it is transmitted out-of-band), while the ephemeral keypairs also have obfuscated public keys. When all required values are available, methods $\mathsf{ServerHandshake}, \mathsf{ClientHandshake}$ are executed to compute shared secrets which in turn are used to authenticate and finalize the handshake.
+As our goal is simply to show how the KEM construction was extracted from the existing code, we omit the full definition of \obfsfour{} here. Suffice to say, the protocol involves one static keypair $\pk_\mathsf{id}, \sk_\mathsf{id}$ (the public key is part of the bridge information) and two ephemeral keypairs generated during the handshake procedure. The static keypair has no encoding applied to the public key (as it is transmitted out-of-band), while the ephemeral keypairs also have obfuscated public keys. When all required values are available, methods $\mathsf{ServerHandshake}, \mathsf{ClientHandshake}$ are executed to compute shared secrets which in turn are used to authenticate and finalize the handshake.
 
 Readers should note that, although the construction is similar in spirit to the DHKEM construction \cite[Section~4.1]{rfc9180}, this KEM has minor differences in the derivation of its shared secret. Instead, the focus was on staying as close as possible to the construction used in \obfsfour{}, in order to offer a fair comparison between the two pluggable transport constructions when targeting traditional security.
 
@@ -550,7 +550,7 @@ Each set of $K_\mathsf{AE}, \mathsf{pre}, K_\mathsf{H}, \mathsf{IV}$ corresponds
 
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{images/packet-framing.png}
+    \includegraphics[width=\linewidth]{images/packet-framing.drawio.png}
     \caption[
         A visualization of \obfsfour{} framing at the sender.
     ]{
