@@ -36,7 +36,7 @@ equal_group_size <- function(df) {
 #################
 
 # State of implementation and OQS relevance
-active_kems <- drivel_parameter_sets <- readr::read_delim(
+active_kems <- readr::read_delim(
     "nist_level  ;  algo
        L0      ;  x25519
        L0      ;  FEO-x25519
@@ -45,6 +45,9 @@ active_kems <- drivel_parameter_sets <- readr::read_delim(
        L5      ;  FEO-Classic-McEliece-6688128
        L5      ;  FEO-Classic-McEliece-6960119
        L5      ;  FEO-Classic-McEliece-8192128
+       L1      ;  BIKE-L1
+       L3      ;  BIKE-L3
+       L5      ;  BIKE-L5
        L1      ;  ML-KEM-512
        L3      ;  ML-KEM-768
        L5      ;  ML-KEM-1024
@@ -139,8 +142,8 @@ max_handshakes <- 1 # XXX: Hack, see below; max(data_runs$handshakes)
 stopifnot(
     2 == (
         data_runs %>% # assert that only one replicate has multiple handshakes
-        filter(handshakes > 1) %>%
-        nrow()
+            filter(handshakes > 1) %>%
+            nrow()
     )
 )
 data_runs <- data_runs %>%
@@ -301,7 +304,8 @@ data_kems <- data_bench %>%
     mutate( # Example: "FEO-HQC-128-KeyGen"
         op = sub(".*-", "", subbench), # "KeyGen"
         algo = sub("-[^-]+$", "", subbench), # "FEO-HQC-128"
-        algo_name = sub("-\\d.*", "", algo), # "FEO-HQC"
+        algo_name = sub("-\\d.*", "", algo), # "FEO-HQC", "BIKE-L1"
+        algo_name = sub("-L\\d.*", "", algo_name), # "FEO-HQC", "BIKE"
         base_kem = sub("^FEO-", "", algo_name), # "HQC"
         encoding = ifelse(grepl("^FEO-", algo_name), "FEO", "-") # "FEO" or "-"
     ) %>%
