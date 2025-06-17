@@ -352,8 +352,8 @@ n <- data_kems %>%
 df_oqs <- df_oqs %>%
     group_by(algo, op) %>%
     summarise(
-        perf_oqs_mean = mean(perf),
-        perf_oqs_sd = sd(perf),
+        perf_supercop_mean = mean(perf),
+        perf_supercop_sd = sd(perf),
         .groups = "drop"
     )
 
