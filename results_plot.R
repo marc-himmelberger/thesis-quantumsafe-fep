@@ -267,6 +267,16 @@ data_handshake <- data_bench %>%
     filter(
         subbench %in% drivel_parameter_sets$Combination |
             grepl("transports/obfs4", benchmark)
+    ) %>%
+    left_join(
+        drivel_parameter_sets,
+        by = c("subbench" = "Combination")
+    ) %>%
+    mutate( # Example: "Drivel-L3b"
+        transport_letter = ifelse(grepl("x25519", subbench_pretty), # "b" or "a" for obfs4
+            "a", # default letter for L0 and obfs4
+            sub("^.*L\\d", "", sub("\\)", "", Name))
+        )
     )
 
 n <- data_handshake %>%
@@ -274,21 +284,38 @@ n <- data_handshake %>%
     equal_group_size()
 
 data_handshake %>%
-    ggplot(aes(y = perf, x = subbench_pretty, fill = branch)) +
+    filter(branch == "main") %>%
+    group_by(subbench_pretty, protocol_with_level_pretty) %>%
+    summarise(sd.perf = sd(perf), sd.bytes.alloc = sd(bytes.alloc), .groups = "drop") %>%
+    summarise(max.sd.perf = max(sd.perf), max.sd.bytes.alloc = max(sd.bytes.alloc))
+
+# Keep only main branch and calculate averages per group
+data_handshake <- data_handshake %>%
+    filter(branch == "main") %>%
+    group_by(subbench_pretty, protocol_with_level_pretty) %>%
+    summarise(
+        perf = mean(perf),
+        bytes.alloc = mean(bytes.alloc),
+        transport_letter = first(transport_letter),
+        .groups = "drop"
+    )
+
+data_handshake %>%
+    ggplot(aes(y = perf, x = subbench_pretty, color = transport_letter)) +
     ggtitle(paste0("Simulated Handshake Running Time (n=", n, ")")) +
     xlab("Benchmark name") +
     ylab("Running time [ms]") +
-    labs(fill = "Branch") +
-    geom_boxplot(notch = TRUE) +
+    guides(color = "none") + # hides "transport_letter" from legend
+    geom_point(size = 2) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     facet_grid(~protocol_with_level_pretty, scales = "free_x", space = "free")
 data_handshake %>%
-    ggplot(aes(y = bytes.alloc, x = subbench_pretty, fill = branch)) +
+    ggplot(aes(y = bytes.alloc, x = subbench_pretty, color = transport_letter)) +
     ggtitle(paste0("Simulated Handshake Memory Usage (n=", n, ")")) +
     xlab("Benchmark name") +
     ylab("Bytes allocated [B]") +
-    labs(fill = "Branch") +
-    geom_boxplot(notch = TRUE) +
+    guides(color = "none") + # hides "transport_letter" from legend
+    geom_point(size = 2) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     facet_grid(~protocol_with_level_pretty, scales = "free_x", space = "free")
 
@@ -472,7 +499,7 @@ data_traffic_handshake_totals <- data_traffic %>%
 p1 <- data_traffic_handshake %>%
     mutate( # Example: "Drivel (L3b)"
         transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
-        transport_letter = ifelse(grepl("L0|obfs4", transport), # "b" or "" for obfs4
+        transport_letter = ifelse(grepl("L0|obfs4", transport), # "b" or "a" for obfs4
             "a", # default letter for L0 and obfs4
             sub("^.*L\\d", "", sub("\\)", "", transport))
         )
@@ -489,7 +516,7 @@ p2 <- data_traffic_handshake_totals %>%
     mutate( # Example: "Drivel (L3b)"
         transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
         transport_subid = sub("\\)$", "", sub(".* \\(", "", transport)), # "L3a"
-        transport_letter = ifelse(grepl("L0|obfs4", transport), # "b" or "" for obfs4
+        transport_letter = ifelse(grepl("L0|obfs4", transport), # "b" or "a" for obfs4
             "a", # default letter for L0 and obfs4
             sub("^.*L\\d", "", sub("\\)", "", transport))
         )
