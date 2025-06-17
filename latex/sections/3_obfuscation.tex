@@ -24,9 +24,9 @@ Finally, we give concrete bounds for the first-keygen success probabilities, fir
         & \textbf{First-encaps Success Probability}\newline (\cref{def:first-encaps-success})
         & \textbf{Output Size}\newline (in bytes)\\ \hline
 
-        Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} \newline/ None \newline (cf. \cref{sec:obfuscating-classic-mceliece})
+        Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} \newline/ None \newline (cf.~\cref{sec:obfuscating-classic-mceliece})
         & $\leq 2 \cdot \left( \advantage{\prkey}{}[] + \advantage{\mdsd}{}[] \right)$\newline
-        (cf. \cref{lem:classic-mceliece-ctxt-unif})
+        (cf.~\cref{lem:classic-mceliece-ctxt-unif})
         & $1$
         & $1$
         & 96 (\textsf{mceliece348864}, +0)\newline
@@ -36,28 +36,28 @@ Finally, we give concrete bounds for the first-keygen success probabilities, fir
           208 (\textsf{mceliece8192128}, +0)\newline \\
 
         HQC \cite{NISTPQC-R4:HQC22} / $E_\mathsf{HQC}$ \newline
-        (cf. \cref{sec:obfuscating-hqc})
+        (cf.~\cref{sec:obfuscating-hqc})
         & $\leq 2 \cdot \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
-        (\textsf{HQC-128}, cf. \cref{lem:hqc-ctxt-unif})\vspace{0.5em}
+        (\textsf{HQC-128}, cf.~\cref{lem:hqc-ctxt-unif})\vspace{0.5em}
         & $1/2$ (\textsf{HQC-128})\newline
-        (cf. \cref{lem:hqc-first-keygen-success})
+        (cf.~\cref{lem:hqc-first-keygen-success})
         & $1$\newline
-          (cf. \cref{lem:hqc-first-encaps-success})
+          (cf.~\cref{lem:hqc-first-encaps-success})
         & 4 433 (\textsf{HQC-128}, +0)
         \\
 
         & $\leq \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
-        (\textsf{HQC-192}, cf. \cref{lem:hqc-ctxt-unif})\vspace{0.5em}
+        (\textsf{HQC-192}, cf.~\cref{lem:hqc-ctxt-unif})\vspace{0.5em}
         & $1$ (\textsf{HQC-192})\newline
-        (cf. \cref{lem:hqc-first-keygen-success})
+        (cf.~\cref{lem:hqc-first-keygen-success})
         &
         & 8 978 (\textsf{HQC-192}, +0)
         \\
 
         & $\leq 2 \cdot \left( \advantage{\twodqcsd}{}[(\cdv_1)] + \advantage{\threedqcsd}{}[(\cdv_2)] \right)$\newline
-        (\textsf{HQC-256}, cf. \cref{lem:hqc-ctxt-unif})\vspace{0.5em}
+        (\textsf{HQC-256}, cf.~\cref{lem:hqc-ctxt-unif})\vspace{0.5em}
         & $1/2$ (\textsf{HQC-256})\newline
-        (cf. \cref{lem:hqc-first-keygen-success})
+        (cf.~\cref{lem:hqc-first-keygen-success})
         &
         & 14 421 (\textsf{HQC-256}, +0)
     \end{tabular}

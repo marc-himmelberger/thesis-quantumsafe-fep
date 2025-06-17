@@ -39,7 +39,7 @@ The two latter components of HQC ciphertexts $\mathbf v, \mathit{salt}$ are indi
 
 As shown in \cite{EC:Xagawa22}, the parity of $\mathbf u$ depends on the public key parity as $\mathbf u(1)=(1 + \mathbf h(1))\cdot w_r \mod 2$. For HQC-192, $w_r = 0 \mod 2$ and ciphertexts therefore always have parity $\mathbf u(1)=0$. For HQC-128 and HQC-256, $w_r = 1 \mod 2$ and the parity of ciphertexts depends on the parity of the public key component as $\mathbf u(1)=1 + \mathbf h(1)$.
 
-Recall that our goal is to encode HQC ciphertexts as bit strings indistinguishable from uniformly random bit strings. Thus, when encoding a ciphertext for HQC-192, we remove the last bit of $\mathbf u$, i.e. $\mathbf u_{n-1}$, canonically encode the rest of $\mathbf u$ to a bit string, and pad with random bits up to the byte boundary. The other parts of the ciphertext align with the byte boundary due to their size. The single dropped bit of $\mathbf u$ can be reconstructed uniquely during decoding such that the parity of $\mathbf u(1)=0$ is achieved. This is because $\mathbf u(1)=0 \iff \bigoplus_{i=0}^{n-1} \mathbf u_i = 0 \iff \mathbf u_{n-1} = \bigoplus_{i=0}^{n-2} \mathbf u_i$.
+Recall that our goal is to encode HQC ciphertexts as bit strings indistinguishable from uniformly random bit strings. Thus, when encoding a ciphertext for HQC-192, we remove the last bit of $\mathbf u$, i.e.~$\mathbf u_{n-1}$, canonically encode the rest of $\mathbf u$ to a bit string, and pad with random bits up to the byte boundary. The other parts of the ciphertext align with the byte boundary due to their size. The single dropped bit of $\mathbf u$ can be reconstructed uniquely during decoding such that the parity of $\mathbf u(1)=0$ is achieved. This is because $\mathbf u(1)=0 \iff \bigoplus_{i=0}^{n-1} \mathbf u_i = 0 \iff \mathbf u_{n-1} = \bigoplus_{i=0}^{n-2} \mathbf u_i$.
 
 For the two remaining parameter sets, HQC-128 and HQC-256, the only obstacle in the $\sprcca$ proof of \cite{EC:Xagawa22} is that the $\mathbf u$ component leaks the parity of the public key component $\mathbf h$ and a good simulator would have to know the parity of the public key component, which was not needed for HQC-192.
 We can circumvent this issue by rejecting half of all public keys (specifically those with parity $\mathbf h(1)=0$) during key generation for HQC-128 and HQC-256.
@@ -86,12 +86,12 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
 \begin{proof}
     This follows directly from the definition of $E_\mathsf{HQC}$ in \cref{fig:hqc-encoding}.
 
-    Note that the behavior of the encoding may violate correctness for public keys where $\mathsf{Filter}(\pk) = 0$, but this is not required by \cref{def:filter-encode-obfs}, and, by \cref{def:first-encaps-success}, does not influence the success probability. 
+    Note that the behavior of the encoding may violate correctness for public keys where $\mathsf{Filter}(\pk) = 0$, but this is not required by \cref{def:filter-encode-obfs}, and, by \cref{def:first-encaps-success}, does not influence the success probability.
 \end{proof}
 
 \begin{lemma}[Ciphertext Uniformity]
 \label{lem:hqc-ctxt-unif}
-    Let $\mathbf F_0 := \{u \in \mathcal R \mid u(1) = 0 \}$ be the set of 0-parity polynomials with degree $<n$. \\
+    Let $\mathbf F_0 := \{u \in \mathcal R \mid u(1) = 0 \}$ be the set of 0-parity polynomials with degree $<n$.\\
     Let $\mathcal S$ be a KEM encapsulation simulator that outputs $\mathbf u \getsr \mathcal F_0, \mathbf v \getsr \bin^{n_1n_2}$, and $\mathit{salt} \getsr \bin^{128}$.
     For brevity, let further $\OKEM := \feo[\mathsf{HQC}, E_\mathsf{HQC}]$.
 
@@ -112,7 +112,7 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
 
     Recall also that the first-keygen success probability depends on the parameter set.
 
-    In \cite[Lemma~P.2]{EC:Xagawa22}, a reduction is given from $\sprcca$ w.r.t. $\mathcal S$ to the $\twodqcsd$ and $\threedqcsd$ assumptions. The proof can easily be adapted to include the $\mathit{salt}$ which would increase the number of arguments for the random oracle $\mathsf G$, but no additional assumption is needed.
+    In \cite[Lemma~P.2]{EC:Xagawa22}, a reduction is given from $\sprcca$ w.r.t.~$\mathcal S$ to the $\twodqcsd$ and $\threedqcsd$ assumptions. The proof can easily be adapted to include the $\mathit{salt}$ which would increase the number of arguments for the random oracle $\mathsf G$, but no additional assumption is needed.
 \end{proof}
 
 The OKEM construction also satisfies the KEM security notions:

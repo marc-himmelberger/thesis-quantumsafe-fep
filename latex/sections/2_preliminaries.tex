@@ -9,9 +9,9 @@ Dual-PRF security is defined in \cite[Section~7.1]{CCS:GunSteVei24}.
 
 \section{Review of Prior Work} \label{sec:review-gsv24}
 
-Günther et al. \cite{CCS:GunSteVei24} first described a framework for the provable security of obfuscated key exchange, extending efforts by Fenske and Johnson \cite{CCS:FenJoh24}, whose work focused on the data transfer phase of fully encrypted protocols.
+Günther et al.~\cite{CCS:GunSteVei24} first described a framework for the provable security of obfuscated key exchange, extending efforts by Fenske and Johnson \cite{CCS:FenJoh24}, whose work focused on the data transfer phase of fully encrypted protocols.
 
-The work of Günther et al.~was iterated in \cite{EPRINT:GRSV25} where the notation was simplified and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel{}, the obfuscated key exchange protocol we will implement in this thesis.
+The work of Günther et al.~was expanded upon in \cite{EPRINT:GRSV25} where the notation was simplified and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel{}, the obfuscated key exchange protocol we will implement in this thesis.
 
 We adapt the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} to our setting. Concretely, we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted in encrypted form (obviating the need for public-key obfsucation) or out-of-band in \drivel{}. Note that we will retain the ability to reject certain public keys, as this can be required for obfuscating ciphertexts. The definitions are equivalent in all other aspects.
 
@@ -50,9 +50,9 @@ This captures the goal that an adversary (given the public key $\pk$) does not l
 This notion is central to the main premise of KEMs, namely to initialize a secure communication channel given only one party's public key by means of setting up a shared secret.
 
 A second notion is strong pseudorandomness ($\sprcca$), i.e., given a public key, it should be hard to differentiate a ciphertext-key pair obtained from encapsulation for that public key from a pair consisting of a simulated ciphertext and a uniformly randomly sampled key, even when allowed to obtain decapsulations of other ciphertexts.
-This captures the goal that ciphertexts must "look randomly chosen" among some set of possible ciphertexts and should look unrelated to any given public key --- even given the corresponding shared secret.
+This captures the goal that ciphertexts must "look randomly sampled" among some set of possible ciphertexts and should look unrelated to any given public key --- even given the corresponding shared secret.
 This is expressed through the use of a simulator $\mathcal S$ and $\sprcca$ is always achieved with respect to such a simulator.
-This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22} in the context of establishing anonymity of KEMs, and is satisfied by many KEMs that are being considered for use in quantum-safe communication \cite{EC:Xagawa22}. We use $\sprcca$ security to argue about the distribution of ciphertext bits.
+This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22} in the context of establishing anonymity of KEMs, and is satisfied by many KEMs that are being considered for use in quantum-safe communication \cite{EC:Xagawa22}. We use $\sprcca$ security to argue about the distribution of ciphertexts.
 
 \begin{definition}[KEM security] \label{def:kem-security}
     We define two security notions, $\indcca$ and $\sprcca$, using the games shown in \cref{fig:kem-security}, and we define the respective advantages of an adversary~$\adv$ against the $\mathsf{goal} \in \{\indcca, \sprcca\}$ security of a KEM~$\KEM$ as
@@ -65,7 +65,7 @@ This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22} in th
 
     We also define two common choices for the simulators used in the game $\sprcca$: \begin{itemize}
         \item Let $\simulunif$ be a simulator that outputs uniformly random ciphertexts from the ciphertext space of $\KEM$.
-        \item Let $\simulbin$ be a simulator that outputs uniformly random elements of $\bin^\ell$, where $\ell$ is a suitable integer.
+        \item Let $\simulbin$ be a simulator that outputs uniformly random elements of $\bin^\ell$, where $\ell$ is a suitable integer representing the length of ciphertexts in bits.
     \end{itemize}
 \end{definition}
 
@@ -110,16 +110,17 @@ This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22} in th
 
         \item $\ul{\decaps}(\sk,\hat c) \to K$ is a deterministic \emph{decapsulation} algorithm that takes as input a secret key~$\sk$ and (obfuscated) ciphertext~$\hat c$, and outputs a shared secret~$K$.
     \end{itemize}
-    Note that any OKEM, as defined here, can also be viewed as a KEM as in \cref{def:kem}, but with a ciphertext space restricted to bit strings.
+    Note that any OKEM, as defined here, can also be viewed as a KEM as in \cref{def:kem}. Crucially, however, the ciphertext space of an OKEM must a a space of fixed-length bit strings.
 
-    As in \cref{def:kem}, we also demand the KEM correctness for OKEMs.
+    As in \cref{def:kem-corr}, we also demand the KEM correctness for OKEMs.
 \end{definition}
 
-For OKEMs, the notions of $\indcca$ security, OKEM correctness, and public-key collision probability are defined exactly as for KEMs (see \cref{fig:kem-security,def:kem-corr,def:pk-collisions}). For the $\sprcca$ security of OKEMs, we restrict the more general definition of KEMs to always use the simulator $\simulbin$ with $\ell = \obfctxtlen$.
+For OKEMs, the notions of $\indcca$ security, OKEM correctness, and public-key collision probability are defined exactly as for KEMs (see \cref{fig:kem-security,def:kem-corr,def:pk-collisions}).
 
-We occasionally denote the length in bits of KEM and OKEM public keys and ciphertext as $\pklen, \ctxtlen, \obfpklen, \obfctxtlen$ respectively.
+We occasionally denote the length in bits of the KEM public keys, KEM ciphertexts, OKEM public keys, and OKEM ciphertexts as $\pklen, \ctxtlen, \obfpklen, \obfctxtlen$, respectively.
 
 In addition to the above properties, an obfuscated KEM should satisfy additional randomness requirements. In particular, its ciphertexts should not be distinguishable from random bit strings. This is in contrast to regular KEMs that may have recognizable structure in $c$ even if they are $\sprcca$-secure.
+For this reason, we also restrict the more general definition of $\sprcca$ security for KEMs to always use the simulator $\simulbin$ with $\ell = \obfctxtlen$ in the context of OKEMs.
 
 \begin{definition}[Ciphertext uniformity]
 \label{def:ctxt-uniformity}
@@ -146,7 +147,7 @@ In addition to the above properties, an obfuscated KEM should satisfy additional
 
 \subsection{Constructing OKEMs}
 
-To construct an OKEM, a regular KEM can be augmented with encoding functions similar to \textsf{Elligator2}~\cite{CCS:BHKL13} or \textsf{Kemeleon}~\cite[Sec. 2.4]{CCS:GunSteVei24}. We define the following construct to bundle such functions --- note, however, that we do not require encoded public keys in this work, which is why we will not aim to capture all components of \textsf{Elligator2} or \textsf{Kemeleon}.
+To construct an OKEM, a regular KEM can be augmented with encoding functions similar to \textsf{Elligator2}~\cite{CCS:BHKL13} or \textsf{Kemeleon}~\cite[Sec.~2.4]{CCS:GunSteVei24}. We define the following construct to bundle such functions --- note, however, that we do not require encoded public keys in this work, which is why we will not aim to capture all components of \textsf{Elligator2} or \textsf{Kemeleon}.
 
 The construction below relies on two primary components to provide obfuscation of ciphertexts: First, the construction may reject or ``filter'' certain KEM public keys to ensure that the public keys and ciphertexts appear unrelated. Secondly, the ciphertexts generated by the KEM's encapsulation function might be ``encoded'' to resemble uniformly random bit strings and thus hide their structure. Together, these components are capable of obfuscating KEM ciphertexts.
 
@@ -338,13 +339,15 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
 
 \subsection{Obfuscated Key Exchange}
 
-In \cite{CCS:GunSteVei24}, the \pqobfs{} protocol is constructed for secure authenticated key exchange and it achievs obfuscation. This protocol allows for the initial setup of a shared key and achieves various other desirable security properties needed for a FEP:
-\pqobfs{} builds upon \obfsfour{} \cite{obfs4}, an established ``pluggable transport'' protocol for the Tor Project, and \pqobfs{} inherits features such as disguising flow signatures, probing resistance and some guarantees even if the node public key and node ID are known.
-However, \pqobfs{} gives even stronger guarantees when node public key and node ID are known, and may crucially also employ OKEMs with other constructions besides \textsf{Elligator2}~\cite{CCS:BHKL13}. This allows for the use of quantum-safe KEMs such as those standardized through the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization} which was not possible in \obfsfour{} without major changes.
+In \cite{CCS:GunSteVei24}, the \pqobfs{} protocol is constructed for secure authenticated key exchange and achieves obfuscation. This protocol allows for the initial setup of a shared key and achieves various other desirable security properties needed for a FEP:
+\pqobfs{} builds upon \obfsfour{} \cite{obfs4}, an established ``pluggable transport'' protocol for the Tor Project, and \pqobfs{} inherits features such as disguising flow signatures, probing resistance and confidentiality even if the node public key and node ID are known.
+However, \pqobfs{} gives even stronger guarantees than \obfsfour{} when node public key and node ID are known, and can be instantiated with many OKEMs and not just the \textsf{Elligator2} construction~\cite{CCS:BHKL13}. This allows for the use of quantum-safe KEMs such as those standardized through the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization} which was not possible in \obfsfour{} without major changes.
 
 Furthermore, \cite{CCS:GunSteVei24} provides a formal security model and proofs for both \obfsfour{} and \pqobfs{} demonstrating the various guarantees.
 
-To define the security of their obfuscated key exchange protocol, \cite{CCS:GunSteVei24} introduces the security notion of strong Obfuscated Key Exchange security ($\sObfKE$), capturing key indistinguishability, explicit server authentication, strong obfuscation, and probing resistance. Strong obfuscation describes the protocol's ability to be unidentifiable (compared to a simulated protocol run) by an adversary, so long as the server's private key is not revealed. Probing resistance, in turn, means that servers should not respond to messages from adversaries unless the server's public key was revealed \cite[Section~4.1]{CCS:GunSteVei24}.
+To define the security of their obfuscated key exchange protocol, \cite{CCS:GunSteVei24} introduces the security notion of strong Obfuscated Key Exchange security ($\sObfKE$), capturing key indistinguishability, explicit server authentication, strong obfuscation, and probing resistance.
+Strong obfuscation describes the protocol's ability to be unidentifiable (compared to a simulated protocol run) by an adversary, so long as the server's private key is not revealed. This is in contrast to the so-called regular obfuscation, achieved e.g.~by \obfsfour{}, which also requires the server's public key to remain secret.
+Probing resistance, in turn, means that servers should not respond to messages from adversaries unless the server's public key was revealed \cite[Section~4.1]{CCS:GunSteVei24}.
 
 In their follow-up work, \cite{EPRINT:GRSV25} constructed the \drivel{} protocol for the same general purpose. Compared to \pqobfs{}, \drivel{} only has one conceptual difference, in that it allows one of the two involved schemes to be a KEM instead of an OKEM.
 This is accomplished by the derivation of symmetric encryption keys from the semi-secret server information combined with a shared secret generated from an OKEM encapsulation against the server's public key (which was distributed out-of-band).
@@ -353,11 +356,9 @@ The symmetric encryption keys can then be used to encrypt the KEM public key in 
 This change has several advantages:
 \begin{itemize}
     \item The use of a KEM for the client allows for shorter messages and more efficient computation. The overhead of symmetric encryption is small.
-    \item This completely removes the need for obfuscated OKEM public keys: the server's public key is distributed out-of-band anyway and the client's public key is now encrypted.
-    \item If appropriate OKEM and KEM are used then \drivel{} can offer hybrid obfuscation, i.e. \drivel{} can combine traditional and post-quantum schemes to hedge against security failures in either component.
+    \item This completely removes the need for obfuscated OKEM public keys: the server's public key is distributed out-of-band anyway, and the client's public key is now encrypted.
+    \item If appropriate OKEM and KEM are used then \drivel{} can offer hybrid obfuscation, i.e.~\drivel{} can combine traditional and post-quantum schemes to hedge against security failures in either component.
 \end{itemize}
-
-The entire specification? for drivel is copied from Fig. 6 GRSV25 here for reference -> also update all citations to point here. Take code from drivel-minimal but check changes, or use git.
 
 The following theorem is a summary of \cite[Theorem~5]{EPRINT:GRSV25} and gives requirements on the functions used to instantiate \drivel{} in order to achieve $\sObfKE$ security. The instantiation requires a KEM, an OKEM, two functions $F_1, F_2$ used for authenticity as well as key derivation, and a symmetric encryption scheme.
 
@@ -382,7 +383,7 @@ When we construct OKEMs in later sections of this work, we will show that they a
         \item $\indonecca$ security of $\KEM$
     \end{itemize}
 
-    And, finally, the $\sObfKE$ security also depends on the $\prf$ security of $F_1$ and $F_2$, the $\swapprf$ security of $F_2$, and the symmetric encryption scheme's one-time ciphertext indistinguishability.    
+    And, finally, the $\sObfKE$ security also depends on the $\prf$ security of $F_1$ and $F_2$, the $\swapprf$ security of $F_2$, and the symmetric encryption scheme's one-time ciphertext indistinguishability.
 \end{theorem}
 
 We instantiate $F_1,F_2$ and the symmetric encryption scheme for the \drivel{} protocol as described later in \cref{sec:drivel-instance}.

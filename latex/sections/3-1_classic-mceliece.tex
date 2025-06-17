@@ -3,7 +3,7 @@
 Throughout this \cref{sec:obfuscating-classic-mceliece}, we use the positive integer variables $\ell, m,n,t,k$ where $\ell = 256, n < 2^m$ and $k=mt-n$ as defined in \cite{NISTPQC-R4:ClassicMcEliece22}. We work with matrices and vectors over $\mathbb F_2$ when examining the KEM and use bit strings in the defintion and analysis of OKEMs. As the dimensions of the matrices and vectors are fixed for a given parameter set, we associate the matrices and vectors with their canonical encoding as bit strings of appropriate length.
 
 \paragraph{Generation of Public Keys and Ciphertexts}
-Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in Round 4 of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}. Although NIST announced in early 2025 that Classic McEliece would not be standardized as part of this process \cite{nist-ir-8545}, we believe the scheme to be worthy of examination. Like \cite{EC:Xagawa22}, we only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
+Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in Round 4 of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}. Although NIST announced in early 2025 that Classic McEliece would not be standardized as part of this process \cite{nist-ir-8545}, we believe the scheme to be worthy of examination due to the very small size of ciphertexts. Like \cite{EC:Xagawa22}, we only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
  
 In Classic McEliece, public keys are the $k$ rightmost columns of a $mt \times n$ generator matrix in systematic form ($k = n - mt$). Ciphertexts are the $mt$ data bits corresponding to $n$-bit codewords with Hamming weight exactly $t$.
 
@@ -20,10 +20,10 @@ For encapsulation, rejection-sampling is used to generate a uniformly random vec
     \label{fig:classic-mceliece-spec}
 \end{figure}
 
-We define the same assumptions about computational hardness as in \cite[Definition~K.1]{EC:Xagawa22}. These have appeared in more general forms in previous literature studying the Niederreiter and McEliece cryptosystems, e.g. \cite{AC:CouFinSen01,EC:SaiXagYam18}. \Cref{fig:classic-mceliece-assumptions} shows corresponding game-based definitions of $\prkey, \mdsd$.
+We define the same assumptions about computational hardness as in \cite[Definition~K.1]{EC:Xagawa22}. These have appeared in more general forms in previous literature studying the Niederreiter and McEliece cryptosystems, e.g.~\cite{AC:CouFinSen01,EC:SaiXagYam18}. \Cref{fig:classic-mceliece-assumptions} shows corresponding game-based definitions of $\prkey, \mdsd$.
 \begin{itemize}
-    \item \textbf{PR-Key assumption:} It is computationally hard to distinguish real public keys from the rightmost columns of the systematic forms of uniformly random generator matrices (conditioned on the systematic form existing).
-    \item \textbf{modified Decisional Syndrome Decoding assumption:} It is computationally hard to distinguish ciphertexts generated using uniformly random generator matrices from uniformly random $(n-k)$-bit vectors.
+    \item \textbf{Pseudorandom Key (PR-Key) assumption:} It is computationally hard to distinguish real public keys from the rightmost columns of the systematic forms of uniformly random generator matrices (conditioned on the systematic form existing).
+    \item \textbf{modified Decisional Syndrome Decoding (mDSD) assumption:} It is computationally hard to distinguish ciphertexts generated using uniformly random generator matrices from uniformly random $(n-k)$-bit vectors.
 \end{itemize}
 
 For both games $\mathsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of an adversary $\adv$ against these games as
@@ -43,7 +43,7 @@ For both games $\mathsf{goal} \in \{\prkey, \mdsd\}$, we define the advantage of
 \end{figure}
 
 \paragraph{Simplifying the PR-Key assumption}
-Although we do not require uniformly random encodings of public keys for this thesis, we believe to have found an equivalent but simplified form of the $\prkey$ assumption, that we found worthy of inclusion.
+Although we do not require uniformly random encodings of public keys for this thesis, there exists an equivalent but simplified form of the $\prkey$ assumption, which we include here.
 
 Given the $\prkey$ assumption, public keys are computationally hard to distinguish from outputs of $\mathsf{RandGen}()$. We claim that $\mathsf{RandGen}()$ can be simplified to a new algorithm $\mathsf{RandGen}'()$, also shown in \cref{fig:classic-mceliece-assumptions}, with statistical indistinguishability between these two algorithms. This claim would imply computational indistinguishability between Classic McEliece's public keys and the outputs of $\mathsf{RandGen}'()$.
 
@@ -84,7 +84,7 @@ Given the $\prkey$ assumption, public keys are computationally hard to distingui
 \paragraph{Classic McEliece is a Natural OKEM}
 We now return to our examination of ciphertext uniformity in Classic McEliece.
 
-Ciphertext uniformity follows directly from the $\prkey$ and $\mdsd$ assumptions, and we show this reduction, and thus computational indistinguishability from uniformly random bit vectors below. Additionally, implementers should note that padding public keys and ciphertexts to the byte boundary may require \emph{randomized} padding. This is only needed if the number of bits is not evenly divisible by 8, and occurs only for the parameter set ``mceliece6960119''.  All other parameter sets have $mt = 0 \mod 8$. Padding of these values with zero bits (as suggested in the Classic McEliece specification) would trivially break the desired ciphertext uniformity.
+Ciphertext uniformity follows directly from the $\prkey$ and $\mdsd$ assumptions, and we show this reduction, and thus computational indistinguishability from uniformly random bit vectors below. Additionally, implementers should note that padding public keys and ciphertexts to the byte boundary may require \emph{randomized} padding. This is only needed if the number of bits is not evenly divisible by 8, and occurs only for the parameter set ``mceliece6960119''. All other parameter sets have $mt = 0 \mod 8$. Padding of these values with zero bits (as suggested in the Classic McEliece specification) would trivially break the desired ciphertext uniformity.
 
 As we require no KEM encoding to achieve ciphertext uniformity, there is no need to discuss first-encaps success probability.
 
@@ -100,7 +100,7 @@ As we require no KEM encoding to achieve ciphertext uniformity, there is no need
     \]
 \end{lemma}
 \begin{proof}
-    This follows directly from \cref{lem:ctxt-unif-for-bijections} because we can define $\encodectxt: \mathcal{C} \to \bin^\obfctxtlen$ to simply map vectors to their canonical representation as bit strings. This encoding function is deterministic, bijective and never fails, i.e. $\epsilon^\firstencapssuccess_{\mathsf{CM},\encodectxt} = 1$.
+    This follows directly from \cref{lem:ctxt-unif-for-bijections} because we can define $\encodectxt: \mathcal{C} \to \bin^\obfctxtlen$ to simply map vectors to their canonical representation as bit strings. This encoding function is deterministic, bijective and never fails, i.e.~$\epsilon^\firstencapssuccess_{\mathsf{CM},\encodectxt} = 1$.
     Further, we also do not reject any public keys, therefore
     $\epsilon^\firstkeygensuccess_{\mathsf{CM},\encodectxt} = 1$.
 
