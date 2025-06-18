@@ -406,7 +406,15 @@ We instantiate $F_1,F_2$ and the symmetric encryption scheme for the \drivel{} p
 
 In this thesis, we implement and evaluate the \drivel{} protocol, which targets $\sObfKE$ security.
 To make this document more self-contained, we reproduce the central definition of \drivel{} from \cite[Figure~6]{EPRINT:GRSV25} below.
-For further information not reproduced in \cref{fig:drivel}, we refer readers to the original paper.
+For further information not reproduced in \cref{fig:drivel}, we refer the reader to the original publication.
+
+Briefly, \drivel{} consists of two messages: A handshake request sent by a client to a bridge server and a response to this message.
+Initially, clients are aware of the bridge information consisting of an OKEM public key $\pk_S$ and a random bit string, $\mathsf{NodeID}$.
+
+Using this knowledge, clients generate their own ephemeral key pair using an unobfuscated KEM, and derive an early secret $ES$ using a shared secret gained by encapsulating against $\pk_S$. By encrypting their ephemeral KEM public key and transmitting the OKEM ciphertext alongside two PRF values, the server can verify the client's knowledge of the bridge information and check the message's integrity.
+
+The bridge server may then also derive $ES$, encapsulate against the ephemeral client public key, and complete the key schedule to produce a final secret $FS$ which is used to derive $\mathsf{KEY\_SEED}$ and a confirmation $\mathsf{auth}$.
+After transmitting the KEM ciphertext, $\mathsf{auth}$ and two PRF values, the client verifies the authenticity of the message and of $\mathsf{auth}$ before also deriving the now securely shared value $\mathsf{KEY\_SEED}$.
 
 \begin{figure}
     \input{algorithms/drivel}
