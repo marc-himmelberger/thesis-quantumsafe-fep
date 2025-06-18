@@ -431,7 +431,7 @@ transform_traffic <- function(data, size_column, granularity) {
             time_bin = round(timestamp, granularity)
         ) %>%
         group_by(.data$transport, .data$packet_type, .data$direction, .data$replicate, .data$time_bin) %>%
-        summarise(bitrate = sum({{ size_column }}) / 10^-granularity / 1000, .groups = "drop")
+        summarise(kbps = 8 * sum({{ size_column }}) / 10^-granularity / 1000, .groups = "drop")
 
     n <- df %>%
         group_by(.data$transport, .data$packet_type, .data$direction, .data$replicate) %>%
@@ -442,12 +442,12 @@ transform_traffic <- function(data, size_column, granularity) {
     # Average traffic over replicates, ensure all replicas have values (even 0) at all time_bins
     df <- df %>%
         group_by(.data$time_bin) %>%
-        complete(.data$transport, .data$packet_type, .data$direction, .data$replicate, fill = list(bitrate = 0)) %>%
+        complete(.data$transport, .data$packet_type, .data$direction, .data$replicate, fill = list(kbps = 0)) %>%
         group_by(.data$transport, .data$packet_type, .data$direction, .data$time_bin) %>%
-        summarise(bitrate = mean(.data$bitrate), .groups = "drop") %>%
-        # Remove direction column, but negate traffic with downstream flow (2 columns for bitrate)
+        summarise(kbps = mean(.data$kbps), .groups = "drop") %>%
+        # Remove direction column, but negate traffic with downstream flow (2 rows for kbps)
         mutate(
-            bitrate = ifelse(.data$direction == "upstream", .data$bitrate, -.data$bitrate)
+            kbps = ifelse(.data$direction == "upstream", .data$kbps, -.data$kbps)
         )
 
     list(n, df)
@@ -461,20 +461,20 @@ c(n, data_traffic_overview) %<-% (
 )
 
 data_traffic_overview %>%
+    filter(time_bin < 10) %>%
     mutate( # Example: "Drivel (L3b)"
         transport_type = sub(" \\(.*$", "", transport), # "Drivel"
     ) %>%
     group_by(time_bin, transport_type, packet_type, direction) %>%
     # because we lump all parameter sets together, we need to average upstream and downstream at each timepoint
-    summarise(bitrate = mean(bitrate), .groups = "drop") %>%
-    ggplot(aes(y = bitrate, x = time_bin, fill = packet_type)) +
+    summarise(kbps = mean(kbps), .groups = "drop") %>%
+    ggplot(aes(y = kbps, x = time_bin, fill = packet_type)) +
     ggtitle(paste0("Network Traffic over Time (TCP payloads, n=", n, ")")) +
     labs(fill = "Packet type (peer)") +
-    xlab("Time since client Tor startup [s]") +
+    xlab("Time since first packet [s]") +
     ylab("Network traffic [kbps]") +
-    scale_x_continuous(n.breaks = 10) +
-    geom_col() +
-    facet_wrap(~transport_type, ncol = 1, scales = "free_y")
+    geom_col(position = "stack") +
+    facet_wrap(~transport_type, ncol = 1)
 
 
 # Shows traffic in handshake only but more detailed
@@ -497,6 +497,7 @@ data_traffic_handshake_totals <- data_traffic %>%
     )
 
 p1 <- data_traffic_handshake %>%
+    filter(time_bin * 1000 < 35) %>%
     mutate( # Example: "Drivel (L3b)"
         transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
         transport_letter = ifelse(grepl("L0|obfs4", transport), # "b" or "a" for obfs4
@@ -504,7 +505,7 @@ p1 <- data_traffic_handshake %>%
             sub("^.*L\\d", "", sub("\\)", "", transport))
         )
     ) %>%
-    ggplot(aes(y = bitrate, x = time_bin * 1000, fill = transport_letter)) +
+    ggplot(aes(y = kbps, x = time_bin * 1000, fill = transport_letter)) +
     ggtitle(paste0("Traffic for Key Exchange (TCP payloads, n=", n, ")")) +
     xlab("Time since client Tor startup [ms]") +
     ylab("Network traffic [kbps]") +
