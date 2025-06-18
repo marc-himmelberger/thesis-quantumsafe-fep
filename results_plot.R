@@ -386,7 +386,7 @@ data_kems %>%
     ggplot(aes(y = mean, x = algo, color = op, shape = origin, alpha = origin)) +
     ggtitle(paste0("(O)KEM Running Time (n=", n, ")")) +
     labs(color = "Operation", shape = "Data Set") +
-    xlab("KEM scheme") +
+    xlab("(O)KEM name") +
     ylab("log Running time [ms]") +
     theme(legend.position = "left", axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_alpha_manual(values = c(0.7, 1)) +
@@ -415,7 +415,7 @@ data_kems %>%
     ) +
     ggtitle(paste0("(O)KEM Memory Usage (n=", n, ")")) +
     labs(color = "Operation") +
-    xlab("KEM scheme") +
+    xlab("(O)KEM name") +
     ylab("log Bytes allocated [KiB]") +
     theme(legend.position = "left", axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_y_continuous(trans = "log10") +
