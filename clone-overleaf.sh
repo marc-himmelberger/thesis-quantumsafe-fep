@@ -15,6 +15,7 @@ git reset --hard
 
 # Clone Overleaf
 git pull --no-edit -X theirs --squash -s subtree latex master
+git add latex/*
 git commit -m "Merge Overleaf"
 
 # Restore state
