@@ -579,8 +579,8 @@ p1 <- data_traffic_hist %>%
     scale_y_continuous(labels = scales::percent) +
     scale_x_log10() +
     geom_col(width = 0.1) +
-    geom_vline(aes(xintercept = 7240, linetype = "TCP Segmentation Size Limit (using GSO)"), colour = "red") +
-    geom_vline(aes(xintercept = 1460, linetype = "TCP Maximum Segment Size (MSS)"), colour = "blue") +
+    geom_vline(aes(xintercept = 7280, linetype = "TCP Packet Size Limit (using GSO)"), colour = "red") +
+    geom_vline(aes(xintercept = 1500, linetype = "Maximum Transmission Unit (MTU)"), colour = "blue") +
     scale_linetype_manual(
         name = "Size limits",
         values = c("dotted", "dotted")
@@ -596,8 +596,8 @@ p2 <- data_traffic_hist %>%
     scale_y_continuous(labels = scales::percent) +
     scale_x_log10() +
     geom_col(fill = "#619cff", width = 0.1) +
-    geom_vline(aes(xintercept = 7240, linetype = "TCP Segmentation Size Limit (using GSO)"), colour = "red") +
-    geom_vline(aes(xintercept = 1460, linetype = "TCP Maximum Segment Size (MSS)"), colour = "blue") +
+    geom_vline(aes(xintercept = 7280, linetype = "TCP Packet Size Limit (using GSO)"), colour = "red") +
+    geom_vline(aes(xintercept = 1500, linetype = "Maximum Transmission Unit (MTU)"), colour = "blue") +
     scale_linetype_manual(
         name = "Size limits",
         values = c("dotted", "dotted")
