@@ -13,7 +13,7 @@ setwd(dir = "~/thesis-quantumsafe-fep/results")
 if (!interactive()) {
     # Code for non-interactive sessions (e.g., Rscript)
     cat("This is running via Rscript, outputting to PDF...\n")
-    aspect <- c(4, 3)
+    aspect <- c(4, 2.7)
     scale <- 2.3
     size_in <- aspect * scale
     pdf("Rplots.pdf", width = size_in[1], height = size_in[2])
