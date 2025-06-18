@@ -240,7 +240,7 @@ data_preexist %>%
     ggplot(aes(y = perf, x = branch, fill = branch)) +
     ggtitle(paste0("Running Time Changes in Preexisting Benchmarks (n=", n, ")")) +
     xlab("Branch") +
-    ylab("Running time [ms/op]") +
+    ylab("Running time [ms]") +
     labs(fill = "Branch") +
     geom_boxplot(notch = TRUE) +
     facet_wrap(~benchmark, scales = "free")
@@ -249,7 +249,7 @@ data_preexist %>%
     ggplot(aes(y = bytes.alloc, x = branch, fill = branch)) +
     ggtitle(paste0("Memory Usage Changes in Preexisting Benchmarks (n=", n, ")")) +
     xlab("Branch") +
-    ylab("Bytes allocated [B/op]") +
+    ylab("Bytes allocated [B]") +
     labs(fill = "Branch") +
     geom_boxplot(notch = TRUE) +
     facet_wrap(~benchmark, scales = "free")
@@ -303,17 +303,17 @@ data_handshake <- data_handshake %>%
 data_handshake %>%
     ggplot(aes(y = perf, x = subbench_pretty, color = transport_letter)) +
     ggtitle(paste0("Simulated Handshake Running Time (n=", n, ")")) +
-    xlab("Benchmark name") +
+    xlab("KEM/OKEM combination") +
     ylab("Running time [ms]") +
     guides(color = "none") + # hides "transport_letter" from legend
     geom_point(size = 2) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     facet_grid(~protocol_with_level_pretty, scales = "free_x", space = "free")
 data_handshake %>%
-    ggplot(aes(y = bytes.alloc, x = subbench_pretty, color = transport_letter)) +
+    ggplot(aes(y = bytes.alloc / 1024 / 1024, x = subbench_pretty, color = transport_letter)) +
     ggtitle(paste0("Simulated Handshake Memory Usage (n=", n, ")")) +
-    xlab("Benchmark name") +
-    ylab("Bytes allocated [B]") +
+    xlab("KEM/OKEM combination") +
+    ylab("Bytes allocated [MiB]") +
     guides(color = "none") + # hides "transport_letter" from legend
     geom_point(size = 2) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -386,8 +386,8 @@ data_kems %>%
     ggplot(aes(y = mean, x = algo, color = op, shape = origin, alpha = origin)) +
     ggtitle(paste0("(O)KEM Running Time (n=", n, ")")) +
     labs(color = "Operation", shape = "Data Set") +
-    xlab("Benchmark name") +
-    ylab("log Running time [ms/op]") +
+    xlab("KEM scheme") +
+    ylab("log Running time [ms]") +
     theme(legend.position = "left", axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_alpha_manual(values = c(0.7, 1)) +
     guides(alpha = "none") +
@@ -406,7 +406,7 @@ data_kems %>%
         encoding = first(encoding),
         .groups = "drop"
     ) %>%
-    ggplot(aes(y = mean, x = algo, color = op)) +
+    ggplot(aes(y = mean / 1024, x = algo, color = op)) +
     scale_fill_manual(
         values = c(
             "#F8766D", "#00BA38", "#619CFF",
@@ -415,8 +415,8 @@ data_kems %>%
     ) +
     ggtitle(paste0("(O)KEM Memory Usage (n=", n, ")")) +
     labs(color = "Operation") +
-    xlab("Benchmark name") +
-    ylab("log Bytes allocated [B/op]") +
+    xlab("KEM scheme") +
+    ylab("log Bytes allocated [KiB]") +
     theme(legend.position = "left", axis.text.x = element_text(angle = 45, hjust = 1)) +
     scale_y_continuous(trans = "log10") +
     geom_point(position = position_dodge(1), size = 2) +
@@ -448,7 +448,9 @@ transform_traffic <- function(data, size_column, granularity) {
         # Remove direction column, but negate traffic with downstream flow (2 rows for kbps)
         mutate(
             kbps = ifelse(.data$direction == "upstream", .data$kbps, -.data$kbps)
-        )
+        ) %>%
+        # Filter kbps = 0 back out again to avoid artefacts
+        filter(.data$kbps != 0)
 
     list(n, df)
 }
@@ -631,6 +633,27 @@ data_runs %>%
         values = c("dotted", "dotted")
     ) +
     theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+    facet_nested(~ transport_type + transport_subid)
+
+# Version with log scale
+data_runs %>%
+    mutate( # Example: "Drivel (L3b)"
+        transport_type = sub("[abcd]\\)$", ")", transport), # "Drivel (L3)"
+        transport_subid = sub("\\)$", "", sub(".* \\(", "", transport)) # "L3a"
+    ) %>%
+    ggplot(aes(x = container, y = size, color = field)) +
+    ggtitle("Composition of Handshake Packets") +
+    xlab("Packet origin") +
+    ylab("log Field size [B]") +
+    labs(color = "Field") +
+    guides(color = guide_legend(nrow = 3)) + # Number of rows for legend
+    scale_y_continuous(transform = "log2", n.breaks = 12) +
+    geom_point(position = position_dodge(1), size = 2) +
+    theme(
+        legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid.minor = element_blank()
+    ) +
     facet_nested(~ transport_type + transport_subid)
 
 warnings()
