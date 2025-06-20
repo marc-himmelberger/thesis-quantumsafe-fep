@@ -110,7 +110,7 @@ This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22} in th
 
         \item $\ul{\decaps}(\sk,\hat c) \to K$ is a deterministic \emph{decapsulation} algorithm that takes as input a secret key~$\sk$ and (obfuscated) ciphertext~$\hat c$, and outputs a shared secret~$K$.
     \end{itemize}
-    Note that any OKEM, as defined here, can also be viewed as a KEM as in \cref{def:kem}. Crucially, however, the ciphertext space of an OKEM must a a space of fixed-length bit strings.
+    Note that any OKEM, as defined here, can also be viewed as a KEM as in \cref{def:kem}. Crucially, however, the ciphertext space of an OKEM must a space of fixed-length bit strings.
 
     As in \cref{def:kem-corr}, we also demand the KEM correctness for OKEMs.
 \end{definition}
@@ -233,7 +233,7 @@ The results apply to our filter-encode transformation, as it can be viewed as a 
 
 \begin{theorem}[Filter-Encode Security]
 \label{thm:filter-encode-security}
-    Let $\OKEM = \feo[\KEM, E]$ be a filter-encode obfuscated obfuscated KEM based on a regular KEM $\KEM$ and a corresponding obfuscator $E$ as per \cref{def:filter-encode-obfs}.
+    Let $\OKEM = \feo[\KEM, E]$ be a filter-encode obfuscated KEM based on a regular KEM $\KEM$ and a corresponding obfuscator $E$ as per \cref{def:filter-encode-obfs}.
     For any adversary $\adv$ against the $\indcca$ security of $\OKEM$, there exists an algorithm $\bdv$ such that
     \[
         \advantage{\indcca}{\OKEM}[(\adv)]
@@ -265,7 +265,7 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
     Let $\OKEM = \feo[\KEM, E]$ be a filter-encode obfuscated KEM based on a regular KEM $\KEM$ and a corresponding obfuscator $E$ with a \emph{deterministic} encoding function $\encodectxt$.
 
     Let $\mathbf{P}' \subseteq \mathbf{P}$ denote the subset of the public key space of $\KEM$ for which $\filterpk$ outputs $1$, i.e. the set of allowed public keys.
-    Let $\mathbf{C}' \subseteq \mathbf{C}$ then denote the subset of the ciphertext space of $\KEM$ where $\encodectxt$ does not output $\bot$, i.e. the set of encodeable ciphertexts.
+    Let $\mathbf{C}' \subseteq \mathbf{C}$ then denote the subset of the ciphertext space of $\KEM$ where $\encodectxt$ does not output $\bot$, i.e. the set of encodable ciphertexts.
     Let $\bin^\ell$ be the output space of $\encodectxt$.
 
     If $\encodectxt$ is a bijective function from $\mathbf{C}'$ to $\bin^\ell$, then for any adversary against the ciphertext uniformity of $\OKEM$, there exists an adversary $\bdv$ against the $\sprcpa$ security of $\KEM$ with respect to the simulator $\simulunif$ such that

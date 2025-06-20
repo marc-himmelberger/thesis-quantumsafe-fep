@@ -249,7 +249,7 @@ The length of the ciphertext is then XORed with the first two bytes of the newly
     \item the AE ciphertext.
 \end{itemize}
 
-Upon receiving a packet, the receiver updates its $\mathsf{counter}$ and $S$ values, deobfuscated the length field, and decrypts the AE ciphertext. Finally, the data is passed up to the packet layer.
+Upon receiving a packet, the receiver updates its $\mathsf{counter}$ and $S$ values, de-obfuscates the length field, and decrypts the AE ciphertext. Finally, the data is passed up to the packet layer.
 
 \paragraph{An Informal Security Analysis}
 
@@ -301,7 +301,7 @@ To this end, we introduce a hash function $\mathbf{H}$ and replace the inputs to
         $F_1$ is a PRF and $F_2$ is a dual PRF.
         $\mathbf{H}$ is a collision-resistant hash function.
         Core differences to the \drivel{} protocol from \cref{fig:drivel} are highlighted in blue boxes.
-        Messages are easily parsed due the the packet layer providing boundaries and the fixed-length components.
+        Messages are easily parsed due the packet layer providing boundaries and the fixed-length components.
         A dashed arrow represents the option to send an arbitrary amount of uniformly random bits for the purpose of traffic shaping, e.g. by sending packets consisting only of padding.
         Dotted lines delimit the framing layer phases between $FL.\mathsf{Rekey}$ operations.
     }

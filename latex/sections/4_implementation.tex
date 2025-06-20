@@ -221,9 +221,9 @@ Due to the different origin of these KEM and OKEM implementations, and the lack 
 
     \item \texttt{internal/cryptofactory} contains the final additional submodule and constitutes our main contribution to the \texttt{internal} module. Its job is to expose a list of supported KEMs and OKEMs for test purposes, as well as two constructors \texttt{NewKem} and \texttt{NewOkem} allowing for the construction of a scheme based only on its name as described above. Several nested submodules implement specific functionality:
     \begin{itemize}
-        \item \texttt{internal/cryptofactory/encoding\_classic\_mceliece} implements a filter-encode-obfuscator for ``Classic-McEliece-6960119'',
-        \item \texttt{internal/cryptofactory/encoding\_hqc} implements filter-encode-obfuscators for all three HQC parameter sets,
-        \item \texttt{internal/cryptofactory/encoding\_kemeleon} implements the ``Non-Rejection Sampling Variant'' of the filter-encode-obfuscators for ML-KEM from \cite{irtf-cfrg-kemeleon-00},
+        \item \texttt{internal/cryptofactory/encoding\_classic\_mceliece} implements a filter-encode obfuscator for ``Classic-McEliece-6960119'',
+        \item \texttt{internal/cryptofactory/encoding\_hqc} implements filter-encode obfuscators for all three HQC parameter sets,
+        \item \texttt{internal/cryptofactory/encoding\_kemeleon} implements the ``Non-Rejection Sampling Variant'' of the filter-encode obfuscators for ML-KEM from \cite{irtf-cfrg-kemeleon-00},
         \item \texttt{internal/cryptofactory/filter\_encode} defines an interface for these obfuscators and implements the generic FEO transformation from \cref{def:filter-encode-okem}, and, finally,
         \item \texttt{internal/cryptofactory/oqs\_wrapper} implements a thin wrapper which makes the \texttt{liboqs} KEM interface compatible with our interface defined in \texttt{internal/kems}\footnote{Our interface differs from the existing \texttt{liboqs} and Go interfaces in that it uses the data types introduced in \texttt{internal/cryptodata}, more closely matches the KEM syntax used in this thesis, and provides fewer pieces of information about the KEM.}.
     \end{itemize}
