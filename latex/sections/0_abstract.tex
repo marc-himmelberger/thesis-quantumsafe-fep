@@ -1,5 +1,16 @@
 \begin{abstract}
+The Tor network enables anonymous communication by routing traffic through volunteer-operated relays, but access to the network is often restricted through censorship that targets identifiable protocol patterns.
+In order to counteract such restrictions, protocols must resist fingerprinting, for example, by obfuscating their traffic to appear like random bytes on the wire.
 
-Abstract here
-
+In this thesis, we adapt the Tor Project's lyrebird implementation to include the obfuscated key exchange protocol \drivel{}, which extends the \obfsfour{} protocol with post-quantum security and stronger obfuscation.
+We analyze the Classic-McEliece and HQC key exchange mechanisms, defining mappings from ciphertexts to random byte strings required for their deployment in \drivel{}. These schemes are then integrated with our implementation, in addition to the previously examined ML-KEM and FrodoKEM schemes.
+Finally, we empirically evaluate our implementation using benchmarks and deployments under laboratory conditions and suggest concrete changes to \drivel{} to increase performance and reduce identifiable traffic patterns in the handshake.
 \end{abstract}
+
+\clearpage
+\section*{Acknowledgement}
+I would like to extend my thanks first to my supervisors Shannon Veitch, Dr.~Felix Günther and Prof.~Dr.~Kenny Paterson for guiding me towards this engaging topic and giving me the opportunity to apply my skills for both theoretical analyses as well as a practical implementation. Their ideas and feedback in every discussion served to improve my thesis tremendously and I am grateful for the chance to contribute to such a relevant topic.
+
+In addition, I want to thank Dr.~Keita Xagawa for his time and insights, which helped me better understand prior research in the space of anonymity of quantum-safe KEMs.
+
+Finally, I thank my friends, colleagues, family, my fiancée, and our cat --- for keeping me motivated, for listening to many overly-technical explanations of my thesis, and for supporting me in more ways than I can count throughout the entirety of my studies.

@@ -110,7 +110,177 @@
 \thesistype{Master's Thesis}
 \advisors{Advisors: Prof.~Kenneth G. Paterson, Dr.~Felix Günther (IBM Research - Zürich), Shannon Veitch}
 \department{Applied Cryptography Group\\Institute of Information Security\\Department of Computer Science}
-\date{June 20, 2025}
+\date{June 30, 2025}
+
+% ######## CUSTOM style code ########
+\lstdefinestyle{myStyle}{
+    breaklines=true,
+    frame=leftline,
+    numbers=left,
+    backgroundcolor=\color{gray!10!white},
+}
+\lstset{style=myStyle}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcommand{\getsr}{\xleftarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
+\newcommand{\tor}{\xrightarrow{\smash{\raisebox{-1.75pt}{$\scriptscriptstyle\$$}}}}
+\newcommand{\ul}[1]{\underline{\smash{#1}}}  % tight underline
+\newcommand{\KEM}{\ensuremath{\mathsf{KEM}}}
+\newcommand{\OKEM}{\ensuremath{\mathsf{OKEM}}}
+\newcommand{\pkcoll}[1]{\pcnotionstyle{pkcoll}_{#1}}
+\newcommand{\obfpklen}{{\mathsf{pl}_\OKEM}}
+\newcommand{\obfctxtlen}{{\mathsf{cl}_\OKEM}}
+\newcommand{\pklen}{{\mathsf{pl}_\KEM}}
+\newcommand{\ctxtlen}{{\mathsf{cl}_\KEM}}
+\newcommand{\pkobf}{\hat{\pk}}
+
+\newcommand{\simulbin}{\mathcal{S}_\$}
+\newcommand{\simulunif}{\mathcal{S}_\mathcal{C}}
+
+\newcommand{\feo}{\textsf{\textnormal{FEO}}}
+
+\newcommand{\obfsfour}{\textsf{obfs4}}
+\newcommand{\pqobfs}{\textsf{pq-obfs}}
+\newcommand{\drivel}{\textsf{drivel}}
+
+\newcommand{\gopkgref}[2]{\href{https://pkg.go.dev/#1@#2}{#1} #2}
+
+\pcfixcleveref
+
+% Define aliases
+\renewcommand{\pcadvantagename}{\mathsf{Adv}}
+\renewcommand{\pcadvantagesuperstyle}[1]{#1}
+\renewcommand{\pcadvantagesubstyle}[1]{#1}
+
+% Set up style for algorithms
+\definecolor{lngray}{gray}{0.5} % gray line numbers
+\renewcommand{\pclnspace}{0.5em} % spacing of numbering
+\renewcommand{\pclnrspace}{0em}
+\renewcommand{\pclnstyle}[1]{\text{\scriptsize\color{lngray} \num[minimum-integer-digits=2]{#1}}} % zero-pad
+\renewcommand{\pclnseparator}{} % no separator
+\makeatletter % put comments at the end of lines, could not do it just with hfill & fiends so I dug into internals :P
+\newcommand{\lncomment}[1]{ \@pc@modeend& \mbox{\pccomment{}\hspace{-0.75em} \ensuremath{#1}} \\  }
+\newcommand{\titlecomment}[1]{ \hfill \mbox{\pccomment{}\hspace{-0.75em} \ensuremath{#1}}}
+\makeatother
+% Refine cryptocode styles and add more notions
+\renewcommand{\pcnotionstyle}[1]{\ensuremath{\mathsf{#1}}}
+\renewcommand{\kgen}{\pcalgostyle{KeyGen}}
+
+\providecommand{\encaps}{\pcalgostyle{Encaps}}
+\providecommand{\decaps}{\pcalgostyle{Decaps}}
+\providecommand{\decapsoracle}{\mathcal{O}_{\decaps}}
+\providecommand{\filterpk}{\pcalgostyle{FilterPk}}
+\providecommand{\encodectxt}{\pcalgostyle{EncodeCtxt}}
+\providecommand{\decodectxt}{\pcalgostyle{DecodeCtxt}}
+\providecommand{\sprcca}{\pcnotionstyle{SPR\pcmathhyphen{}CCA}}
+\providecommand{\sprcpa}{\pcnotionstyle{SPR\pcmathhyphen{}CPA}}
+
+\providecommand{\sObfKE}{\pcnotionstyle{sObfKE}}
+\providecommand{\swapprf}{\pcnotionstyle{swap\pcmathhyphen{}PRF}}
+\providecommand{\indonecca}{\pcnotionstyle{IND\pcmathhyphen{}1CCA}}
+
+\providecommand{\firstkeygensuccess}{\pcnotionstyle{1kgensucc}}
+\providecommand{\firstencapssuccess}{\pcnotionstyle{1encsucc}}
+
+\providecommand{\pkunif}{\pcnotionstyle{pk\pcmathhyphen{}unif}}
+\providecommand{\ctxtunif}{\pcnotionstyle{ctxt\pcmathhyphen{}unif}}
+
+\providecommand{\prkey}{\pcnotionstyle{PR\pcmathhyphen{}Key}}
+\providecommand{\mdsd}{\pcnotionstyle{mDSD}}
+\providecommand{\skdsd}{\pcnotionstyle{skDSD}}
+
+
+\providecommand{\twodqcsd}{\pcnotionstyle{2\pcmathhyphen{}DQCSD}}
+\providecommand{\threedqcsd}{\pcnotionstyle{3\pcmathhyphen{}DQCSD}}
+
+\providecommand{\sObf}{\pcnotionstyle{sObf}}
+
+% ######## Start macros.tex
+
+\definecolor{RoyalBlue}{RGB}{65,105,225}
+
+% ClientAction and ServerAction
+% Print a command executed by the client/server
+% main argument: the text, optional argument: tikz modifier
+\newcommand{\ClientAction}[2][]{
+	\node[right,#1] at (\ClientX, \Y) {#2};
+}
+\newcommand{\ServerAction}[2][]{
+	\node[left,#1] at (\ServerX, \Y) {#2};
+}
+\newcommand{\ServerActionLeft}[2][]{
+	\ServerAction[text width=\ServerLeftTextwidth,align=left,#1]{#2}
+}
+\newcommand{\SharedAction}[2][]{
+	\node[#1] at ($1/2*(\ClientX, \Y)+1/2*(\ServerX, \Y)$) {#2};
+}
+
+% ClientToServer and ServerToClient
+% Draws a message flow from client-to-server or server-to-client, with text above and below
+% 1st argument (optional): line type, default ->
+% 2nd argument: text above
+% 3rd argument: text below
+% Example: \ClientToServer{$Y$}{}
+% Example: \ClientToServer[<->,double]{$Y$}{over an encrypted channel}
+\newcommand{\ClientToServer}[3][->]{
+	\NextLine[0.5]
+	\draw[#1] (\ArrowLeft,\Y) -- node[above] {#2} node[below] {#3} (\ArrowRight,\Y) ;
+	% \NextLine[0.5]
+}
+\newcommand{\ServerToClient}[3][->]{
+	\NextLine[0.5]
+	\draw[#1] (\ArrowRight,\Y) -- node[above] {#2} node[below] {#3} (\ArrowLeft,\Y) ;
+	% \NextLine[0.5]
+}
+% Draws a horizontal line across the entire page to denote the start and end of protocol phases
+% 1st argument (optional): line type, default "dotted"
+% 2nd argument: text above
+% 3rd argument: text below
+\newcommand{\PhaseBreak}[3][dotted]{
+	\NextLine[0.5]
+	\draw[#1] (\ClientX,\Y) -- node[above] {#2} node[below] {#3} (\ServerX,\Y) ;
+	% \NextLine[0.5]
+}
+
+% Spacing factor for NextLines
+\def\NextLineSpacing{0.45}
+
+% NextLine
+% 1st argument (optional): amount of spacing to increment by, default 1.0
+% Example: \NextLine
+% Example: \NextLine[1.5]
+\newcommand{\NextLine}[1][1.0]{
+	\pgfmathparse{\Y-\NextLineSpacing*#1}
+	\edef\Y{\pgfmathresult}
+}
+
+
+\newcommand{\highlightbox}[2][RoyalBlue!20]{\adjustbox{cframe=#1, bgcolor=#1}{\strut #2}}
+
+\providecommand{\nodeid}{\ensuremath{\mathsf{NodeID}}}
+\providecommand{\nodeidlen}{\ensuremath{\mathsf{nl}}}
+\providecommand{\pstate}{\ensuremath{\mathsf{st}}}
+\providecommand{\macregister}{\ensuremath{\mathcal{S}_\mathsf{MAC}}}
+\providecommand{\cpaddist}{\ensuremath{\mathcal{D}_\mathsf{pad}_C}}
+\providecommand{\cpaddist}{\ensuremath{\mathcal{D}_\mathsf{pad}_S}}
+
+\newcommand{\funPRF}{\ensuremath{\pcalgostyle{F}_1}\xspace}
+\newcommand{\funPRFoutlen}{\ensuremath{\mathsf{fl}_1}}
+\newcommand{\funComb}{\ensuremath{\pcalgostyle{F}_2}\xspace}
+\newcommand{\funComboutlen}{\ensuremath{\mathsf{fl}_2}}
+
+\newcommand{\symmenc}{\pcalgostyle{SE}}
+\newcommand{\funEnc}{\pcalgostyle{\symmenc.Enc}}
+\newcommand{\funDec}{\pcalgostyle{\symmenc.Dec}}
+
+\newcommand{\keylen}{\ensuremath{\mathsf{kl}}}
+\newcommand{\textlit}[1]{\ensuremath{\text{``\texttt{#1}''}}}
+
+\providecommand{\conc}{\|}
+\crefname{conjecture}{Conjecture}{Conjectures}
+
+% ######## END CUSTOM style code ########
 
 % ######## CUSTOM style code ########
 \lstdefinestyle{myStyle}{

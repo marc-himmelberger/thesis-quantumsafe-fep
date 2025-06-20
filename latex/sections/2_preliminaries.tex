@@ -13,7 +13,7 @@ Günther et al.~\cite{CCS:GunSteVei24} first described a framework for the prova
 
 The work of Günther et al.~was expanded upon in \cite{EPRINT:GRSV25} where the notation was simplified and the proposed protocol from \cite{CCS:GunSteVei24} was slightly modified to yield \drivel{}, the obfuscated key exchange protocol we will implement in this thesis.
 
-We adapt the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} to our setting. Concretely, we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted in encrypted form (obviating the need for public-key obfsucation) or out-of-band in \drivel{}. Note that we will retain the ability to reject certain public keys, as this can be required for obfuscating ciphertexts. The definitions are equivalent in all other aspects.
+We adapt the definitions from \cite{CCS:GunSteVei24,EPRINT:GRSV25} to our setting. Concretely, we omit the concept of obfuscated public keys and focus only on ciphertext obfuscation, as public keys are only transmitted in encrypted form (obviating the need for public-key obfuscation) or out-of-band in \drivel{}. Note that we will retain the ability to reject certain public keys, as this can be required for obfuscating ciphertexts. The definitions are equivalent in all other aspects.
 
 \subsection{Key Encapsulation Mechanisms}
 
@@ -337,7 +337,7 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
     Combining these results with the triangle inequality, we obtain the claimed bound.
 \end{proof}
 
-\subsection{Obfuscated Key Exchange}
+\subsection{Obfuscated Key Exchange} \label{ssec:prelim-obf-keyex}
 
 In \cite{CCS:GunSteVei24}, the \pqobfs{} protocol is constructed for secure authenticated key exchange and achieves obfuscation. This protocol allows for the initial setup of a shared key and achieves various other desirable security properties needed for a FEP:
 \pqobfs{} builds upon \obfsfour{} \cite{obfs4}, an established ``pluggable transport'' protocol for the Tor Project, and \pqobfs{} inherits features such as disguising flow signatures, probing resistance and confidentiality even if the node public key and node ID are known.
