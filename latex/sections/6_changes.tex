@@ -13,7 +13,7 @@ This section analyzes possibilities to allow for more flexibility in shaping \dr
 \paragraph{Fragmentation is Needed}
 When deploying \drivel{}, it may be desirable to offer even more flexibility for traffic shaping than \obfsfour{}. In particular, \obfsfour{} sends two messages in its handshake, before fragmenting packets using a customizable message size distribution based on a deterministic pseudorandom number generator and a seed determined by the bridge server.
 
-While \drivel{} also requires two messages to complete the handshake, \obfsfour{} messages range from 141 to 8 192 bytes in length, and \drivel{} message sizes depend on the selected KEM and OKEM. Ignoring the padding for the moment, \cref{tab:frag-msg-sizes} gives an overview of the minimum message sizes required for different combinations of KEM and OKEM in \drivel{}.
+While \drivel{} also requires two messages to complete the handshake, \obfsfour{} messages range from 141 to 8~192 bytes in length, and \drivel{} message sizes depend on the selected KEM and OKEM. Ignoring the padding for the moment, \cref{tab:frag-msg-sizes} gives an overview of the minimum message sizes required for different combinations of KEM and OKEM in \drivel{}.
 
 \begin{table}
     \centering \footnotesize
@@ -21,28 +21,28 @@ While \drivel{} also requires two messages to complete the handshake, \obfsfour{
     KEM with\newline Parameter Sets & OKEM with\newline Parameter Sets & Minimum Sizes (bytes)\newline Level 1 / Level 3 / Level 5 \\ \hline
     
     \multirow{4}{*}[-2.6em]{\shortstack[l]{ML-KEM\\ 512 / 768 / 1024}}
-    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 928 / 1 372 / 1 808 \\
-    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 1 709 / 2 468 / 3 258 \\
-    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 5 265 / 10 194 / 16 021 \\
-    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 10 552 / 16 960 / 23 232 \\ \hline
+    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 928 / 1~372 / 1~808 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 1~709 / 2~468 / 3~258 \\
+    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 5~265 / 10~194 / 16~021 \\
+    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 10~552 / 16~960 / 23~232 \\ \hline
 
     \multirow{4}{*}[-2.6em]{\shortstack[l]{BIKE\\ L1 / L3 / L5}}
-    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 1 669 / 3 271 / 5 362 \\
-    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 2 450 / 4 367 / 6 812 \\
-    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 6 006 / 12 093 / 19 575 \\
-    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 11 293 / 18 859 / 26 786 \\ \hline
+    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 1~669 / 3~271 / 5~362 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 2~450 / 4~367 / 6~812 \\
+    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 6~006 / 12~093 / 19~575 \\
+    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 11~293 / 18~859 / 26~786 \\ \hline
 
     \multirow{4}{*}[-2.6em]{\shortstack[l]{HQC\\ 128 / 192 / 256}}
-    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 2 377 / 4 710 / 7 485 \\
-    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 3 158 / 5 806 / 8 935 \\
-    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 6 714 / 13 532 / 21 698 \\
-    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 12 001 / 20 298 / 28 909 \\ \hline
+    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 2~377 / 4~710 / 7~485 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 3~158 / 5~806 / 8~935 \\
+    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 6~714 / 13~532 / 21~698 \\
+    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 12~001 / 20~298 / 28~909 \\ \hline
 
     \multirow{4}{*}[-2.6em]{\shortstack[l]{FrodoKEM\\ 640 / 976 / 1344}} 
-    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 9 744 / 15 820 / 21 760 \\
-    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 10 525 / 16 916 / 23 210 \\
-    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 14 081 / 24 642 / 35 973 \\
-    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 19 368 / 31 408 / 43 184
+    & Classic-McEliece\newline 348864 / 460896 / 6688128\vspace{0.3em} & 9~744 / 15~820 / 21~760 \\
+    & ML-Kemeleon\newline 512 / 768 / 1024\vspace{0.3em} & 10~525 / 16~916 / 23~210 \\
+    & FEO-HQC\newline 128 / 192 / 256\vspace{0.3em} & 14~081 / 24~642 / 35~973 \\
+    & FrodoKEM\newline 640 / 976 / 1344\vspace{0.3em} & 19~368 / 31~408 / 43~184
     \end{tabular}
     \caption[
         Minimum sizes in bytes for the first \drivel{} message without padding depending on the choice of KEM and OKEM
@@ -55,7 +55,7 @@ While \drivel{} also requires two messages to complete the handshake, \obfsfour{
 
 The concern in this section is that censors may observe particular traffic patterns. In particular, a bridge server never sends a reply before receiving the entire first \drivel{} or \obfsfour{} message in order to avoid probing attacks. This leads to quiet periods which may constitute an identifiable feature of the pluggable transport.
 
-As is obvious from the table, sending the entire first \drivel{} message in full before the bridge responds (after verifying the PRF value at the end of message) leads to a large quiet period. Thus, for all but a few KEM/OKEM combinations, this quiet period would quickly be identifiable. At best, using Classic McEliece or ML-Kemeleon as an OKEM while employing ML-KEM or BIKE as a KEM still yields sizes not exceeding 8 192 bytes but the quiet periods would still be easy to distinguish from e.g.~\obfsfour{} traffic.
+As is obvious from the table, sending the entire first \drivel{} message in full before the bridge responds (after verifying the PRF value at the end of message) leads to a large quiet period. Thus, for all but a few KEM/OKEM combinations, this quiet period would quickly be identifiable. At best, using Classic McEliece or ML-Kemeleon as an OKEM while employing ML-KEM or BIKE as a KEM would still yield sizes not exceeding 8~192 bytes, but the quiet periods would nonetheless be easy to distinguish from e.g.~\obfsfour{} traffic.
 
 \paragraph{Desirable Security Properties}
 Before discussing the options to mitigate this risk, let us recall one of the advantages \drivel{} has over \obfsfour{}. In \obfsfour{}, censors can retroactively identify handshake packets by verifying the MAC value if the bridge information is leaked, as the MAC it is keyed only with the bridge information. This allows censors to definitively identify clients that had previously connected to a bridge, as well as any future clients connecting to the bridge. This property has been discussed in \cite[Section~6]{CCS:GunSteVei24} and was also recognized earlier by David Fifield in \cite{obfs4-pk-reveal-distinguisher}.
@@ -68,10 +68,10 @@ For $\drivel$ to maintain its security, it is necessary that:
     \item[b)] the client's message proving this is indistinguishable from random bits, even given the bridge information and independent proofs from other clients.
 \end{itemize}
 
-Violating a) would make the bridge vulnerable to probing attacks by censors that do not know the bridge information. On the other hand, violating b) would trivially break $\sObf$. Both of these outcomes would be undesirable and $\sObfKE$ from \cite{CCS:GunSteVei24} captures both avenues of attack, since the predicate \textsf{Probed} automatically wins the game, and public keys can be revealed when asked to distinguish a simulated from a real transcript in \textsc{ChallExec}, respectively.
+Violating a) would make the bridge vulnerable to probing attacks by censors that do not know the bridge information. On the other hand, violating b) would trivially break $\sObf$. Both of these outcomes would be undesirable and $\sObfKE$ from \cite{CCS:GunSteVei24} captures both avenues of attack, since the predicate \textsf{Probed} automatically wins the game, and public keys can be revealed when asked to distinguish a simulated transcript from a real transcript in \textsc{ChallExec}, respectively.
 
-Due to the required proof in the client's initial communication alone, it is strictly necessary that the bridge server receive a certain minimum amount of data before it may respond in any way.
-To break up the first large \drivel{} message, we could, for example, split it into parts and let the server respond after receiving smaller parts. However, the first such ``fragment'' would need to contain at least a suitable proof that the client knows the bridge information.
+Due to the required proof in the client's initial communication alone, it is strictly necessary that the bridge server receives a certain minimum amount of data before it may respond in any way.
+To break up the first large \drivel{} message, we could, for example, split it into parts and let the server respond after receiving each of these smaller parts. However, the first such ``fragment'' would need to contain at least a suitable proof that the client knows the bridge information.
 
 \paragraph{An Informal Security Notion}
 In order to outline the above requirements a bit more, we can informally define the initial interaction between an adversary and the bridge servers. One goal of the initial exchange, among others, is to arrive at a shared secret, that can aid in subsequent fragmentation, using just the first message from the client to the server.
@@ -104,8 +104,8 @@ The OKEM covers both requirements, and probing resistance is also achieved by au
 It is hard to imagine a significant potential in message size reduction outside of removing other components of the first \drivel{} message, as we conjecture the following:
 Any protocol satisfying the requirements listed above could act as an OKEM.
 %(or an inefficient MAC).
-The existence of a more efficient protocol would thus imply the existence of a more efficient OKEM, which, due to the large scope of the NIST Standardization, seems implausible.
-This gives us confidence that the constructions in \cref{ssec:drivel-mod} below are both close to optimal in terms of the size of the first fragment.
+The existence of a more efficient protocol would thus imply the existence of a more efficient OKEM, which, due to the large scope of the NIST Standardization \cite{nist-standardization}, seems implausible.
+This gives us confidence that both the constructions in \cref{ssec:drivel-mod} below are close to optimal in terms of the size of the first fragment.
 
 \paragraph{Arbitrary Fragmentation}
 We have focused on maintaining $\sObf$ security during fragmentation up until now, as this was also a design goal for \drivel{}.
@@ -118,7 +118,7 @@ The current epoch hour is used as an input to every PRF calculation, and verifie
 This allows bridges to partially clear the set of already received PRF values (used to prevent replay attacks checks) every hour.
 In particular, the value of $x$ must be such that the chance of collisions in those $x$ bytes must be kept small within a given epoch hour.
 
-As an example, \cite{tor-metrics} reports around 112 000 users across all pluggable transports and around 1 900 bridges, so assuming an even distribution of users across bridges, this would mean an average of 60 active users per bridge, each making at most 60 handshakes per epoch hour. Using those numbers, choosing $x=6$ already yields a collision probability $\leq 3 \cdot 10^{-8}$ by the birthday bound (with $2^{48}$ possible values and only $2^{11.8}$ samples per epoch hour).
+As an example, \cite{tor-metrics} reports around 112~000 users across all pluggable transports and around 1~900 bridges, so assuming an even distribution of users across bridges, this would mean an average of 60 active users per bridge, each making at most 60 handshakes per epoch hour. Using those numbers, choosing $x=6$ already yields a collision probability $\leq 3 \cdot 10^{-8}$ by the birthday bound (with $2^{48}$ possible values and only $2^{11.8}$ samples per epoch hour).
 
 This approach is very similar in spirit to the first message in \obfsfour{} (in that it does not use a shared secret in the calculation of the PRF value) and allows for much more flexibility in traffic shaping through padding. The key difference from \obfsfour{} is the removal of one of the PRF values and the aggressive reduction in message size by replacing the obfuscated client public key with randomized data.
 
@@ -181,9 +181,9 @@ However, replayed messages by definition also contain the same value for $A_C$ a
         & FEO-HQC\newline 128 / 192 / 256
         & FrodoKEM\newline 640 / 976 / 1344
         \\ \hline
-    Level 1 & 112 & 893 & 4 449 & 9 736 \\
-    Level 3 & 172 & 1 268 & 8 994 & 15 760 \\
-    Level 5 & 224 & 1 674 & 14 437 & 21 648
+    Level 1 & 112 & 893 & 4~449 & 9~736 \\
+    Level 3 & 172 & 1~268 & 8~994 & 15~760 \\
+    Level 5 & 224 & 1~674 & 14~437 & 21~648
     \end{tabular}
     \caption[
         Minimum sizes in bytes of a first fragment before a bridge may respond depending on the choice of OKEM.
@@ -202,7 +202,7 @@ Once this first fragment has been received by the server, later fragmentation do
 \paragraph{Existing Fragmentation Mechanisms in obfs4}
 The lyrebird repository's \obfsfour{} implementation features a packet-based system capable of transferring different types of messages during the data transfer phase. This system could be reused to implement more flexible fragmentation after the initial fragment $c_S \conc A_C$ is transmitted, but its construction duplicates part of the \drivel{} protocol.
 
-At the time of writing, this packet-based system can be outlined as follows. Given a securely established shared secret $\mathsf{KEY\_SEED}$, client and bridge both derive two sets of the following values from it:
+At the time of writing, this packet-based system can be outlined as follows. Given a securely established shared secret $\mathsf{KEY\_SEED}$, both client and bridge derive two sets of the following values from it:
 \begin{itemize}
     \item A 32-byte authenticated encryption (AE) key $K_\mathsf{AE}$,
     \item a 16-byte nonce prefix $\mathsf{pre}$,
@@ -264,7 +264,7 @@ This contrasts harshly with the handling of errors and invalid MAC values in the
 
 If active attackers attempt to fingerprint the connection by modifying the length value to provoke a closure of the connection (e.g. flipping the most significant bit, ensuring an invalid length), the length value is instead chosen as a random valid length between 16 to 1446 bytes. As the connection then remains blocked until the corresponding amount of AE ciphertext is received before the connection is closed, this attack cannot provoke a closure after a fixed, identifiable amount of data. The concept of ``secure closures'' of channels in general is discussed in more detail in \cite{CCS:FenJoh24}.
 
-The main purpose of the length field obfuscation is therefore not to hide it from active attackers, or protect against manipulation (this is done by the authenticated encryption), but instead to make the protocol harder to identify. To this end, it is not clear to us, why $S$ is not instead chosen as e.g.~$S \gets H(K_H, \mathsf{counter})$ to obtain a similarly secure random value to use in the XOR operation. This would remove the need for $\mathsf{IV}, S$ altogether and streamline the construction. Additionally, the \drivel{} PRF $F_1$ could be reused, reducing the number of primitives required in the protocol.
+The main purpose of the length field obfuscation is therefore not to hide it from active attackers, or protect against manipulation (this is done by the authenticated encryption), but instead to make the protocol harder to identify. To this end, it is not clear to us, why $S$ is not instead chosen as e.g.~$S \gets H(K_H, \mathsf{counter})$ to obtain a similarly secure random value to use in the XOR operation. This would remove the need for $\mathsf{IV}$ and $S$ altogether and streamline the construction. Additionally, the \drivel{} PRF $F_1$ could be reused, reducing the number of primitives required in the protocol.
 
 \paragraph{Design Conflicts and Conclusion}
 
@@ -276,7 +276,7 @@ The only precondition is a securely shared $\mathsf{KEY\_SEED}$.
 It is possible to employ this system directly in \drivel{} (possibly changing the employed schemes in the framing layer to match KEM and OKEM security levels).
 For example, we could first transmit $c_S \conc A_C$ without using the framing layer, and then initialize the framing layer using a key derived from the early secret $ES$. Later, we could re-initialize the framing layer using yet another key after the handshake is completed.
 
-However, since the framing layer already aims to provide obfuscation, integrity, and confidentiality, the need for $P_C, M_C, \mathsf{MAC}_C, P_S, M_S, \mathsf{MAC}_S$ would disappear. Note that the message transcript is implicitly validated by including the $\mathsf{context}$ value when calculating $\mathsf{KEY\_SEED}$. Furthermore, it would not be necessary to encrypt $\pk_e$ at all.
+However, since the framing layer already aims to provide obfuscation, integrity, and confidentiality, the need for $P_C, M_C, \mathsf{MAC}_C, P_S, M_S$, and $\mathsf{MAC}_S$ would disappear. Note that the message transcript is implicitly validated by including the $\mathsf{context}$ value when calculating $\mathsf{KEY\_SEED}$. Furthermore, it would not be necessary to encrypt $\pk_e$ at all.
 
 We believe it to be worthwhile to modify \drivel{} accordingly, allowing almost arbitrary traffic shaping after an initial transmission of only $c_S \conc A_C$.
 Conversely, this rather extensive change would require adapting the extensive $\sObfKE$ security proof for \drivel{} presented in \cite{EPRINT:GRSV25}.

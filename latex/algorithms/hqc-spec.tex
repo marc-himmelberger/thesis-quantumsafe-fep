@@ -1,6 +1,6 @@
 \begin{pchstack}[boxed, center, space=0.5em]
 
-\procedure[linenumbering]{$\kgen()$ \titlecomment{\text{see \cite[Figure~3]{NISTPQC-R4:HQC22}}}}{
+\procedure[linenumbering]{$\kgen()$ \titlecomment{\text{see \cite[Fig.~3]{NISTPQC-R4:HQC22}}}}{
     \mathbf h \gets \mathcal R \\
     \sigma \getsr \mathbb F_2^k \\
     \mathbf x, \mathbf y \getsr \mathcal R_w^2 \\
@@ -8,7 +8,7 @@
     \pcreturn \pk=(\mathbf h, \mathbf s), \sk=(\mathbf x, \mathbf y, \sigma)
 }
 
-\procedure[lnstart=5,linenumbering]{$\encaps(\pk=(\mathbf h, \mathbf s))$ \titlecomment{\text{see \cite[Figure~3]{NISTPQC-R4:HQC22}}}}{
+\procedure[lnstart=5,linenumbering]{$\encaps(\pk=(\mathbf h, \mathbf s))$ \titlecomment{\text{see \cite[Fig.~3]{NISTPQC-R4:HQC22}}}}{
     \mathbf m \getsr \mathbb F_2^k \\
     \mathit{salt} \getsr \mathbb F_2^k \\
     \theta \gets \mathcal G(\mathbf m \mathbin\Vert \mathsf{firstBytes}(\pk,32) \mathbin\Vert \mathit{salt}) \\

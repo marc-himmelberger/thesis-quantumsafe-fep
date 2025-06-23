@@ -3,7 +3,7 @@
 Throughout this \cref{sec:obfuscating-classic-mceliece}, we use the positive integer variables $\ell, m,n,t,k$ where $\ell = 256, n < 2^m$ and $k=mt-n$ as defined in \cite{NISTPQC-R4:ClassicMcEliece22}. We work with matrices and vectors over $\mathbb F_2$ when examining the KEM and use bit strings in the definition and analysis of OKEMs. As the dimensions of the matrices and vectors are fixed for a given parameter set, we associate the matrices and vectors with their canonical encoding as bit strings of appropriate length.
 
 \paragraph{Generation of Public Keys and Ciphertexts}
-Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in Round 4 of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}. Although NIST announced in early 2025 that Classic McEliece would not be standardized as part of this process \cite{nist-ir-8545}, we believe the scheme to be worthy of examination due to the very small size of ciphertexts. Like \cite{EC:Xagawa22}, we only consider the so-called "non-f" versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
+Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} is a perfectly correct, code-based KEM in Round 4 of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}. Although NIST announced in early 2025 that Classic McEliece would not be standardized as part of this process \cite{nist-ir-8545}, we believe the scheme to be worthy of examination due to the very small size of ciphertexts. Like \cite{EC:Xagawa22}, we only consider the so-called ``non-f'' versions of the specified parameter sets which are interoperable with the f versions, and have simpler but slower key generation.
  
 In Classic McEliece, public keys are the $k$ rightmost columns of a $mt \times n$ generator matrix in systematic form ($k = n - mt$). Ciphertexts are the $mt$ data bits corresponding to $n$-bit codewords with Hamming weight exactly $t$.
 
@@ -16,7 +16,7 @@ For encapsulation, rejection-sampling is used to generate a uniformly random vec
     \caption[
         A selection of algorithms from the Classic McEliece Round 4 specification.
     ]{
-        A relevant selection of algorithms from the Classic McEliece Round 4 specification \cite{NISTPQC-R4:ClassicMcEliece22}. $q=2^m$ refers to the size of a polynomial field of characteristic $2$. $G$ refers to a pseudorandom bit generator mapping a string of $\ell$ bits to a string of $\geq n + mq + mt + \ell$ bits. For the sake of brevity, the many more technical details, as well as the semi-systematic form, are omitted.}
+        A relevant selection of algorithms from the Classic McEliece Round 4 specification \cite{NISTPQC-R4:ClassicMcEliece22}. $q=2^m$ refers to the size of a polynomial field of characteristic $2$. $G$ refers to a pseudorandom bit generator mapping a string of $\ell$ bits to a string of length at least $n + mq + mt + \ell$ bits. For the sake of brevity, the many more technical details, as well as the semi-systematic form, are omitted.}
     \label{fig:classic-mceliece-spec}
 \end{figure}
 
@@ -64,17 +64,17 @@ Given the $\prkey$ assumption, public keys are computationally hard to distingui
     
     After understanding which reductions fail, we now consider the possible influence that the reduction to systematic form might have on the distribution of bits in the simulated public key $\hat T$.
 
-    Consider an intermediate value of $\hat H$ which can be reduced to systematic form (i.e. has full rank in its leftmost columns and will thus pass the check on \cref{ln:randgen-reject}). This value exists precisely once for all terminating executions of $\mathsf{RandGen}()$ as the last $\hat H$ sampled before returning a result.
+    Consider an intermediate value of $\hat H$ which can be reduced to systematic form (i.e. has full rank in its $mt$ leftmost columns and will thus pass the check on \cref{ln:randgen-reject}). This value exists precisely once for all terminating executions of $\mathsf{RandGen}()$ as the last $\hat H$ sampled before returning a result.
 
-    In general, the reduced row echelon form can be obtained using Gauss–Jordan elimination. This algorithm carries out a sequence of operations on the matrix consisting of swapping rows, adding rows onto others and scaling rows.
-    Over $\mathbb F_2$, the scaling of rows is not needed and swapping of rows can be accomplished via a sequence of 3 row additions. Any Gauss-Jordan reduction to systematic form can thus be expressed as merely a sequence of row additions.
-    The systematic form of $\hat H$ over $\mathbb F_2$, just like reduced row echelon forms over any field, is also unique. Thus it suffices to consider an arbitrary sequence of row additions transforming $\hat H$ to systematic form.
+    In general, the systematic form can be obtained using Gauss–Jordan elimination. This algorithm carries out a sequence of operations on the matrix consisting of swapping rows, adding rows onto others and scaling rows.
+    Over $\mathbb F_2$, the scaling of rows is not needed and swapping of rows can be accomplished via a sequence of three row additions. Any Gauss-Jordan reduction to systematic form can thus be expressed as merely a sequence of row additions.
+    The systematic form of $\hat H$ over $\mathbb F_2$ is also unique, as reduced row echelon forms are unique over any field. Thus it suffices to consider an arbitrary sequence of row additions transforming $\hat H$ to systematic form.
 
     Note in particular, that during such a sequence of row additions, the row rank of $\hat H$ must be preserved, as the systematic form has full row rank. It is thus impossible for the sequence to ever add any row onto itself, i.e. all row additions must be between distinct rows. Any addition of a row onto itself would lower the rank by 1 and, trivially, no row addition can increase the rank of a matrix.
     
     Due to the number of rows, a reduction is possible in at most $(mt)^2$ row additions: The diagonal can be filled with ones using at most $mt$ additions. After another $(mt)^2-mt$ additions at the latest, all other entries in the leftmost $mt$ columns are zeroes. To determine one such order of row additions which bring $\hat H$ into systematic form, it suffices to consider only the leftmost $mt$ columns.
     
-    Let $M_0$ denote the rightmost columns of $\hat H$, which form a $mt \times k$ matrix of (by definition) uniformly random i.i.d. entries from $\mathbb F_2$, in particular, independent from the leftmost columns of $\hat H$.
+    Let $M_0$ denote the $k = n - mt$ rightmost columns of $\hat H$, which form a $mt \times k$ matrix of (by definition) uniformly random i.i.d. entries from $\mathbb F_2$, in particular, independent from the leftmost columns of $\hat H$.
     
     As the addition of any one row of uniformly random bits onto any other row of independent uniformly random bits produces a row of uniformly random i.i.d. bits, the resulting matrix after one row addition, say $M_1$, is statistically indistinguishable from $M_0$.
     
@@ -84,7 +84,7 @@ Given the $\prkey$ assumption, public keys are computationally hard to distingui
 \paragraph{Classic McEliece is a Natural OKEM}
 We now return to our examination of ciphertext uniformity in Classic McEliece.
 
-Ciphertext uniformity follows directly from the $\prkey$ and $\mdsd$ assumptions, and we show this reduction, and thus computational indistinguishability from uniformly random bit vectors below. Additionally, implementers should note that padding public keys and ciphertexts to the byte boundary may require \emph{randomized} padding. This is only needed if the number of bits is not evenly divisible by 8, and occurs only for the parameter set ``mceliece6960119''. All other parameter sets have $mt = 0 \mod 8$. Padding of these values with zero bits (as suggested in the Classic McEliece specification) would trivially break the desired ciphertext uniformity.
+Ciphertext uniformity follows directly from the $\prkey$ and $\mdsd$ assumptions, a reduction that we show below. This allows us to conclude that ciphertexts are computationally indistinguishable from uniformly random bit vectors. Additionally, implementers should note that padding public keys and ciphertexts to the byte boundary may require \emph{randomized} padding. This is only needed if the number of bits is not evenly divisible by 8, and occurs only for the parameter set ``mceliece6960119''. All other parameter sets have $mt = 0 \mod 8$. Padding of these values with zero bits (as suggested in the Classic McEliece specification) would trivially break the desired ciphertext uniformity.
 
 As we require no KEM encoding to achieve ciphertext uniformity, there is no need to discuss first-encaps success probability.
 

@@ -1,6 +1,6 @@
 \section{Obfuscating HQC} \label{sec:obfuscating-hqc}
 
-Throughout this \cref{sec:obfuscating-hqc}, we use the following variables as defined in as defined in \cite{NISTPQC-R4:HQC22}: the integer variables $n, n_1, n_2$, denoting the length of employed codes, as well as the integer variables $w$, and $w_e = w_r$, as the hamming weights of randomly sampled vectors. Further, we use $k = 512$ as the bitlength of the shared secret in all HQC parameter sets as in \cite[Figure~3, Table~7]{NISTPQC-R4:HQC22}.
+Throughout this \cref{sec:obfuscating-hqc}, we use the following variables as defined in as defined in \cite{NISTPQC-R4:HQC22}: the integer variables $n, n_1, n_2$, denoting the length of employed codes, as well as the integer variables $w$, and $w_e = w_r$, as the hamming weights of randomly sampled vectors. Further, we use $k = 512$ as the bit length of the shared secret in all HQC parameter sets as in \cite[Fig.~3 and Table~7]{NISTPQC-R4:HQC22}.
 As in \cref{sec:obfuscating-classic-mceliece}, we work with polynomials and vectors over $\mathbb F_2$ when examining the KEM and use bit strings in the definition and analysis of OKEMs. As the degrees of the polynomials and the dimensions of the vectors are fixed for a given parameter set, we associate them with their canonical encoding as bit strings of appropriate length.
 
 Let $\mathcal R \subset \mathbb{F}_2[x]$ be the ring of polynomials over $\mathbb F_2$ with degree $<n$, specifically $\mathcal R := \mathbb{F}_2[x]/(x^n-1)$. Let $\mathcal R_w \subset \mathcal R$ denote the subset of polynomials with hamming weight exactly $w$. The notion $\mathbf u(1)$ is used to denote the evaluation of a polynomial $\mathbf u(x) \in \mathbb{F}_2[x]$ at the point $x=1$, note that $\mathbf u(x) \in \mathbb{F}_2$ for any fixed value of $x \in \mathbb{F}_2$. To refer to the coefficients of $\mathbf u$, we write $\mathbf u_i \in \mathbb{F}_2$, such that $\mathbf u(x) = \sum_{i=0}^{n-1} \mathbf u_i \cdot x^i$.
@@ -35,7 +35,7 @@ A notable detail is that while \cite{EC:Xagawa22} does not mention $\mathit{salt
 
 \paragraph{Constructed Encoding $E_\mathsf{HQC}$}
 
-The two latter components of HQC ciphertexts $\mathbf v, \mathit{salt}$ are indistinguishable from random bit strings due to \cite{EC:Xagawa22} and by definition, respectively. We therefore need only be concerned with obfuscating $\mathbf u$.
+The two latter components of HQC ciphertexts $\mathbf v$ and $\mathit{salt}$ are indistinguishable from random bit strings due to \cite{EC:Xagawa22} and by definition, respectively. We therefore need only be concerned with obfuscating $\mathbf u$.
 
 As shown in \cite{EC:Xagawa22}, the parity of $\mathbf u$ depends on the public key parity as $\mathbf u(1)=(1 + \mathbf h(1))\cdot w_r \mod 2$. For HQC-192, $w_r = 0 \mod 2$ and ciphertexts therefore always have parity $\mathbf u(1)=0$. For HQC-128 and HQC-256, $w_r = 1 \mod 2$ and the parity of ciphertexts depends on the parity of the public key component as $\mathbf u(1)=1 + \mathbf h(1)$.
 
@@ -86,7 +86,7 @@ In the following, let $\mathsf{HQC}$ denote the HQC KEM as defined in \cite{NIST
 \begin{proof}
     This follows directly from the definition of $E_\mathsf{HQC}$ in \cref{fig:hqc-encoding}.
 
-    Note that the behavior of the encoding may violate correctness for public keys where $\mathsf{Filter}(\pk) = 0$, but this is not required by \cref{def:filter-encode-obfs}, and, by \cref{def:first-encaps-success}, does not influence the success probability.
+    Note that the behavior of the encoding may violate correctness for public keys where $\mathsf{Filter}(\pk) = 0$, but this is not required by \cref{def:filter-encode-obfs}, and does not influence the first-encaps success probability as per \cref{def:first-encaps-success}.
 \end{proof}
 
 \begin{lemma}[Ciphertext Uniformity]

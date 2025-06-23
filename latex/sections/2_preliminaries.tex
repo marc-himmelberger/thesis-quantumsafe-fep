@@ -45,12 +45,12 @@ We say that a KEM~$\KEM=(\kgen, \encaps, \decaps)$ is \emph{$\delta_\KEM$-correc
 \]
 \end{definition}
 
-To define what it means for a KEM to be secure, we require two security notions. One focuses on indistinguishability of ciphertexts ($\indcca$), i.e., given a public key and ciphertext, it should be hard to differentiate the encapsulated shared secret from uniformly random elements of the key space.
+To define what it means for a KEM to be secure, we require two security notions. One focuses on indistinguishability of ciphertexts ($\indcca$), i.e. given a public key and ciphertext, it should be hard to differentiate the encapsulated shared secret from uniformly random elements of the key space.
 This captures the goal that an adversary (given the public key $\pk$) does not learn any information about the shared secret encapsulated in the challenge ciphertext $c^*$, even when allowed to obtain decapsulations of other ciphertexts.
 This notion is central to the main premise of KEMs, namely to initialize a secure communication channel given only one party's public key by means of setting up a shared secret.
 
-A second notion is strong pseudorandomness ($\sprcca$), i.e., given a public key, it should be hard to differentiate a ciphertext-key pair obtained from encapsulation for that public key from a pair consisting of a simulated ciphertext and a uniformly randomly sampled key, even when allowed to obtain decapsulations of other ciphertexts.
-This captures the goal that ciphertexts must "look randomly sampled" among some set of possible ciphertexts and should look unrelated to any given public key --- even given the corresponding shared secret.
+A second notion is strong pseudorandomness ($\sprcca$), i.e. given a public key, it should be hard to differentiate a ``real'' pair of ciphertext and key (obtained from encapsulation for that public key) from a ``random'' pair (consisting of a simulated ciphertext and a uniformly randomly sampled key), even when allowed to obtain decapsulations of other ciphertexts.
+This captures the goal that ciphertexts must ``look randomly sampled'' among some set of possible ciphertexts and should look unrelated to any given public key --- even given the corresponding shared secret.
 This is expressed through the use of a simulator $\mathcal S$ and $\sprcca$ is always achieved with respect to such a simulator.
 This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22} in the context of establishing anonymity of KEMs, and is satisfied by many KEMs that are being considered for use in quantum-safe communication \cite{EC:Xagawa22}. We use $\sprcca$ security to argue about the distribution of ciphertexts.
 
@@ -110,7 +110,7 @@ This notion was first introduced in this form by Xagawa \cite{EC:Xagawa22} in th
 
         \item $\ul{\decaps}(\sk,\hat c) \to K$ is a deterministic \emph{decapsulation} algorithm that takes as input a secret key~$\sk$ and (obfuscated) ciphertext~$\hat c$, and outputs a shared secret~$K$.
     \end{itemize}
-    Note that any OKEM, as defined here, can also be viewed as a KEM as in \cref{def:kem}. Crucially, however, the ciphertext space of an OKEM must a space of fixed-length bit strings.
+    Note that any OKEM, as defined here, can also be viewed as a KEM as in \cref{def:kem}. Crucially, however, the ciphertext space of an OKEM must be a space of fixed-length bit strings.
 
     As in \cref{def:kem-corr}, we also demand the KEM correctness for OKEMs.
 \end{definition}
@@ -119,7 +119,7 @@ For OKEMs, the notions of $\indcca$ security, OKEM correctness, and public-key c
 
 We occasionally denote the length in bits of the KEM public keys, KEM ciphertexts, OKEM public keys, and OKEM ciphertexts as $\pklen, \ctxtlen, \obfpklen, \obfctxtlen$, respectively.
 
-In addition to the above properties, an obfuscated KEM should satisfy additional randomness requirements. In particular, its ciphertexts should not be distinguishable from random bit strings. This is in contrast to regular KEMs that may have recognizable structure in $c$ even if they are $\sprcca$-secure.
+In addition to the above properties, an obfuscated KEM should satisfy additional randomness requirements. In particular, its ciphertexts should not be distinguishable from random bit strings. This is in contrast to regular KEMs that may have a recognizable structure in $c$ even if they are $\sprcca$-secure.
 For this reason, we also restrict the more general definition of $\sprcca$ security for KEMs to always use the simulator $\simulbin$ with $\ell = \obfctxtlen$ in the context of OKEMs.
 
 \begin{definition}[Ciphertext uniformity]
@@ -165,7 +165,7 @@ The construction below relies on two primary components to provide obfuscation o
         is a deterministic \emph{ciphertext decoding} algorithm that, on input of an obfuscated ciphertext~$\hat c \in \bin^{\obfctxtlen}$, outputs a ciphertext~$c$ from the ciphertext space of $\KEM$.
     \end{itemize}
 
-    We demand that these encoding/decoding algorithms are perfectly correct, i.e.:
+    We demand that these encoding/decoding algorithms are perfectly correct:
     \[
         \Pr\left[
             \decodectxt(\hat c) = c
@@ -185,7 +185,7 @@ The construction below relies on two primary components to provide obfuscation o
 \label{def:first-keygen-success}
     Let $\KEM = (\kgen, \encaps, \decaps)$ be a KEM.
     Let $E = (\filterpk, \encodectxt, \decodectxt)$ be a filter-encode obfuscator for $\KEM$.
-    We then define the \emph{first-keygen success probability} as the probability that a randomly generated public key is not rejected, i.e.
+    We then define the \emph{first-keygen success probability} as the probability that a randomly generated public key is not rejected:
     \[
         \epsilon^\firstkeygensuccess_{\KEM,E} :=
         \Pr\left[
@@ -202,7 +202,7 @@ The construction below relies on two primary components to provide obfuscation o
 \label{def:first-encaps-success}
     Let $\KEM = (\kgen, \encaps, \decaps)$ be a KEM.
     Let $E = (\filterpk, \encodectxt, \decodectxt)$ be a filter-encode obfuscator for $\KEM$.
-    We then define the \emph{first-encaps success probability} as the probability that a randomly generated ciphertext is not rejected during encoding, i.e.
+    We then define the \emph{first-encaps success probability} as the probability that a randomly generated ciphertext is not rejected during encoding:
     \[
         \epsilon^\firstencapssuccess_{\KEM,E} :=
         \Pr\left[
@@ -346,8 +346,8 @@ However, \pqobfs{} gives even stronger guarantees than \obfsfour{} when node pub
 Furthermore, \cite{CCS:GunSteVei24} provides a formal security model and proofs for both \obfsfour{} and \pqobfs{} demonstrating the various guarantees.
 
 To define the security of their obfuscated key exchange protocol, \cite{CCS:GunSteVei24} introduces the security notion of strong Obfuscated Key Exchange security ($\sObfKE$), capturing key indistinguishability, explicit server authentication, strong obfuscation, and probing resistance.
-Strong obfuscation describes the protocol's ability to be unidentifiable (compared to a simulated protocol run) by an adversary, so long as the server's private key is not revealed. This is in contrast to the so-called regular obfuscation, achieved e.g.~by \obfsfour{}, which also requires the server's public key to remain secret.
-Probing resistance, in turn, means that servers should not respond to messages from adversaries unless the server's public key was revealed \cite[Section~4.1]{CCS:GunSteVei24}.
+Strong obfuscation describes the protocol's ability to be unidentifiable (compared to a simulated protocol run) by an adversary, as long as the server's private key is not revealed. This is in contrast to the so-called regular obfuscation, achieved e.g.~by \obfsfour{}, which requires the server's public key to remain secret as well.
+Probing resistance, in turn, means that the server should not respond to messages from adversaries unless the server's public key was revealed~\cite[Section~4.1]{CCS:GunSteVei24}.
 
 In their follow-up work, \cite{EPRINT:GRSV25} constructed the \drivel{} protocol for the same general purpose. Compared to \pqobfs{}, \drivel{} only has one conceptual difference, in that it allows one of the two involved schemes to be a KEM instead of an OKEM.
 This is accomplished by the derivation of symmetric encryption keys from the semi-secret server information combined with a shared secret generated from an OKEM encapsulation against the server's public key (which was distributed out-of-band).
@@ -383,7 +383,7 @@ When we construct OKEMs in later sections of this work, we will show that they a
         \item $\indonecca$ security of $\KEM$
     \end{itemize}
 
-    And, finally, the $\sObfKE$ security also depends on the $\prf$ security of $F_1$ and $F_2$, the $\swapprf$ security of $F_2$, and the symmetric encryption scheme's one-time ciphertext indistinguishability.
+    And finally, the $\sObfKE$ security also depends on the $\prf$ security of $F_1$ and $F_2$, the $\swapprf$ security of $F_2$, and the symmetric encryption scheme's one-time ciphertext indistinguishability.
 \end{theorem}
 
 We instantiate $F_1,F_2$ and the symmetric encryption scheme for the \drivel{} protocol as described later in \cref{sec:drivel-instance}.
@@ -405,16 +405,16 @@ We instantiate $F_1,F_2$ and the symmetric encryption scheme for the \drivel{} p
 \subsection{The Drivel Protocol}
 
 In this thesis, we implement and evaluate the \drivel{} protocol, which targets $\sObfKE$ security.
-To make this document more self-contained, we reproduce the central definition of \drivel{} from \cite[Figure~6]{EPRINT:GRSV25} below.
-For further information not reproduced in \cref{fig:drivel}, we refer the reader to the original publication.
+To make this document more self-contained, we reproduce the central definition of \drivel{} from \cite[Fig.~6]{EPRINT:GRSV25} below.
+For further information not reproduced in \cref{fig:drivel}, we refer the readers to the original publication.
 
 Briefly, \drivel{} consists of two messages: A handshake request sent by a client to a bridge server and a response to this message.
-Initially, clients are aware of the bridge information consisting of an OKEM public key $\pk_S$ and a random bit string, $\mathsf{NodeID}$.
+Initially, the client is aware of the bridge information consisting of an OKEM public key $\pk_S$ and a random bit string, $\mathsf{NodeID}$.
 
 Using this knowledge, clients generate their own ephemeral key pair using an unobfuscated KEM, and derive an early secret $ES$ using a shared secret gained by encapsulating against $\pk_S$. By encrypting their ephemeral KEM public key and transmitting the OKEM ciphertext alongside two PRF values, the server can verify the client's knowledge of the bridge information and check the message's integrity.
 
 The bridge server may then also derive $ES$, encapsulate against the ephemeral client public key, and complete the key schedule to produce a final secret $FS$ which is used to derive $\mathsf{KEY\_SEED}$ and a confirmation $\mathsf{auth}$.
-After transmitting the KEM ciphertext, $\mathsf{auth}$ and two PRF values, the client verifies the authenticity of the message and of $\mathsf{auth}$ before also deriving the now securely shared value $\mathsf{KEY\_SEED}$.
+After transmitting the KEM ciphertext, $\mathsf{auth}$ and two PRF values, the client verifies the authenticity of the message and of the confirmation, $\mathsf{auth}$, before also deriving the now securely shared value $\mathsf{KEY\_SEED}$.
 
 \begin{figure}
     \input{algorithms/drivel}
@@ -426,7 +426,7 @@ After transmitting the KEM ciphertext, $\mathsf{auth}$ and two PRF values, the c
         $KEM$ is an $\indonecca$-secure KEM.
         $SE$ is a length-preserving, one-time ciphertext indistinguishable, symmetric encryption scheme.
         $F_1$ is a PRF and $F_2$ is a dual PRF.
-        This Figure is a reproduction of \cite[Figure~6]{EPRINT:GRSV25} but without highlights and slight changes to the KEM and OKEM syntax.
+        This Figure is a reproduction of \cite[Fig.~6]{EPRINT:GRSV25} but without highlights and slight changes to the KEM and OKEM syntax.
     }
     \label{fig:drivel}
 \end{figure}

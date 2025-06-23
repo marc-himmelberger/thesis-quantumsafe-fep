@@ -115,18 +115,18 @@ These parameter sets prioritize the selection of combinations that lead to the s
     \centering  \footnotesize
     \begin{tabular}{@{} L{0.1\textwidth-\tabcolsep} | L{0.16\textwidth-2\tabcolsep} L{0.17\textwidth-2\tabcolsep} L{0.32\textwidth-2\tabcolsep} R{0.11\textwidth-2\tabcolsep} R{0.14\textwidth-\tabcolsep} @{}}
     NIST Security\newline Level & Parameter Set\newline Name & KEM\newline Component & OKEM\newline Component & Total Traffic & First Fragment \\ \hline
-    \multirow{4}{*}{Level 1} & drivel-L1a & ML-KEM-512 & ML-Kemeleon-512 & 2 541 & 893 \\
-     & drivel-L1b & BIKE-L1 & ML-Kemeleon-512 & 4 087 & 893 \\
-     & drivel-L1c & ML-KEM-512 & FEO-HQC-128 & 6 097 & 4 449 \\
+    \multirow{4}{*}{Level 1} & drivel-L1a & ML-KEM-512 & ML-Kemeleon-512 & 2~541 & 893 \\
+     & drivel-L1b & BIKE-L1 & ML-Kemeleon-512 & 4~087 & 893 \\
+     & drivel-L1c & ML-KEM-512 & FEO-HQC-128 & 6~097 & 4~449 \\
      & drivel-L1d & ML-KEM-512 & Classic-McEliece-348864 & 1760 & 112 \\ \hline
-    \multirow{4}{*}{Level 3} & drivel-L3a & ML-KEM-768 & ML-Kemeleon-768 & 3 620 & 1 268 \\
-     & drivel-L3b & BIKE-L3 & ML-Kemeleon-768 & 7 546 & 1 268 \\
-     & drivel-L3c & ML-KEM-768 & FEO-HQC-192 & 11 346 & 8 994 \\
-     & drivel-L3d & ML-KEM-768 & Classic-McEliece-460896 & 2 524 & 172 \\ \hline
-    \multirow{4}{*}{Level 5} & drivel-L5a & ML-KEM-1024 & ML-Kemeleon-1024 & 4 890 & 1 674 \\
-     & drivel-L5b & BIKE-L5 & ML-Kemeleon-1024 & 12 030 & 1 674 \\
-     & drivel-L5c & ML-KEM-1024 & FEO-HQC-256 & 17 653 & 14 437 \\
-     & drivel-L5d & ML-KEM-1024 & Classic-McEliece-6688128 & 3 440 & 224
+    \multirow{4}{*}{Level 3} & drivel-L3a & ML-KEM-768 & ML-Kemeleon-768 & 3~620 & 1~268 \\
+     & drivel-L3b & BIKE-L3 & ML-Kemeleon-768 & 7~546 & 1~268 \\
+     & drivel-L3c & ML-KEM-768 & FEO-HQC-192 & 11~346 & 8~994 \\
+     & drivel-L3d & ML-KEM-768 & Classic-McEliece-460896 & 2~524 & 172 \\ \hline
+    \multirow{4}{*}{Level 5} & drivel-L5a & ML-KEM-1024 & ML-Kemeleon-1024 & 4~890 & 1~674 \\
+     & drivel-L5b & BIKE-L5 & ML-Kemeleon-1024 & 12~030 & 1~674 \\
+     & drivel-L5c & ML-KEM-1024 & FEO-HQC-256 & 17~653 & 14~437 \\
+     & drivel-L5d & ML-KEM-1024 & Classic-McEliece-6688128 & 3~440 & 224
     \end{tabular}
     \caption[
         Definitions of parameter sets for \drivel{}, used in later experiments.
@@ -137,11 +137,12 @@ These parameter sets prioritize the selection of combinations that lead to the s
     \label{tab:drivel-params}
 \end{table}
 
-Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to its larger public key size compared to both ML-KEM and BIKE. Due to its more conservative assumptions, but consequently larger public key and ciphertext sizes, FrodoKEM is not included as KEM or OKEM in any parameter set. Depending on the assumptions one is comfortable with, ``a'' parameter sets may be suitable as only one KEM has to remain unbroken, whereas ``b'' can profit from different underlying assumptions for its KEM and OKEM, while ``c'' parameter sets feature a simpler encoding routine. Finally, ``d'' parameter sets employ Classic McEliece as an OKEM directly and require confidence in its pseudorandomness (see \cref{sec:obfuscating-classic-mceliece}), but offer significantly smaller message sizes.
+Notably, HQC is not included as an unobfuscated KEM in any parameter set, due to its larger public key size compared to both ML-KEM and BIKE. Due to its more conservative assumptions, but consequently larger public key and ciphertext sizes, FrodoKEM is not included as KEM or OKEM in any parameter set.
+Depending on the assumptions one is comfortable with, different paarameter sets may be suitable. Our definition uses letters to signal that two parameter sets use the same underlying KEM/OKEM combination for this purpose: ``a'' parameter sets have the advantage that only one KEM has to remain unbroken, whereas ``b'' can profit from different underlying assumptions for its KEM and OKEM, while ``c'' parameter sets feature a simpler encoding routine. Finally, ``d'' parameter sets employ Classic McEliece as an OKEM directly and require confidence in its pseudorandomness (see \cref{sec:obfuscating-classic-mceliece}), but offer significantly smaller message sizes.
 
 When choosing between ``a'' and ``b'' parameter sets, it is worth considering the likelihood of the following scenario where a censor manages to break just one assumption underlying a used KEM or OKEM.
 In an ``a'' parameter set, only the assumptions underlying ML-KEM are relevant, but a break could lead to a complete loss of confidentiality as censors might be able to infer the shared secrets generated in recorded key exchanges, decrypt all corresponding traffic and impersonate the bridge server from then on out.
-In an ``b'' parameter set, the use of different underlying assumptions makes a break in any assumption more likely, but breaking only one assumption does not immediately mean a loss of all security guarantees: As an example, a censor that completely breaks an OKEM may impersonate bridge servers and retroactively identify obfuscated key exchanges, but cannot recover the KEM shared secrets and is thus not able to retroactively decrypt recorded traffic.
+In a ``b'' parameter set, the use of different underlying assumptions makes a break in any assumption more likely, but breaking only one assumption does not immediately mean a loss of all security guarantees: As an example, a censor that completely breaks an OKEM may impersonate bridge servers and retroactively identify obfuscated key exchanges, but cannot recover the KEM shared secrets and is thus not able to retroactively decrypt recorded traffic.
 
 \section{Instantiating the Drivel Protocol} \label{sec:drivel-instance}
 
@@ -159,9 +160,9 @@ We instantiate the primitives as follows:
 
 We differ from the author's recommendations and the protocol specification only in two points:
 \begin{enumerate}
-    \item We do not use XOR as our one-time secure symmetric encryption scheme, and instead use AES in CTR mode. Using XOR would involve setting $\keylen_1 = \pklen$ and $\keylen_2 = \ctxtlen$, and the outputs of \textsf{HDKF-Expand} (used as $F_1$) are inherently limited to at most 8 160 bytes. This limitation would not affect any of our parameter sets proposed in \cref{sec:parameters}, but would lead to an avoidable loss of flexibility in the choice of KEM.
+    \item We do not use XOR as our one-time secure symmetric encryption scheme, and instead use AES in CTR mode. Using XOR would involve setting $\keylen_1 = \pklen$ and $\keylen_2 = \ctxtlen$, and the outputs of \textsf{HDKF-Expand} (used as $F_1$) are inherently limited to at most 8~160 bytes. This limitation would not affect any of our parameter sets proposed in \cref{sec:parameters}, but would lead to an avoidable loss of flexibility in the choice of KEM.
 
-    \item The literal strings used for domain separation (such as e.g.~``:enckey1'') are prefixed with the string constant ``Drivel'', just as in \obfsfour{}. This cautionary measure helps to guarantee domain separation even in the case of reused keypairs over multiple protocol versions.
+    \item The literal strings used for domain separation (e.g.~``:enckey1'') are prefixed with the string constant ``Drivel'', just as in \obfsfour{}. This cautionary measure helps to guarantee domain separation even in the case of reused keypairs over multiple protocol versions.
 \end{enumerate}
 
 \section{Core Architecture} \label{sec:impl-architecture}
@@ -206,7 +207,7 @@ Observing the current need for post-quantum key exchange, combined with the incr
 To this end, the \drivel{} implementation contains string constants identifying the desired KEM and OKEM. The data structures for the schemes are then loaded at runtime based on these strings.
 The schemes are identified by the following naming convention:
 \begin{itemize}
-    \item The string "x25519" refers to the unobfuscated, newly implemented KEM from \cref{fig:impl-x25519-kem},
+    \item The string ``x25519'' refers to the unobfuscated, newly implemented KEM from \cref{fig:impl-x25519-kem},
     \item all other strings denote \texttt{liboqs} KEMs, and
     \item any KEM with a corresponding filter-encode obfuscator can be used to request an OKEM under the KEM name prefixed with ``FEO-'', e.g.~``FEO-x25519'' would denote $\feo[\KEM, E]$ using the components from \cref{fig:impl-x25519-kem}. This includes ML-Kemeleon, which we name as ``FEO-ML-KEM''.
 \end{itemize}
@@ -262,8 +263,8 @@ A significant change here concerned the passing of bridge information between th
 
 To circumvent this limitation, we require clients to:
 \begin{itemize}
-    \item add the so-called ``bridge-line'' to their configuration file (as for \obfsfour{}), containing (among other things) the name of the pluggable transport, IP and port of the bridge, and the $\mathsf{NodeID}$, but now also
-    \item download a public key file called \texttt{drivel\_key-<KEYID>} containing $\pk_S$ in JSON format, where \texttt{<KEYID>} is a prefix of $\mathsf{NodeID}$. This file is created in the correct format by the bridge upon starting.
+    \item add the so-called ``bridge-line'' to their configuration file (as for \obfsfour{}), containing (among other things) the name of the pluggable transport, IP and port of the bridge, and the $\mathsf{NodeID}$,
+    \item and to additionally download a public key file called \texttt{drivel\_key-<KEYID>} containing $\pk_S$ in JSON format, where \texttt{<KEYID>} is a prefix of $\mathsf{NodeID}$. This file is created in the correct format by the bridge upon starting.
 \end{itemize}
 
 As the configuration is now considerably shorter, it can be transmitted via the SOCKS fields, and the pluggable transport can load the public key corresponding to $\mathsf{NodeID}$ from the disk.
