@@ -6,10 +6,10 @@ Similar encodings have previously been constructed for the quantum-vulnerable el
 
 Some other KEMs being examined for future use, incidentally, are ``natural'' OKEMs and require no further encodings. An example of this is FrodoKEM \cite{NISTPQC-R3:FrodoKEM20}, as discussed in \cite[Section~2.1]{EPRINT:GRSV25}, which we will also include when evaluating our implementation of \drivel{} later on.
 
-We take a selection of two Round 4 candidates of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}, Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} and HQC \cite{NISTPQC-R4:HQC22}, which (as far as we know) have not been shown to satisfy our definition of OKEMs before.
+We take a selection of two candidates among the submissions in the fourth and final round of the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}: Classic McEliece \cite{NISTPQC-R4:ClassicMcEliece22} and HQC \cite{NISTPQC-R4:HQC22}, which (as far as we know) have not been shown to satisfy our definition of OKEMs before.
 
 For each scheme, we describe the generation of public keys and ciphertexts in the original scheme and examine their distributions. We then introduce filter-encode obfuscators enabling a mapping from ciphertexts to uniformly random bit strings, if needed.
-Finally, we give concrete bounds for the first-keygen success probabilities, first-encaps success probabilities and ciphertext uniformity of our constructions, which, together with the KEM's security properties, allows the corresponding instantiation of \drivel{} to achieve $\sObfKE$ security per \cref{cor:drivel-security-filter-encode}.
+Finally, we give concrete bounds for the first-keygen success probabilities, first-encaps success probabilities, and ciphertext uniformity of our constructions. These properties, together with the KEM's security properties, allows the corresponding instantiation of \drivel{} to achieve $\sObfKE$ security per \cref{cor:drivel-security-filter-encode}.
 
 \Cref{tab:obfuscation-summary} summarizes previous work and the results of the later sections in this chapter for the context of \drivel{} (e.g. ignoring public key obfuscation).
 

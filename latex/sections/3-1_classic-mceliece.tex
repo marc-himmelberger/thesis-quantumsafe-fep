@@ -132,7 +132,7 @@ The Classic McEliece team has noted that the concrete computational cost of the 
 However, recent work in \cite{cryptoeprint:2024/1193} illustrates that assumptions about the pseudorandomness of Classic McEliece public keys that previously seemed plausible may not hold up to future in-depth examination.
 
 While our arguments above used the $\prkey$ and $\mdsd$ assumptions directly, we do not explicitly require pseudorandomness of public keys and use $\prkey$ only because $\mdsd$ relies upon it.
-We note that changing the $\mdsd$ assumption to not use $\mathsf{RandGen}()$ but instead do key generation as in Classic McEliece would be equivalent to $\ctxtunif$ security.
+We note that changing the $\mdsd$ assumption, in such a way as to perform key generation in the same way as Classic McEliece instead of using $\mathsf{RandGen}()$, would be equivalent to $\ctxtunif$ security.
 Therefore, it is possible that even if there are good attacks against $\prkey$, Classic McEliece could still achieve $\ctxtunif$ security without any changes to the scheme.
 
 In summary, the attack described in \cite{cryptoeprint:2024/1193} appears to have high concrete costs, but uncertainty is growing surrounding the $\prkey$ assumption, which our presented proof uses indirectly. Additionally, the small size of Classic McEliece's ciphertexts would make it an efficient choice to use in \drivel{}.

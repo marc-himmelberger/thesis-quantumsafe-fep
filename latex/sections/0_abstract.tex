@@ -2,8 +2,8 @@
 The Tor network enables anonymous communication by routing traffic through volunteer-operated relays, but access to the network is often restricted through censorship that targets identifiable protocol patterns.
 In order to counteract such restrictions, protocols must resist fingerprinting, for example, by obfuscating their traffic to appear like random bytes on the wire.
 
-In this thesis, we build on the Tor Project's lyrebird repository, which implements the obfuscation protocol \obfsfour{} \cite{obfs4}. We adapt this implementation to include the obfuscated key exchange protocol \drivel{} \cite{EPRINT:GRSV25}, which extends the \obfsfour{} protocol with post-quantum security and stronger obfuscation.
-We analyze the Classic-McEliece and HQC key exchange mechanisms, defining mappings from ciphertexts to random byte strings required for their deployment in \drivel{}. These schemes are then integrated with our implementation, in addition to the previously examined ML-KEM and FrodoKEM schemes.
+In this thesis, we build on the Tor Project's lyrebird repository, which implements the obfuscation protocol \obfsfour{} \cite{obfs4}. We implement the obfuscated key exchange protocol \drivel{} \cite{EPRINT:GRSV25} and integrate it into lyrebird. The \drivel{} protocol extends the \obfsfour{} protocol with post-quantum security and stronger obfuscation.
+We analyze the Classic-McEliece and HQC key encapsulation mechanisms, defining mappings from ciphertexts to random byte strings required for their deployment in \drivel{}. These schemes are then integrated with our implementation, in addition to the previously examined ML-KEM and FrodoKEM schemes.
 Finally, we empirically evaluate our implementation using benchmarks and deployments under laboratory conditions and suggest concrete changes to \drivel{} to reduce identifiable traffic patterns in the handshake and increase performance.
 \end{abstract}
 

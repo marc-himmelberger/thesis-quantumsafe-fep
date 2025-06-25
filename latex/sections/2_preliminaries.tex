@@ -273,7 +273,7 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
         \advantage{\ctxtunif}{\OKEM}[(\adv)]
         \leq 1/\epsilon^\firstkeygensuccess_{\KEM,E}
         \cdot 1/\epsilon^\firstencapssuccess_{\KEM,E}
-        \cdot \advantage{\sprcpa}{\KEM,\simulunif}[(\bdv)]
+        \cdot \advantage{\sprcpa}{\KEM,\simulunif}[(\bdv)].
     \]
 \end{lemma}
 \begin{proof}
@@ -290,7 +290,7 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
     We analyze the probability of the $\ctxtunif$ adversary $\adv$ outputting the bit $1$ in each of these games, which we denote by $p_0, p_1$ and $p'$ respectively.
     We now have
     \[
-        \advantage{\ctxtunif}{\OKEM}[(\adv)] = \left| p_0 - p_1 \right|
+        \advantage{\ctxtunif}{\OKEM}[(\adv)] = \left| p_0 - p_1 \right|.
     \]
 
     Due to the rejection-sampling in $G'$, the sampling of $c$ in $G'$ is statistically indistinguishable from directly sampling $c \in \mathbf{C}'$. As $\encodectxt$ is bijective, it will output a uniformly random bit string upon input of a uniformly random element from $\mathbf{C}'$. This makes $G'$ and $G_0$ statistically indistinguishable, i.e.
