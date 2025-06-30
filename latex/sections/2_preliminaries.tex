@@ -265,8 +265,7 @@ Finally, the ciphertext uniformity of the resulting OKEM may be analyzed directl
 \label{lem:ctxt-unif-for-bijections}
     Let $\OKEM = \feo[\KEM, E]$ be a filter-encode obfuscated KEM based on a regular KEM $\KEM$ and a corresponding obfuscator $E$ with a \emph{deterministic} encoding function $\encodectxt$.
 
-    Let $\mathbf{P}' \subseteq \mathbf{P}$ denote the subset of the public key space of $\KEM$ for which $\filterpk$ outputs $1$, i.e. the set of allowed public keys.
-    Let $\mathbf{C}' \subseteq \mathbf{C}$ then denote the subset of the ciphertext space of $\KEM$ where $\encodectxt$ does not output $\bot$, i.e. the set of encodable ciphertexts.
+    Let $\mathbf{C}' \subseteq \mathbf{C}$ denote the subset of the ciphertext space of $\KEM$ where $\encodectxt$ does not output $\bot$, i.e. the set of encodable ciphertexts.
     Let $\bin^\ell$ be the output space of $\encodectxt$.
 
     If $\encodectxt$ is a bijective function from $\mathbf{C}'$ to $\bin^\ell$, then for any adversary against the ciphertext uniformity of $\OKEM$, there exists an adversary $\bdv$ against the $\sprcpa$ security of $\KEM$ with respect to the simulator $\simulunif$ such that
