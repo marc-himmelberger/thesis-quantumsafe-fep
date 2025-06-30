@@ -247,7 +247,8 @@ The results apply to our filter-encode transformation, as it can be viewed as a 
     \[
         \advantage{\sprcca}{\OKEM}[(\adv)]
         \leq 
-        1/\epsilon^\firstencapssuccess_{\KEM,E}
+        1/\epsilon^\firstkeygensuccess_{\KEM,E}
+        \cdot 1/\epsilon^\firstencapssuccess_{\KEM,E}
         \cdot \advantage{\sprcca}{\KEM,\simulunif}[(\bdv)]
         + \advantage{\ctxtunif}{\KEM,E}[(\cdv)].
     \]
