@@ -6,9 +6,9 @@ Future implementations may want to take inspiration from the ideas presented her
 
 \section{Discussion on Fragmenting Handshake Messages} \label{ssec:fragmentation}
 
-This section analyzes possibilities to allow for more flexibility in shaping \drivel{} traffic. Avoiding fingerprinting based on certain sizes, directionalities and timing of messages between client and bridge is crucial to evade censors.
+This section analyzes possibilities to allow for more flexibility in shaping \drivel{} traffic. Avoiding fingerprinting based on certain sizes, directionalities and timing of messages between client and bridge is crucial to evade censoring.
 
-\textbf{No changes discussed or proposed in this \cref{ssec:fragmentation} were implemented, or practically evaluated as part of this thesis, but this discussion may be valuable to readers to understand possible future directions of the protocol.}
+No changes discussed or proposed in this \cref{ssec:fragmentation} were implemented, or practically evaluated as part of this thesis. However, we believe that this discussion will be valuable to readers to understand possible future directions of the protocol.
 
 \paragraph{Fragmentation is Needed}
 When deploying \drivel{}, it may be desirable to offer even more flexibility for traffic shaping than \obfsfour{}. In particular, \obfsfour{} sends two messages in its handshake, before fragmenting packets using a customizable message size distribution based on a deterministic pseudorandom number generator and a seed determined by the bridge server.
@@ -55,7 +55,7 @@ While \drivel{} also requires two messages to complete the handshake, \obfsfour{
 
 The concern in this section is that censors may observe particular traffic patterns. In particular, a bridge server never sends a reply before receiving the entire first \drivel{} or \obfsfour{} message in order to avoid probing attacks. This leads to quiet periods which may constitute an identifiable feature of the pluggable transport.
 
-As is obvious from the table, sending the entire first \drivel{} message in full before the bridge responds (after verifying the PRF value at the end of message) leads to a large quiet period. Thus, for all but a few KEM/OKEM combinations, this quiet period would quickly be identifiable. At best, using Classic McEliece or ML-Kemeleon as an OKEM while employing ML-KEM or BIKE as a KEM would still yield sizes not exceeding 8~192 bytes, but the quiet periods would nonetheless be easy to distinguish from e.g.~\obfsfour{} traffic.
+As is obvious from the table, sending the entire first \drivel{} message in full before the bridge responds (after verifying the PRF value at the end of message) leads to a large quiet period. Thus, for all but a few KEM/OKEM combinations, this quiet period would quickly be identifiable. When trying to minimize the size of the first \drivel{} message, using Classic McEliece or ML-Kemeleon as an OKEM while employing ML-KEM or BIKE as a KEM would be close to optimal and yield sizes not exceeding 8~192 bytes. However, even these combinations would entail larger quiet periods than \obfsfour{} which would be easy to distinguish.
 
 \paragraph{Desirable Security Properties}
 Before discussing the options to mitigate this risk, let us recall one of the advantages \drivel{} has over \obfsfour{}. In \obfsfour{}, censors can retroactively identify handshake packets by verifying the MAC value if the bridge information is leaked, as the MAC it is keyed only with the bridge information. This allows censors to definitively identify clients that had previously connected to a bridge, as well as any future clients connecting to the bridge. This property has been discussed in \cite[Section~6]{CCS:GunSteVei24} and was also recognized earlier by David Fifield in \cite{obfs4-pk-reveal-distinguisher}.
@@ -68,13 +68,13 @@ For $\drivel$ to maintain its security, it is necessary that:
     \item[b)] the client's message proving this is indistinguishable from random bits, even given the bridge information and independent proofs from other clients.
 \end{itemize}
 
-Violating a) would make the bridge vulnerable to probing attacks by censors that do not know the bridge information. On the other hand, violating b) would trivially break $\sObf$. Both of these outcomes would be undesirable and $\sObfKE$ from \cite{CCS:GunSteVei24} captures both avenues of attack, since the predicate \textsf{Probed} automatically wins the game, and public keys can be revealed when asked to distinguish a simulated transcript from a real transcript in \textsc{ChallExec}, respectively.
+Violating a) would make the bridge vulnerable to probing attacks by censors that do not know the bridge information. On the other hand, violating b) would trivially break $\sObf$. Both of these outcomes are undesirable and $\sObfKE$ from \cite{CCS:GunSteVei24} captures both avenues of attack. This is because the predicate \textsf{Probed} automatically wins the game, and public keys can be revealed when asked to distinguish a simulated transcript from a real transcript in \textsc{ChallExec}, respectively.
 
-Due to the required proof in the client's initial communication alone, it is strictly necessary that the bridge server receives a certain minimum amount of data before it may respond in any way.
+Due to the required proof in the client's initial communication alone, it is strictly necessary that the bridge server receives a certain minimum amount of data before it responds in any way.
 To break up the first large \drivel{} message, we could, for example, split it into parts and let the server respond after receiving each of these smaller parts. However, the first such ``fragment'' would need to contain at least a suitable proof that the client knows the bridge information.
 
 \paragraph{An Informal Security Notion}
-In order to outline the above requirements a bit more, we can informally define the initial interaction between an adversary and the bridge servers. One goal of the initial exchange, among others, is to arrive at a shared secret, that can aid in subsequent fragmentation, using just the first message from the client to the server.
+In order to outline the above requirements a bit more, we can informally define the initial interaction between an adversary and the bridge servers. One goal of the initial exchange, among others, is to establish a shared secret, that can aid in subsequent fragmentation, using just the first message from the client to the server.
 
 This effectively means that a first fragment could be viewed as an (O)KEM ciphertext: Some bridge information is generated and distributed (similar to a public key), a message is sent by a client to the bridge and a shared secret is computed from it.
 % Conversely, the first fragment may also be viewed as a MAC tag: Bridge information is then assumed to be secret and shared between two parties (similar to a symmetric key), and used to authenticate a communication.
@@ -82,7 +82,7 @@ This effectively means that a first fragment could be viewed as an (O)KEM cipher
 Let us also assume that there is no possibility for bridges to save state about each client, that clients are unwilling to save state for the bridges due to privacy concerns (both options could be implemented e.g. similar to TLS 1.3 session resumption \cite[Section~2.2]{rfc8446}) and that no pre-shared symmetric keys are available (which would trivialize the entire handshake).
 
 For the following discussion, let $P$ be the bridge information.
-Let $M$ denote the fixed-length message sent from the client to the bridge, and let $S$ denote the shared secret computed by both client and bridge for the secure transport of subsequent traffic.
+Let $M$ denote the fixed-length message sent from the client to the bridge, and let $S$ denote the shared secret computed by both the client and the bridge for secure transport of subsequent traffic.
 % We also define two adversaries $\adv$ and $\bdv$. The bridge information $P$ is only known to $\adv$, and not $\bdv$.
 We also define an adversary $\adv$, to which the bridge information $P$ is known.
 The goal of $\adv$ is to identify traffic as a client-bridge handshake (breaking strong obfuscation).
@@ -92,7 +92,7 @@ We will now examine what properties (in addition to probing resistance) this exc
 \begin{itemize}
     \item The adversary $\adv$ should not be able to distinguish the first fragment sent over the network from random bits, even given $P$ (e.g. retroactively). This corresponds directly to $\ctxtunif$, if we were to view the exchange as an OKEM.
 
-    \item The adversary $\adv$ should not be able to distinguish a randomly sampled shared secret $S$ from one corresponding to any given message $M$ observed on the network, even if the adversary is allowed further communication with the bridge. Viewing the exchange as a KEM, this corresponds to $\indcca$ security.
+    \item The adversary $\adv$ should not be able to distinguish a randomly sampled shared secret $S$ from a secret corresponding to any given message $M$ observed on the network, even if the adversary is allowed further communication with the bridge. Viewing the exchange as a KEM, this corresponds to $\indcca$ security.
     
     % \item The adversary $\bdv$ should not be able to create a message $M$ that, when parsed by the bridge results in a valid shared secret $S$ without access to the bridge information. This would allow bridges to respond, violating probing resistance. Instead, the bridge should reject the message. Here, we can view the exchange as a MAC application using the previously shared bridge information $P$ as a key. The property then corresponds to the standard notion of strongly secure MACs as defined in \cite[Definition~4.3]{katz_lindell}, \cite[Chapter~2]{AC:BelNam00}.
 \end{itemize}
@@ -104,7 +104,7 @@ The OKEM covers both requirements, and probing resistance is also achieved by au
 It is hard to imagine a significant potential in message size reduction outside of removing other components of the first \drivel{} message, as we conjecture the following:
 Any protocol satisfying the requirements listed above could act as an OKEM.
 %(or an inefficient MAC).
-The existence of a more efficient protocol would thus imply the existence of a more efficient OKEM, which, due to the large scope of the NIST Standardization \cite{nist-standardization}, seems implausible.
+The existence of a more efficient protocol would thus imply the existence of a more efficient OKEM, which, due to the large scope of the NIST Standardization~\cite{nist-standardization}, seems unlikely.
 This gives us confidence that both the constructions in \cref{ssec:drivel-mod} below are close to optimal in terms of the size of the first fragment.
 
 \paragraph{Arbitrary Fragmentation}
@@ -128,7 +128,7 @@ Sending even less data in a first fragment seems implausible, as the randomized 
 
 \section{Proposed Modifications to the Drivel Protocol} \label{ssec:drivel-mod}
 
-No changes discussed or proposed in this \cref{ssec:drivel-mod} were implemented or practically evaluated as part of this thesis, but this discussion may be valuable to readers to understand possible future directions of the protocol.
+No changes discussed or proposed in this \cref{ssec:drivel-mod} were implemented, or practically evaluated as part of this thesis. However, we believe that this discussion will be valuable to readers to understand possible future directions of the protocol.
 
 This thesis employs only the unmodified variant of $\drivel{}$ presented in \cref{fig:drivel}.
 
@@ -138,9 +138,9 @@ The following two subsections offer different approaches to implement fragmentat
 
 One way to achieve the security properties described in \cref{ssec:fragmentation} in a space-efficient manner would be to send one OKEM ciphertext plus a 16 byte PRF value as the first fragment. The PRF would be keyed by a combination of the shared secret and the bridge information (as in \drivel{}).
 
-Recall from \cref{fig:drivel} that the first \drivel{} message is constructed as $\mathsf{epk}_e \conc c_S \conc P_C \conc M_C \conc \mathsf{MAC}_C$, where $\mathsf{epk}_e$ is the encrypted KEM public key, $c_S$ is the OKEM ciphertext of interest, $M_C$ helps delimit the message, and $\mathsf{MAC}_C$ authenticates all preceding data.
+Recall from \cref{fig:drivel} that the first \drivel{} message is constructed as $\mathsf{epk}_e \conc c_S \conc P_C \conc M_C \conc \mathsf{MAC}_C$, where $\mathsf{epk}_e$ is the encrypted KEM public key, $c_S$ is the OKEM ciphertext of interest, $M_C$ helps to delimit the message, and $\mathsf{MAC}_C$ authenticates all preceding data.
 
-In this fragmentation approach, we propose a minimal change to this message, such that encrypted public keys $\mathsf{epk}_e$ are sent later, and an additional PRF value (the ``authenticator'') is sent directly following the OKEM ciphertext. Reusing the same variables, parenthesizing the first fragment for clarity, and introducing $A_C \gets F_1(ES, c_S \conc \text{``:authc''})$ as an authenticator, this would lead to the following first protocol message:
+In this fragmentation approach, we propose a minimal change to this message, such that encrypted public keys $\mathsf{epk}_e$ are sent later, and an additional PRF value (the ``authenticator'') is sent directly following the OKEM ciphertext. Reusing the same variables, parenthesizing the first fragment for clarity, and introducing $A_C \gets F_1(ES, c_S \conc \text{``:authc''})$ as an authenticator, leads to the following first protocol message:
 
 \[
     \left( c_S \conc A_C \right) \conc \mathsf{epk}_e \conc P_C \conc M_C \conc \mathsf{MAC}_C .
@@ -168,7 +168,7 @@ The adapted protocol specification is visualized in \cref{fig:modified-drivel-mi
 
 Implementers should note that the newly introduced $A_C$ must be saved to protect against replay attacks. This replaces the existing replay protection in \obfsfour{} which uses $\mathsf{MAC}_C$. The same mechanism can be reused.
 
-There is no need to check for repeats between $\mathsf{MAC}_C$ values in this variant. The goal of these checks is to prevent the server from answering on replayed messages, in order to resist active probing.
+There is no need to check for repetitions between $\mathsf{MAC}_C$ values in this variant. The goal of these checks is to prevent the server from answering on replayed messages, in order to resist active probing.
 However, replayed messages by definition also contain the same value for $A_C$ and would be rejected even earlier.
 
 \Cref{tab:frag-min-needed} shows the minimum size of a first fragment using this approach for different OKEMs. Note that this is simply the size of OKEM ciphertexts plus 16 bytes for the PRF value.
@@ -210,7 +210,7 @@ At the time of writing, this packet-based system can be outlined as follows. Giv
     \item an 8-byte hash IV $\mathsf{IV}$.
 \end{itemize}
 
-Each set of $K_\mathsf{AE}, \mathsf{pre}, K_\mathsf{H}, \mathsf{IV}$ corresponds to either the direction client-to-bridge, or bridge-to-client. Both directions work in the same way presented below and visualized in \cref{fig:framing}.
+Each set of $K_\mathsf{AE}, \mathsf{pre}, K_\mathsf{H}, \mathsf{IV}$ corresponds to either the client-to-bridge direction or vice versa. Both directions work in the same way presented below and visualized in \cref{fig:framing}.
 
 \begin{figure}
     \centering
@@ -260,7 +260,7 @@ After the initial handshake, the connection is ``wrapped'' in the packet and fra
 If, at any point, a connection closes or raises an error (e.g. because a tag in the framing layer's AE ciphertext failed to verify), the connection is immediately closed, and a TCP FIN packet is sent by the OS as part of closing the TCP file descriptor.
 This allows active attackers to choose any TCP burst after the initial handshake, leave the length field in the first two bytes unmodified, arbitrarily change the third byte (part of the 16 byte NaCl secretbox tag, ensuring a decryption failure later), and then slowly send one byte at a time. As the pluggable transport, after reading a valid length value, will wait for all data to arrive, and then verify the AE ciphertext, the total length of the AE ciphertext can be deduced by observing when the connection is closed.
 
-This contrasts harshly with the handling of errors and invalid MAC values in the handshake procedure: There, a random delay between 1 and 60 seconds from the start of the connection is chosen as a deadline, and if a client causes an error in the handshake or does not send enough data in the first 30 seconds, the connection is closed only at this randomized deadline.
+This contrasts harshly with the handling of errors and invalid MAC values in the handshake procedure: At the start of a connection, the server chooses a random delay between 1 and 60 seconds as a deadline. If a client causes an error in the handshake or does not send enough data in the first 30 seconds, the connection is closed only at this randomized deadline, and not immediately upon the occurrence of the problematic behavior.
 
 If active attackers attempt to fingerprint the connection by modifying the length value to provoke a closure of the connection (e.g. flipping the most significant bit, ensuring an invalid length), the length value is instead chosen as a random valid length between 16 to 1446 bytes. As the connection then remains blocked until the corresponding amount of AE ciphertext is received before the connection is closed, this attack cannot provoke a closure after a fixed, identifiable amount of data. The concept of ``secure closures'' of channels in general is discussed in more detail in \cite{CCS:FenJoh24}.
 
@@ -279,7 +279,7 @@ For example, we could first transmit $c_S \conc A_C$ without using the framing l
 However, since the framing layer already aims to provide obfuscation, integrity, and confidentiality, the need for $P_C, M_C, \mathsf{MAC}_C, P_S, M_S$, and $\mathsf{MAC}_S$ would disappear. Note that the message transcript is implicitly validated by including the $\mathsf{context}$ value when calculating $\mathsf{KEY\_SEED}$. Furthermore, it would not be necessary to encrypt $\pk_e$ at all.
 
 We believe it to be worthwhile to modify \drivel{} accordingly, allowing almost arbitrary traffic shaping after an initial transmission of only $c_S \conc A_C$.
-Conversely, this rather extensive change would require adapting the extensive $\sObfKE$ security proof for \drivel{} presented in \cite{EPRINT:GRSV25}.
+Conversely, this rather large change would require adapting the extensive $\sObfKE$ security proof for \drivel{} presented in \cite{EPRINT:GRSV25}.
 
 This approach is visualized in \cref{fig:modified-drivel-framing}, an adaptation of \cref{fig:drivel}. Let $FL$ denote the framing layer presented above. Then $FL.\mathsf{Rekey}(k)$ indicates that the framing layer is reinitialized using $k$ as the $\mathsf{KEY\_SEED}$ value following the process outlined above.
 
@@ -287,7 +287,7 @@ In addition, we took the opportunity to propose a simplification of the calculat
 As $F_1$ is implemented as \textsf{HDKF-Expand}, its state after digesting part of its input cannot be reused for further calls to $F_1$ (due to e.g. the string constants used for domain separation) and its entire input must be re-hashed when requesting multiple output blocks.
 Both shortcomings can be circumvented by instead pre-hashing long inputs without appending a string constant. This hash state could also be reused when more inputs are desired in the later stages of the protocol.
 
-To this end, we introduce a hash function $\mathbf{H}$ and replace the inputs to $F_1$ appropriately. This approach is similar in spirit to e.g. the calculation of the transcript hash in TLS 1.3 by keeping a running hash value \cite[Section~4.4.1]{rfc8446}.
+For this purpose, we introduce a hash function $\mathbf{H}$ and replace the inputs to $F_1$ appropriately. This approach is similar in spirit to e.g. the calculation of the transcript hash in TLS 1.3 by keeping a running hash value \cite[Section~4.4.1]{rfc8446}.
 
 \begin{figure}
     \input{algorithms/drivel-framing}

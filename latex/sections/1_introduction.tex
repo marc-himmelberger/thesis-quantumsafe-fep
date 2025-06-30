@@ -2,7 +2,7 @@
 
 \section{Context} \label{sec:context}
 
-The growing spread of well-researched and high-performing cryptographic algorithms has enabled the development of many messaging services, websites, authentication systems, and digital signature applications, which are considered secure.
+The growing spread of well-researched and high-performing cryptographic algorithms has enabled the development of many digital services, which are considered secure, such as electronic banking, messengers, digital identities, and digital signing, to name a few.
 In the context of secure communication, the notion of ``security'' usually boils down to three main properties: authentication (a guarantee that the conversation takes place with the intended peer), confidentiality (data remains secret to third parties), and integrity (receivers can verify that data was not modified by third parties).
 
 In addition to these properties, the question of availability arises, i.e.~whether third parties can restrict access to specific services. Evidence of Internet censorship supports this concern as certain Internet Service Providers (ISPs) or nations impose limitations on end user access to services or information over the Internet \cite{master2023worldwide,SP:NCWHRC20,CCS:RSKE20}.
@@ -13,9 +13,9 @@ Ultimately, this work takes the position that individuals should retain the abil
 
 From a technical point of view, widely used secure communication protocols, such as TLS 1.3, provide authentication, integrity, and confidentiality. However, censorship remains feasible, as communication to specific sites can be blocked based on IP addresses or DNS names. Censorship can be further augmented by using block lists of common VPN or proxy services at the cost of a certain degree of collateral damage.
 
-In order to provide the necessary anonymity to avoid censorship based on destination address, services such as the Tor Project \cite{torproject} rely on a dynamic set of volunteer-operated entry nodes into the Tor network, which uses onion routing to anonymize traffic.
+In order to provide the necessary anonymity to avoid censorship based on destination address, services such as the Tor Project \cite{torproject} rely on a dynamic set of entry nodes into the Tor network. These entry nodes, as well as all other nodes of the Tor network are primarily volunteer-operated, and together implement onion routing in order to anonymize users' traffic.
 
-Nonetheless, the Tor protocol itself is easily identified due to e.g. lists of Tor entry nodes such as \cite{danNodeList} or using time-based characteristics \cite{icissp17}. Tor traffic can thus be blocked using relatively inexpensive traffic inspection. To remedy this issue, protocols are required that are difficult to identify, which can then be used to communicate with special Tor nodes. These so-called ``Tor bridges'' replace typical entry nodes into the Tor network (``guards'') and IPs of bridges may be unknown to censors.
+Nonetheless, the Tor protocol itself is easily identified due to e.g. lists of Tor entry nodes such as \cite{danNodeList} or using time-based characteristics \cite{icissp17}. Tor traffic can thus be blocked using relatively inexpensive traffic inspection. To remedy this issue, special protocols (so-called ``pluggable transports'') are required that are more difficult to identify. These protocols can then be used to communicate with the Tor network. In such a setup, so-called ``Tor bridges'' may be employed that replace typical entry nodes into the Tor network (``guards'') and IPs of bridges may be unknown to censors. By having Tor bridges run outside of censored regions, the pluggable transport only has to be used between the client and bridge.
 
 In an attempt to fill this niche, Fully Encrypted Protocols (FEPs) such as \obfsfour{}~\cite{obfs4}, \textsf{Shadowsocks}~\cite{shadowsocks}, or \textsf{VMess}~\cite{vmess} encrypt or otherwise modify the data stream sent over the Internet in order to make it unidentifiable. One approach is to create a data stream indistinguishable from random bits, which could then also be embedded within other protocols. This ``obfuscation'' of traffic serves to evade conventional traffic fingerprinting techniques and allow FEPs to serve as tunnels that hide specific protocol behavior.
 Unlike more mainstream tunneling protocols such as SSH or IPsec, a FEP makes the tunneling more difficult to recognize by ensuring that a seemingly uniformly random sequence of bytes is sent on the wire and by changing packet sizes independent of the message sizes.
@@ -29,9 +29,15 @@ Such a device, capable of employing Shor's algorithm \cite{Shor_1997} to factor 
 The general approach to safeguard against a quantum threat and to ensure a security level similar to the resistance of today's algorithms against classical computers is two-fold:
 Symmetric algorithms should double their key size -- typically this means employing 256-bit keys, which is already possible in many wide-spread AEAD schemes. Asymmetric algorithms, on the other hand, should be migrated to new, so-called ``post-quantum'' or ``quantum-safe'' algorithms to ensure the security of authentication and key exchange. By relying on mathematical hardness assumptions different from traditional cryptography, these algorithms are believed to be less susceptible to attacks by large quantum computers. In this vein, NIST has standardized \cite{nist-standardization} one key encapsulation mechanism (KEM) and two signature schemes, namely ML-KEM \cite{fips203}, ML-DSA \cite{fips204} and SLH-DSA \cite{fips205}, with more schemes to be standardized in the months following the completion of this thesis.
 
+To address \obfsfour{}'s reliance on traditional cryptography alone, the protocol \pqobfs{}~\cite{CCS:GunSteVei24} was proposed. Among other improvements, it allows the integration of these newly standardized KEMs.
+Building upon \pqobfs{}, the \drivel{}~\cite{EPRINT:GRSV25} protocol further modifies the construction by lowering the requirements on the KEMs, and strengthening the security guarantees in the case of failures of some components.
+
 \section{Our Contributions} \label{sec:contributions}
 
-This thesis involves implementing the proposed \drivel{} construction from \cite{EPRINT:GRSV25} (an iteration of \pqobfs{}, which is, in turn, based on \obfsfour{}) in order to test its practicality and performance.
+These proposed protocols have not yet been implemented in practice, but constitute a major change compared to \obfsfour{}.
+In particular, performance profiles and bandwidth requirements are affected, and there is currently no concrete analysis of these effects on an end-to-end Tor connection.
+
+This thesis therefore involves implementing the proposed \drivel{} construction from \cite{EPRINT:GRSV25} in order to test its practicality and performance.
 This thesis pays special attention to the possible tradeoffs in the choice of cryptographic algorithms and aims to be easily integrated into the existing Tor ecosystem.
 %\footnote{To support the clarity and readability of this thesis, I utilized OpenAI's ChatGPT~\cite{chatgpt} for editorial purposes, such as grammar refinement and language consistency. The intellectual content, research findings, and interpretations remain entirely my own.}
 
@@ -50,9 +56,11 @@ After a recapitulation of the requisite theory in \cref{ch:preliminaries}, we di
 
 \Cref{ch:implementation} summarizes our work on successfully implementing \drivel{}. We point out compromises, suggest suitable configurations of cryptographic schemes, and provide guidance on how to integrate the \drivel{} protocol as part of the Tor ecosystem.
 
-In \cref{ch:experiment}, we evaluate the performance of our implementation using benchmarks and deployments under laboratory conditions. We quantify the tradeoffs between our suggested configurations and conclude that while our implementation integrates nicely into the lyrebird repository and adds crucial flexibility to the protocol, some parts of the implementation could profit from further optimization.
+In \cref{ch:experiment}, we evaluate the performance of our implementation using benchmarks and local, virtualized deployments. We quantify the tradeoffs between our suggested configurations and conclude that while our implementation integrates nicely into the existing lyrebird repository~\cite{lyrebird}, which also implements \obfsfour{}, and adds crucial flexibility to the protocol, some parts of the implementation could profit from further optimization.
 
-Finally, \cref{ch:protocol-changes} presents our proposal for concrete modifications to the \drivel{} specification of \cite{EPRINT:GRSV25}. We believe that a closer integration with the mechanisms used in the data transfer phase could benefit key exchange while improving the potential of \drivel{} to hide within specific traffic patterns.
+\Cref{ch:protocol-changes} presents our proposal for concrete modifications to the \drivel{} specification of \cite{EPRINT:GRSV25}. We believe that a closer integration with the mechanisms used in the data transfer phase could benefit the key exchange while improving the potential of \drivel{} to hide within specific traffic patterns.
+
+Finally, \cref{ch:conclusion} summarizes our findings and discusses possible directions for future work.
 
 \section{Related Work} \label{sec:related-work}
 
@@ -62,7 +70,7 @@ This thesis relies on five main pieces of prior work, each contributing to a dif
 
     \item Xagawa~\cite{EC:Xagawa22} surveyed security properties of various Key Encapsulation Mechanisms (KEMs) proposed during the NIST Post-Quantum Cryptography Standardization \cite{nist-standardization}, in order to show their anonymity. We often refer to their work for our theoretical analyses, as their intermediate results greatly simplify our security proofs.
 
-    \item Security notions for the data transfer phase of FEPs were defined by Fenske and Johnson~\cite{CCS:FenJoh24}. While their work largely ignores the issue of how the parties arrive at a securely shared secret, it offers important considerations on how the encryption of higher-level data should be implemented and discusses possible pitfalls. The security notions capture the goals of encrypting or obfuscating all protocol data, and thus hiding protocol behavior from an adversary.
+    \item Security notions for the data transfer phase of FEPs were defined by Fenske and Johnson~\cite{CCS:FenJoh24}. Their work offers important considerations on how the encryption of higher-level data should be implemented for the data transfer phase and discusses possible pitfalls. The security notions capture the goals of encrypting or obfuscating all protocol data, and thus hiding protocol behavior from an adversary.
     Although we do not implement these ideas in our work, they are complementary to the following works and should be considered in future changes to the implementation.
 
     \item A generic quantum-safe construction for an obfuscated key exchange is presented by Günther et al. in~\cite{CCS:GunSteVei24}, similar to \obfsfour{}. This protocol, called \pqobfs{}, is capable of employing a specific form of quantum-safe KEMs in order to arrive at the requisite shared secret for the data transfer phase.
