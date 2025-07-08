@@ -2,6 +2,7 @@
 
 # Ensure correct remote present
 if ! git remote | grep -q latex; then
+    # Don't worry, this token doesn't work anymore ;)
     git remote add -f latex https://git:olp_6CYA7UJ8bd3GebksBVNGiBJMKTXcDq3k144k@git.overleaf.com/6780e2bde2975c5d641bb05d
 fi
 

@@ -5,8 +5,7 @@ mkdir -p results
 out_folder=$(realpath results/profiles)
 cd lyrebird
 
-# Make sure the same size of buffer is used
-# TODO remove once we have fragmentation
+# Make sure the same size of buffer is used, doesn't make sense for KEM/OKEM other than x25519
 maxHandshake_pattern="maxHandshakeLength =.*$"
 handshake_file="transports/drivel/handshake.go"
 old_line=$(cat "$handshake_file" | grep -o "$maxHandshake_pattern")

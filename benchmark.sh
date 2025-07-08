@@ -45,7 +45,7 @@ config_schemes () {
     # Example: config_schemes "x25519" "FEO-x25519"
     export TOR_PT_SERVER_TRANSPORT_OPTIONS="drivel:kem-name=$1;drivel:okem-name=$2"
 }
-# TODO change these to actually use our 12 parameter sets
+
 ensure_drivel_L0 () {
     config_schemes "x25519" "FEO-x25519"
 }

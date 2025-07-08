@@ -138,7 +138,7 @@ data_bench <- data_bench %>%
 
 # Runs data
 data_runs <- read.csv("structured/runs.csv")
-max_handshakes <- 1 # XXX: Hack, see below; max(data_runs$handshakes)
+max_handshakes <- 1 # Hack, see below; max(data_runs$handshakes)
 stopifnot(
     2 == (
         data_runs %>% # assert that only one replicate has multiple handshakes
@@ -202,7 +202,7 @@ data_traffic <- read.csv("structured/traffic.csv") %>%
 # For the one run with 2 handshakes (check using runs.csv):
 #   drop data_traffic rows for first handshake ("handshake,bridge" with smaller numbers - one "upstream" one "downstream")
 #   for all "data,bridge", reduce timestamp by delta between "handshake,bridge,upstream"
-# XXX: I'm lazy, so I just looked up the appropriate rows myself
+# I'm lazy, so I just looked up the appropriate rows myself
 delta_handshake <- data_traffic[data_traffic$X == 1099, ]$timestamp # timestamp for first packet is "0"
 data_traffic <- data_traffic %>%
     filter(

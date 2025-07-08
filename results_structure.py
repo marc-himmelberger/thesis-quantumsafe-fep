@@ -477,7 +477,7 @@ def structure_runs(folder_runs: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
                 bridge_hs_data
             ), "Bridge packet had no payload?"
 
-            # TODO add an entry for each PSH+ACK packet in handshake
+            # add an entry for each PSH+ACK packet in handshake
             psh_ack_packets = [p for p in handshake if p[TCP].flags == "PA"]
             # How much of each TCP payload was used for key exchange (i.e. not for inlineseedframe)
             key_ex_sizes = []
